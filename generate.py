@@ -9,9 +9,9 @@ from datetime import datetime
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-MAKS_SAKER    = 16   # Maks saker på siden til enhver tid
-NYE_PER_RUNDE =  8   # Nye saker som hentes hver kjøring
-FALLER_UT     =  4   # Eldste saker som fjernes ved hver oppdatering (unntatt morgen)
+MAKS_SAKER    = 16
+NYE_PER_RUNDE =  8
+FALLER_UT     =  4
 
 SAKER_FIL_NAT = "docs/saker_nasjonal.json"
 SAKER_FIL_LOK = "docs/saker_lokal.json"
@@ -29,9 +29,56 @@ RSS_LOKAL = [
     ("https://www.vestlandsnytt.no/rss/",  "Vestlandsnytt"),
 ]
 
+# Emoji-kategorier som fallback
+EMOJI_MAP = [
+    (["krig","ukraina","russland","angrep","soldat","forsvar","nato","våpen"], "⚔️"),
+    (["fotball","sport","idrett","vm","em","lag","kamp","turnering","mål"],   "⚽"),
+    (["skole","elev","lærer","utdanning","barnehage","ungdom","barn"],        "🏫"),
+    (["klima","natur","miljø","skog","hav","dyr","fisk","vær","snø","storm"], "🌿"),
+    (["helse","sykehus","lege","sykdom","medisin","vaksine","virus"],         "🏥"),
+    (["politikk","regjering","stortinget","statsminister","valg","parti"],    "🏛️"),
+    (["penger","økonomi","priser","strøm","rente","inflasjon","toll"],        "💰"),
+    (["brann","ulykke","redning","politi","kriminalitet","ran"],              "🚒"),
+    (["teknologi","ai","robot","data","internett","app"],                     "💻"),
+    (["kultur","musikk","film","kunst","teater","konsert"],                   "🎭"),
+    (["romfart","forskning","vitenskap","oppdagelse"],                        "🔭"),
+    (["mat","restaurant","landbruk","jordbruk"],                              "🍽️"),
+]
+
+def velg_emoji(tittel, brodtekst=""):
+    tekst = (tittel + " " + brodtekst).lower()
+    for nokkelord, emoji in EMOJI_MAP:
+        if any(ord in tekst for ord in nokkelord):
+            return emoji
+    return "📰"
+
+def hent_bilde(item, ns):
+    """Prøver å hente bilde-URL fra RSS-item."""
+    # Prøv media:content
+    media = item.find("media:content", ns)
+    if media is not None:
+        url = media.get("url", "")
+        if url and url.startswith("http"):
+            return url
+    # Prøv enclosure
+    enc = item.find("enclosure")
+    if enc is not None:
+        url = enc.get("url", "")
+        if url and ("jpg" in url or "png" in url or "jpeg" in url or "webp" in url):
+            return url
+    # Prøv å finne img-tag i description
+    desc = item.findtext("description") or ""
+    match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', desc)
+    if match:
+        url = match.group(1)
+        if url.startswith("http"):
+            return url
+    return None
+
 def hent_rss(feeds, maks_per_kilde=4):
     artikler = []
     headers = {"User-Agent": "JuniorNytt/1.0"}
+    ns = {"media": "http://search.yahoo.com/mrss/"}
     for url, kilde in feeds:
         try:
             req = urllib.request.Request(url, headers=headers)
@@ -42,8 +89,14 @@ def hent_rss(feeds, maks_per_kilde=4):
                 tittel = (item.findtext("title") or "").strip()
                 desc   = (item.findtext("description") or "").strip()
                 desc   = re.sub(r"<[^>]+>", "", desc).strip()
+                bilde  = hent_bilde(item, ns)
                 if tittel:
-                    artikler.append({"kilde": kilde, "tittel": tittel, "ingress": desc[:300]})
+                    artikler.append({
+                        "kilde":   kilde,
+                        "tittel":  tittel,
+                        "ingress": desc[:300],
+                        "bilde":   bilde,
+                    })
         except Exception as e:
             print(f"  Kunne ikke hente {kilde}: {e}")
     return artikler
@@ -59,18 +112,23 @@ Regler:
 - Behold det viktigste innholdet
 - Legg til ordforklaring (1–4 ord) for vanskelige begreper
 - Bruk kildenavnet fra artikkelen
+- Legg til et felt "emoji" med én passende emoji for saken
 
 Artikler:
 {artikler}
 
 Svar KUN med JSON-array, ingen annen tekst:
-[{{"tittel":"...","brodtekst":"...","kilde":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
+[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
 
 
 def omskriv(artikler, antall=8, retries=4, wait=60):
+    # Ta med bilde-URL i teksten til Claude slik at vi kan mappe det tilbake
     tekst = "\n\n".join(
         f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artikler
     )
+    # Lag en tittel->bilde-mapping
+    bilde_map = {a["tittel"]: a.get("bilde") for a in artikler}
+
     prompt = OMSKRIV_PROMPT.format(antall=antall, artikler=tekst)
     for attempt in range(retries):
         try:
@@ -85,10 +143,21 @@ def omskriv(artikler, antall=8, retries=4, wait=60):
             if s == -1:
                 return []
             saker = json.loads(text[s:e+1])
-            # Legg til tidsstempel
             ts = datetime.now().strftime("%H:%M")
             for sak in saker:
                 sak["tidspunkt"] = ts
+                # Prøv å matche bilde fra original tittel
+                sak["bilde"] = None
+                for orig_tittel, bilde_url in bilde_map.items():
+                    if bilde_url and any(
+                        ord in sak["tittel"].lower()
+                        for ord in orig_tittel.lower().split()[:4]
+                    ):
+                        sak["bilde"] = bilde_url
+                        break
+                # Sett emoji-fallback
+                if not sak.get("emoji"):
+                    sak["emoji"] = velg_emoji(sak["tittel"], sak.get("brodtekst",""))
             return saker
         except anthropic.RateLimitError:
             if attempt < retries - 1:
@@ -100,7 +169,6 @@ def omskriv(artikler, antall=8, retries=4, wait=60):
 
 
 def oppdater_saker(nye, fil, er_morgen):
-    """Legg nye saker øverst, fjern 4 eldste (nederst) hvis ikke morgen."""
     eksisterende = []
     if not er_morgen and os.path.exists(fil):
         try:
@@ -109,23 +177,14 @@ def oppdater_saker(nye, fil, er_morgen):
         except Exception:
             eksisterende = []
 
-    # Unngå duplikater basert på tittel
     eksist_titler = {s["tittel"].lower() for s in eksisterende}
     nye_unike = [s for s in nye if s["tittel"].lower() not in eksist_titler]
-
-    # Nye saker øverst, gamle nederst
     kombinert = nye_unike + eksisterende
 
-    # Fjern 4 eldste (ikke om morgenen)
-    if not er_morgen and len(kombinert) > MAKS_SAKER:
-        kombinert = kombinert[:MAKS_SAKER]
-    elif not er_morgen:
-        # Fjern 4 eldste uansett (rullering)
-        kombinert = kombinert[:-FALLER_UT] if len(kombinert) >= FALLER_UT else kombinert
+    if not er_morgen and len(kombinert) >= FALLER_UT:
+        kombinert = kombinert[:-FALLER_UT]
 
-    # Behold maks 16
     kombinert = kombinert[:MAKS_SAKER]
-
     os.makedirs("docs", exist_ok=True)
     with open(fil, "w", encoding="utf-8") as f:
         json.dump(kombinert, f, ensure_ascii=False, indent=2)
@@ -140,6 +199,13 @@ def card(sak, idx):
                "#FCD34D","#7DD3FC","#6EE7B7","#F0ABFC","#A78BFA","#FB923C",
                "#FACC15","#60A5FA","#34D399","#E879F9"]
     bg, border = colors[idx % len(colors)], borders[idx % len(borders)]
+
+    bilde_html = ""
+    if sak.get("bilde"):
+        bilde_html = f'<img src="{sak["bilde"]}" alt="" class="card-img" onerror="this.style.display=\'none\'">'
+    
+    emoji = sak.get("emoji") or velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
+
     forklaringer = ""
     if sak.get("ordforklaring"):
         items = "".join(
@@ -147,10 +213,14 @@ def card(sak, idx):
             for o in sak["ordforklaring"]
         )
         forklaringer = f'<div class="ordbox"><div class="ord-title">📖 Visste du at…?</div>{items}</div>'
+
     ts = sak.get("tidspunkt", "")
     ts_html = f'<span class="tidspunkt">🕐 {ts}</span>' if ts else ""
+
     return f'''<div class="card" style="background:{bg};border-color:{border}">
+      {bilde_html}
       <div class="card-meta">{ts_html}</div>
+      <div class="card-emoji">{emoji}</div>
       <h3>{sak["tittel"]}</h3>
       <p>{sak["brodtekst"]}</p>
       {forklaringer}
@@ -189,9 +259,11 @@ def build_html(nasjonal, lokal):
   .sources{{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}}
   main{{max-width:720px;margin:0 auto;padding:16px}}
   .panel{{display:none}}.panel.active{{display:block}}
-  .card{{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}}
-  .card-meta{{display:flex;justify-content:flex-end;margin-bottom:6px}}
+  .card{{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}}
+  .card-img{{width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:12px;display:block}}
+  .card-meta{{display:flex;justify-content:flex-end;margin-bottom:4px}}
   .tidspunkt{{font-size:.7rem;color:#9ca3af}}
+  .card-emoji{{font-size:2rem;margin-bottom:8px}}
   .card h3{{font-size:1.15rem;font-weight:800;color:#1f2937;margin-bottom:10px;line-height:1.3}}
   .card p{{font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:12px}}
   .ordbox{{background:rgba(255,255,255,.7);border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:12px}}
@@ -242,7 +314,7 @@ def build_html(nasjonal, lokal):
 
 if __name__ == "__main__":
     time_now = datetime.now()
-    er_morgen = time_now.hour < 9  # Kl. 07 = morgen, nullstill
+    er_morgen = time_now.hour < 9
 
     print(f"Kjøring kl. {time_now.strftime('%H:%M')} – {'morgen (nullstiller)' if er_morgen else 'oppdatering'}")
 
@@ -252,7 +324,7 @@ if __name__ == "__main__":
     print("Omskriver nasjonale nyheter...")
     nye_nat = omskriv(nat_rss, antall=NYE_PER_RUNDE)
     nasjonal = oppdater_saker(nye_nat, SAKER_FIL_NAT, er_morgen)
-    print(f"  → {len(nasjonal)} saker totalt på siden")
+    print(f"  → {len(nasjonal)} saker totalt")
 
     print("Henter RSS – lokalt...")
     lok_rss = hent_rss(RSS_LOKAL)
@@ -260,7 +332,7 @@ if __name__ == "__main__":
     print("Omskriver lokale nyheter...")
     nye_lok = omskriv(lok_rss, antall=NYE_PER_RUNDE)
     lokal = oppdater_saker(nye_lok, SAKER_FIL_LOK, er_morgen)
-    print(f"  → {len(lokal)} saker totalt på siden")
+    print(f"  → {len(lokal)} saker totalt")
 
     html = build_html(nasjonal, lokal)
     os.makedirs("docs", exist_ok=True)
