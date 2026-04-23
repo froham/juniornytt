@@ -24,6 +24,8 @@
   main{max-width:720px;margin:0 auto;padding:16px}
   .panel{display:none}.panel.active{display:block}
   .card{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .card-meta{display:flex;justify-content:flex-end;margin-bottom:6px}
+  .tidspunkt{font-size:.7rem;color:#9ca3af}
   .card h3{font-size:1.15rem;font-weight:800;color:#1f2937;margin-bottom:10px;line-height:1.3}
   .card p{font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:12px}
   .ordbox{background:rgba(255,255,255,.7);border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:12px}
@@ -41,7 +43,7 @@
     document.querySelectorAll('.tab').forEach(t=>t.classList.add('inactive'));
     document.getElementById('tab-'+tab).classList.remove('inactive');
     document.getElementById('src-line').textContent = tab==='nasjonal'
-      ? 'Kilder: NRK · Aftenposten · TV2'
+      ? 'Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG'
       : 'Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten';
   }
 </script>
@@ -52,78 +54,66 @@
   <h1>JuniorNytt</h1>
   <div class="dato">Torsdag 23. april 2026</div>
   <div class="sub">Nyheter for deg mellom 8 og 12 år</div>
-  <div class="oppdatert">Oppdatert kl. 18:11</div>
+  <div class="oppdatert">Oppdatert kl. 18:21</div>
 </header>
 <div class="tabs">
   <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">
-    🇳🇴 Nasjonalt <span class="badge">6</span>
+    🇳🇴 Nasjonalt <span class="badge">4</span>
   </button>
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">
-    📍 Lokalt <span class="badge">6</span>
+    📍 Lokalt <span class="badge">4</span>
   </button>
 </div>
-<div class="sources" id="src-line">Kilder: NRK · Aftenposten · TV2</div>
+<div class="sources" id="src-line">Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG</div>
 <main>
   <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <h3>Britiske barn får aldri lov til å røyke</h3>
-      <p>I Storbritannia har myndighetene laget en ny regel: Barn og unge som er 17 år eller yngre, får aldri lov til å kjøpe sigaretter. Dette gjelder selv når de blir eldre. Regelen er veldig streng, men politikere mener det er bra for helsen til unge mennesker. I Norge diskuterer politikere nå om vi bør gjøre noe lignende. Partiet KrF synes det er en god idé. De mener at hvis vi gjør det vanskeligere for unge å kjøpe sigaretter, røyker færre mennesker når de blir voksne.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Myndighetene:</strong> De folka som leder landet og lager regler</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Britania forbyr røyking for unge</h3>
+      <p>I Britania får ikke barn og unge som er 17 år eller yngre kjøpe sigaretter. Det er en helt ny regel som gjør det ulovlig. Noen politikere i Norge mener vi burde gjøre det samme her. Røyking er dårlig for helsen, spesielt når kroppen din fortsatt vokser. En politisk partiet i Norge synes denne regelen er veldig smart. Det handler om å beskytte barn slik at de ikke blir røykere.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>forbyr:</strong> gjør noe ulovlig</div><div class="ord-item"><strong>politikere:</strong> personer som styrer landet</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <h3>Russebusser har farlige feil</h3>
-      <p>En verksted som reparerer busser ble stengt fordi alle russebussene hadde store problemer. Statens vegvesen sjekket bussene og fant at de var i dårlig stand. Noen hadde rust, andre hadde hull i gulvet, og mange hadde andre feil som kan være farlige. Russen er 17- og 18-åringer som feirer at de er ferdig med videregående skole. De kjører rundt i spesielle busser under feiringen. Nå advarer ekspertene: Pass dere selv og sjekk at bussen er sikker før dere setter dere inn!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Rust:</strong> Når metall blir brunt og skjør når det blir vått</div><div class="ord-item"><strong>Statens vegvesen:</strong> En statlig organisasjon som sjekker at kjøretøy er sikre</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Russebusser må repareres – mange er ødelagte</h3>
+      <p>En verksted som leier ut busser til russen ble stengt etter at politiet sjekket alle bussene deres. De fant ut at alle bussene hadde problemer! Noen hadde rust, andre hadde hull i gulvet og andre deler var ødelagte. Dette er veldig farlig fordi russen skal kjøre rundt i disse bussene. Nå må alle bussene repareres før noen får lov til å bruke dem. Politiet advarer: pass dere hvis dere skal kjøre russebus!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>rust:</strong> når metall blir brunt og stygt av å bli gammelt</div><div class="ord-item"><strong>russen:</strong> elever som har fullført videregående skole</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <h3>Stor brann på fiskebåt</h3>
-      <p>En fiskebåt tok fyr ved Færder fyr på Oslofjorden. Båten brant så kraftig at flammene kunne sees helt fra land. Skipperen, som er kapteinen på båten, ble skadet i brannen og måtte dra til sykehus for å få hjelp. Politiet sier at båten brant helt ned. Det var heldig at det var andre båter i nærheten som kunne hjelpe. Brannen viser hvor viktig det er å ha sikkerhetsutstyr på båter.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Skipper:</strong> Kapteinen som leder en båt</div><div class="ord-item"><strong>Færder fyr:</strong> Et fyrtårn som hjelper båter med navigation på Oslofjorden</div></div>
-      <span class="kilde">📰 NRK</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Stor brann i terrenget – helikopter hjelper til</h3>
+      <p>Det brenner i terrenget i Kvinnherad kommune i Hordaland. Et stort område på størrelse med flere fotballbaner står i flammer. Brannmannskaper og helikopter jobber for å slukke brannen. Når det brenner i terrenget, er det veldig vanskelig å bekjempe fordi brannen kan spre seg fort. Værforholdene og terrenget gjør jobben svær. Mange mennesker jobber sammen for å få kontroll på brannen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>terrengbrann:</strong> ild som brenner i naturen og skogen</div><div class="ord-item"><strong>brannmannskaper:</strong> mennesker som jobber med å slukke branner</div></div>
+      <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <h3>Leilighet og jobb: Ikke lett å få begge deler</h3>
-      <p>Et pilotprosjekt prøver å hjelpe mennesker som har det vanskelig. Prosjektet gir folk hjelp til både å finne jobb og et sted å bo. Det viser seg at det er viktig å løse begge problemene samtidig. Hvis du har et godt sted å bo, er det lettere å finne jobb. Og hvis du har jobb, er det lettere å få råd til å leie eller kjøpe bolig. Resultatene fra forsøket viser at denne metoden fungerer veldig bra. Nå ønsker man å gjøre dette i flere steder.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Pilotprosjekt:</strong> Et forsøk som tester om en idé fungerer, før man gjør det overalt</div></div>
-      <span class="kilde">📰 Aftenposten</span>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <h3>Psykolog deler hemmeligheten sin mot stress</h3>
-      <p>I 25 år har psykolog Mari Kjølseth Bræin hjulpet mennesker som er stresset og redde. Hun har funnet ut at det finnes et system som alle kan lære seg for å bli roligere. Systemet trener hjernen og kroppen til å slappe av når det blir for mye. Det finest ut at hvis du øver på dette systemet regelmessig, blir du mye bedre til å håndtere stress. Mari vil dele denne kunnskapen med så mange mennesker som mulig. Kanskje kan du også lære deg dette trikset for å bli roligere!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Psykolog:</strong> En person som er utdannet til å hjelpe mennesker med følelser og tanker</div><div class="ord-item"><strong>System:</strong> En metode eller plan som man følger</div></div>
-      <span class="kilde">📰 Aftenposten</span>
-    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <h3>Kvinnen må vente veldig lenge på lønn når hun er syk</h3>
-      <p>En kvinne som heter Karen, må vente hele 20 uker på å få sjukepenger når hun er syk og ikke kan jobbe. Samtidig mener hun at andre arbeidere på samme arbeidsplassen får pengene mye raskere. Dette er urettferdig, mener arbeidstakerorganisasjonen Fellesforbundet. De sier at det er helt uakseptabelt at noen blir behandlet annerledes enn andre. Bedriften ISS skal ha en avtale som lar noen få penger raskere enn andre. Fellesforbundet mener dette er diskriminering og krever at det må endres.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Sjukepenger:</strong> Penger du får fra staten når du er syk og ikke kan jobbe</div><div class="ord-item"><strong>Diskriminering:</strong> Når noen blir behandlet dårligere enn andre på grunn av hvem de er</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Fiskebåt tok fyr ved Færder fyr</h3>
+      <p>En fiskebåt tok fyr nær Færder fyr og ble overtent. Flammene var så store at man kunne se dem fra land! Skipperen på båten måtte få hjelp og ble kjørt til sykehus. Brannvesenet rykket ut med det samme for å redde båten og mennesker rundt området. Heldigvis kom redningsmannskapene raskt på plass. Dette var en veldig farlig situasjon, men ingen andre mennesker ble skadet.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>skipper:</strong> sjef på en båt</div><div class="ord-item"><strong>overtent:</strong> helt dekket av ild og flammer</div></div>
       <span class="kilde">📰 NRK</span>
     </div></div>
   <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <h3>Stor brann i Ålesund – mange måtte forlate bygget</h3>
-      <p>Torsdag oppsto det brann i Sparebanken Møres bygning i Ålesund sentrum. Hele 81 personer måtte forlate bygget raskt og trygt. Politiet tror at arbeidere som holdt på med renovering av bygget kan ha forårsaket brannen. Det var en skummel situasjon, men det gikk heldigvis bra med alle mennesker.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>renovering:</strong> når man fikser opp og gjør bygget nytt igjen</div><div class="ord-item"><strong>forårsaket:</strong> å gjøre noe som starter en hendelse</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Stor brann i Ålesund – 81 personer måtte rømme</h3>
+      <p>Torsdag brakk det ut brann i en bank i sentrum av Ålesund. Brannen startet i Sparebanken Møres lokaler, som blir renovert for tiden. Politiet tror at arbeiderne på stedet kan ha forårsaket brannen. 81 personer måtte evakueres fra bygget – det betyr at de måtte forlate stedet raskt og sikkert. Brannmannskapene kom fort til stedet og slokket brannen. Politiet fortsetter å undersøke hva som skjedde.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>evakueres:</strong> må forlate et sted raskt på grunn av fare</div><div class="ord-item"><strong>renovert:</strong> blitt gjort nytt og pent igjen</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <h3>Torv på taket – sånn gjør de det på Petterbakken</h3>
-      <p>En arbeidsgjenk på Petterbakken har begynt å legge torv på taket til et hus. Torv er jordlag med røtter og planter som gjør taket spesielt og miljøvennlig. Kåre Løvoll fra Byggtrad sier at torven de bruker har veldig god kvalitet. Slik tak med torv er blitt mer populært fordi det er fint og bra for naturen.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>torv:</strong> jordlag med røtter og planter</div><div class="ord-item"><strong>miljøvennlig:</strong> bra for naturen og ikke skader den</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Gull-ørnene bygger reir igjen på samme sted</h3>
+      <p>En stor fugl som heter gull-ørn var vekk fra sitt reirsted i flere dager. Men nå kom Fru Lunde tilbake! Hun har lagt sitt egg i reiret sitt. Det er veldig spennende at denne sjeldne fuglen fortsetter å bruke samme plass år etter år. Biologer og fuglebeskyttere følger med på hva som skjer videre. Gull-ørner er store og kraftige fugler som trenger fred for å få unger.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>reirsted:</strong> stedet hvor en fugl bygger sitt reir og legger egg</div><div class="ord-item"><strong>sjeldne:</strong> finnes ikke mange av</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <h3>Fugl kom tilbake etter lang fravær – og la egg</h3>
-      <p>Fru Lunde er en fugl som hadde forsvunnet fra reiret sitt i flere dager. Men så kom hun tilbake! Og det var en fin overraskelse – hun hadde lagt egg i reiret sitt. Dette er tegn på at fuglen er frisk og trygg. Snart kan det bli flere små fugler på plass.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>reir:</strong> fuglers hjem som de bygger med grein og strå</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Tak av torv skal lage varmt og fint hus</h3>
+      <p>I gamle dager brukte nordmenn torv på takene sine. Nå gjør noen det igjen! En byggemester og hans arbeidere legger torv på taket til et gammelt hus kalt Petterbakken. Torven (som er jord med røtter) er veldig bra for å holde varmen inne og for miljøet. Når det er torv på taket, kan det til og med vokse planter og blomster der oppe. Dette er en fin måte å bygge på en mer naturlig måte.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>torv:</strong> jord med planterotstoffer som brukes på tak</div><div class="ord-item"><strong>totalrenovering:</strong> når man gjør hele huset helt nytt</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <h3>Far og sønn feirer jubileum sammen på samme dag</h3>
-      <p>På bedriften Vestsink skjedde det noe veldig sjeldent – en far og sønn som jobbet der skulle begge feires for lang arbeidstid på samme dag! Det er ikke ofte man ser at hele familier jobber så lenge på samme sted. Dette er noe virkelig spesielt som bedriften ville markere på en fin måte.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jubileum:</strong> når man feirer at noe varte i mange år</div></div>
-      <span class="kilde">📰 Vestlandsnytt</span>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <h3>Fjellet får oppussing – folket oppfordres til å hjelpe</h3>
-      <p>En gruppe arrangører har startet "Prosjekt folkehelse" for å pusseoppbygdene. De vil reparere stier i fjellet så flere kan vandre der hele året. Prosjektet trenger mye hjelp fra lokalfolk som kjenner området godt. Dersom du og familien din liker å gå i fjellet, kan dere hjelpe til med at stiene blir fine og trygge.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>arrangører:</strong> personer som planlegger og leder arrangementer</div><div class="ord-item"><strong>stier:</strong> små veier man går på i naturen</div></div>
-      <span class="kilde">📰 Vestlandsnytt</span>
-    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <h3>Ørsta får være med i fotball-cupturneringen</h3>
-      <p>Fotballlaget Ørsta fikk god nyhet fra ankeutvalet i NFF – de får være med i NM-kvalifiseringen! De skulle ha spilt omkamp mot Bergsøy, men ankeutvalet sa nei til det. Ørsta kan nå fokusere på å spille best mulig for å komme videre i turneringen. Bergsøy-treneren sier at de tar avgjørelsen til etterretning.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ankeutvalet:</strong> en gruppe som avgjør tvister i idrett</div><div class="ord-item"><strong>omkamp:</strong> å spille en kamp om igjen</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 18:21</span></div>
+      <h3>Pappa og sønn feirer 25 år i samme bedrift samtidig</h3>
+      <p>Det er veldig sjelden at både far og sønn jobber på samme sted i så mange år. Men hos bedriften Vestsink skjedde nettopp det! Både faren og sønnen kunne feire sin 25-årsjubileum samtidig. Det betyr at de begge hadde jobbet der i 25 år. Det er en fin historie om at familien kunne jobbe sammen og bli så lojale mot samme bedrift. Mange medarbeidere feirer jubileum alene, men denne duoen var spesiell.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jubileum:</strong> minnefest for at noe har vart i mange år</div><div class="ord-item"><strong>lojale:</strong> trofaste og følger samme arbeidsplass lenge</div></div>
       <span class="kilde">📰 Vestlandsnytt</span>
     </div></div>
 </main>
