@@ -1,6 +1,7 @@
 import anthropic
 import json
 import os
+import time
 from datetime import datetime
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -32,17 +33,28 @@ Regler:
 Svar KUN med JSON-array, ingen annen tekst:
 [{"tittel":"...","brodtekst":"...","kilde":"...","ordforklaring":[{"ord":"...","forklaring":"..."}]}]"""
 
-def fetch(prompt):
-    resp = client.messages.create(
-        model="claude-sonnet-4-5",
-        max_tokens=2000,
-        tools=[{"type": "web_search_20250305", "name": "web_search"}],
-        messages=[{"role": "user", "content": prompt}]
-    )
-    text = "".join(b.text for b in resp.content if hasattr(b, "text"))
-    text = text.replace("```json", "").replace("```", "").strip()
-    s, e = text.find("["), text.rfind("]")
-    return json.loads(text[s:e+1]) if s != -1 else []
+
+def fetch(prompt, retries=5, wait=90):
+    for attempt in range(retries):
+        try:
+            resp = client.messages.create(
+                model="claude-sonnet-4-5",
+                max_tokens=2000,
+                tools=[{"type": "web_search_20250305", "name": "web_search"}],
+                messages=[{"role": "user", "content": prompt}]
+            )
+            text = "".join(b.text for b in resp.content if hasattr(b, "text"))
+            text = text.replace("```json", "").replace("```", "").strip()
+            s, e = text.find("["), text.rfind("]")
+            return json.loads(text[s:e+1]) if s != -1 else []
+        except anthropic.RateLimitError:
+            if attempt < retries - 1:
+                print(f"  Rate limit – venter {wait}s før nytt forsøk ({attempt+1}/{retries})...")
+                time.sleep(wait)
+            else:
+                print("  Ga opp etter maks forsøk.")
+                return []
+
 
 def card(sak, idx):
     colors = ["#FEF9C3","#DBEAFE","#DCFCE7","#FCE7F3","#F3E8FF","#FFEDD5"]
@@ -51,7 +63,10 @@ def card(sak, idx):
     border = borders[idx % len(borders)]
     forklaringer = ""
     if sak.get("ordforklaring"):
-        items = "".join(f'<div class="ord-item"><strong>{o["ord"]}:</strong> {o["forklaring"]}</div>' for o in sak["ordforklaring"])
+        items = "".join(
+            f'<div class="ord-item"><strong>{o["ord"]}:</strong> {o["forklaring"]}</div>'
+            for o in sak["ordforklaring"]
+        )
         forklaringer = f'<div class="ordbox"><div class="ord-title">📖 Visste du at…?</div>{items}</div>'
     return f'''
     <div class="card" style="background:{bg};border-color:{border}">
@@ -60,6 +75,7 @@ def card(sak, idx):
       {forklaringer}
       <span class="kilde">📰 {sak["kilde"]}</span>
     </div>'''
+
 
 def build_html(nasjonal, lokal):
     dato = datetime.now().strftime("%-d. %B %Y").lower()
@@ -109,10 +125,11 @@ def build_html(nasjonal, lokal):
   function show(tab){{
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('panel-'+tab).classList.add('active');
-    document.querySelectorAll('.tab').forEach(t=>{{
-      t.classList.add('inactive');
-    }});
+    document.querySelectorAll('.tab').forEach(t=>t.classList.add('inactive'));
     document.getElementById('tab-'+tab).classList.remove('inactive');
+    document.getElementById('src-line').textContent = tab === 'nasjonal'
+      ? 'Kilder: NRK · Aftenposten · TV2'
+      : 'Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten';
   }}
 </script>
 </head>
@@ -141,25 +158,16 @@ def build_html(nasjonal, lokal):
 </main>
 
 <footer>JuniorNytt • Laget for nysgjerrige barn 🌟</footer>
-
-<script>
-  document.getElementById('tab-lokal').addEventListener('click',()=>{{
-    document.getElementById('src-line').textContent='Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten';
-  }});
-  document.getElementById('tab-nasjonal').addEventListener('click',()=>{{
-    document.getElementById('src-line').textContent='Kilder: NRK · Aftenposten · TV2';
-  }});
-</script>
 </body>
 </html>"""
 
+
 if __name__ == "__main__":
-    import time
     print("Henter nasjonale nyheter...")
     nasjonal = fetch(NASJONAL_PROMPT)
     print(f"  → {len(nasjonal)} saker")
-    print("Venter 60 sekunder før neste kall...")
-    time.sleep(60)
+    print("Venter 90 sekunder før neste kall...")
+    time.sleep(90)
     print("Henter lokale nyheter...")
     lokal = fetch(LOKAL_PROMPT)
     print(f"  → {len(lokal)} saker")
