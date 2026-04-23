@@ -154,9 +154,12 @@ def build_html(nasjonal, lokal):
 </html>"""
 
 if __name__ == "__main__":
+    import time
     print("Henter nasjonale nyheter...")
     nasjonal = fetch(NASJONAL_PROMPT)
     print(f"  → {len(nasjonal)} saker")
+    print("Venter 60 sekunder før neste kall...")
+    time.sleep(60)
     print("Henter lokale nyheter...")
     lokal = fetch(LOKAL_PROMPT)
     print(f"  → {len(lokal)} saker")
