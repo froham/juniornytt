@@ -52,28 +52,7 @@ def velg_emoji(tittel, brodtekst=""):
             return emoji
     return "📰"
 
-def hent_bilde(item, ns):
-    """Prøver å hente bilde-URL fra RSS-item."""
-    # Prøv media:content
-    media = item.find("media:content", ns)
-    if media is not None:
-        url = media.get("url", "")
-        if url and url.startswith("http"):
-            return url
-    # Prøv enclosure
-    enc = item.find("enclosure")
-    if enc is not None:
-        url = enc.get("url", "")
-        if url and ("jpg" in url or "png" in url or "jpeg" in url or "webp" in url):
-            return url
-    # Prøv å finne img-tag i description
-    desc = item.findtext("description") or ""
-    match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', desc)
-    if match:
-        url = match.group(1)
-        if url.startswith("http"):
-            return url
-    return None
+
 
 def hent_rss(feeds, maks_per_kilde=4):
     artikler = []
@@ -89,13 +68,11 @@ def hent_rss(feeds, maks_per_kilde=4):
                 tittel = (item.findtext("title") or "").strip()
                 desc   = (item.findtext("description") or "").strip()
                 desc   = re.sub(r"<[^>]+>", "", desc).strip()
-                bilde  = hent_bilde(item, ns)
                 if tittel:
                     artikler.append({
                         "kilde":   kilde,
                         "tittel":  tittel,
                         "ingress": desc[:300],
-                        "bilde":   bilde,
                     })
         except Exception as e:
             print(f"  Kunne ikke hente {kilde}: {e}")
@@ -126,9 +103,6 @@ def omskriv(artikler, antall=8, retries=4, wait=60):
     tekst = "\n\n".join(
         f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artikler
     )
-    # Lag en tittel->bilde-mapping
-    bilde_map = {a["tittel"]: a.get("bilde") for a in artikler}
-
     prompt = OMSKRIV_PROMPT.format(antall=antall, artikler=tekst)
     for attempt in range(retries):
         try:
@@ -146,16 +120,6 @@ def omskriv(artikler, antall=8, retries=4, wait=60):
             ts = datetime.now().strftime("%H:%M")
             for sak in saker:
                 sak["tidspunkt"] = ts
-                # Prøv å matche bilde fra original tittel
-                sak["bilde"] = None
-                for orig_tittel, bilde_url in bilde_map.items():
-                    if bilde_url and any(
-                        ord in sak["tittel"].lower()
-                        for ord in orig_tittel.lower().split()[:4]
-                    ):
-                        sak["bilde"] = bilde_url
-                        break
-                # Sett emoji-fallback
                 if not sak.get("emoji"):
                     sak["emoji"] = velg_emoji(sak["tittel"], sak.get("brodtekst",""))
             return saker
@@ -200,10 +164,6 @@ def card(sak, idx):
                "#FACC15","#60A5FA","#34D399","#E879F9"]
     bg, border = colors[idx % len(colors)], borders[idx % len(borders)]
 
-    bilde_html = ""
-    if sak.get("bilde"):
-        bilde_html = f'<img src="{sak["bilde"]}" alt="" class="card-img" onerror="this.style.display=\'none\'">'
-    
     emoji = sak.get("emoji") or velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
 
     forklaringer = ""
@@ -218,7 +178,6 @@ def card(sak, idx):
     ts_html = f'<span class="tidspunkt">🕐 {ts}</span>' if ts else ""
 
     return f'''<div class="card" style="background:{bg};border-color:{border}">
-      {bilde_html}
       <div class="card-meta">{ts_html}</div>
       <div class="card-emoji">{emoji}</div>
       <h3>{sak["tittel"]}</h3>
