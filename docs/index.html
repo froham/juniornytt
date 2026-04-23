@@ -1,1 +1,113 @@
-<h1>Laster...</h1>
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JuniorNytt</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:linear-gradient(to bottom,#e0f2fe,#fff);min-height:100vh}
+  header{background:linear-gradient(to right,#3b82f6,#06b6d4);color:white;padding:24px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  header h1{font-size:2.5rem;font-weight:900;letter-spacing:-1px}
+  header .dato{font-size:.85rem;opacity:.85;margin-top:4px}
+  header .sub{font-size:.75rem;opacity:.7;font-style:italic;margin-top:2px}
+  header .oppdatert{font-size:.7rem;opacity:.6;margin-top:6px}
+  .tabs{display:flex;max-width:720px;margin:24px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .tab{flex:1;padding:12px;font-weight:700;font-size:.85rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .tab-nat{background:#3b82f6;color:white}
+  .tab-nat.inactive{background:white;color:#6b7280}
+  .tab-nat.inactive:hover{background:#eff6ff}
+  .tab-lok{background:#10b981;color:white}
+  .tab-lok.inactive{background:white;color:#6b7280}
+  .tab-lok.inactive:hover{background:#f0fdf4}
+  .badge{background:rgba(255,255,255,.3);border-radius:99px;padding:2px 8px;font-size:.7rem}
+  .inactive .badge{background:#e5e7eb;color:#6b7280}
+  .sources{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}
+  main{max-width:720px;margin:0 auto;padding:16px}
+  .panel{display:none}.panel.active{display:block}
+  .card{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .card h3{font-size:1.15rem;font-weight:800;color:#1f2937;margin-bottom:10px;line-height:1.3}
+  .card p{font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:12px}
+  .ordbox{background:rgba(255,255,255,.7);border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:12px}
+  .ord-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:8px}
+  .ord-item{font-size:.85rem;color:#374151;margin-bottom:4px}
+  .ord-item strong{color:#1f2937}
+  .kilde{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}
+  footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 0}
+  @media(max-width:480px){header h1{font-size:2rem}}
+</style>
+<script>
+  function show(tab){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.add('inactive'));
+    document.getElementById('tab-'+tab).classList.remove('inactive');
+    document.getElementById('src-line').textContent = tab === 'nasjonal'
+      ? 'Kilder: NRK · Aftenposten · TV2'
+      : 'Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten';
+  }
+</script>
+</head>
+<body>
+<header>
+  <div style="font-size:2.5rem">📰</div>
+  <h1>JuniorNytt</h1>
+  <div class="dato">Torsdag 23. april 2026</div>
+  <div class="sub">Nyheter for deg mellom 8 og 12 år</div>
+  <div class="oppdatert">Oppdatert kl. 17:59</div>
+</header>
+
+<div class="tabs">
+  <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">
+    🇳🇴 Nasjonalt <span class="badge">6</span>
+  </button>
+  <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">
+    📍 Lokalt <span class="badge">0</span>
+  </button>
+</div>
+<div class="sources" id="src-line">Kilder: NRK · Aftenposten · TV2</div>
+
+<main>
+  <div class="panel active" id="panel-nasjonal">
+    <div class="card" style="background:#FEF9C3;border-color:#FDE047">
+      <h3>Over 3000 hotellarbeidere i streik</h3>
+      <p>I dag trappes hotellstreiken i Norge opp. Over tusen nye arbeidere legger ned arbeidet, slik at totalt over 3000 personer nå streiker. De krever høyere lønn og at arbeidsgiverne skal betale lønnen når de er syke. Hotellarbeidere er blant de som tjener minst i Norge. Når de blir syke, må de ofte vente lenge på penger fra NAV, og mange har ikke råd til det. Nå streiker de på hoteller i Oslo, Bergen, Trondheim, Tromsø og Sandefjord. Noen hoteller må stenge restauranter og redusere frokosttilbudet. Det er ikke avtalt når de skal møtes for å løse streiken.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>streik:</strong> når arbeidere slutter å jobbe for å protestere</div><div class="ord-item"><strong>NAV:</strong> det offentlige kontoret som betaler penger når du er syk</div></div>
+      <span class="kilde">📰 NRK</span>
+    </div>
+    <div class="card" style="background:#DBEAFE;border-color:#93C5FD">
+      <h3>Trollstigen åpner rekordtidlig</h3>
+      <p>Den kjente turistveien Trollstigen åpner mandag 27. april – det er tidligere enn noen gang! Vanligvis åpner veien i midten av mai, men i år er det så lite snø at den kan åpnes allerede nå. Trollstigen har elleve skarpe hårnålssvinger og er en av Norges mest kjente turistveier. Den ligger i Møre og Romsdal og går mellom Åndalsnes og Valldal. Forrige rekord for tidligste åpning var 8. mai i 2014. I 2024 måtte veien stenges i nesten et år på grunn av steinras, men nå er det gjort mye arbeid for å gjøre veien tryggere.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>hårnålssvinger:</strong> veldig skarpe svinger som ser ut som en hårnål</div><div class="ord-item"><strong>turistvei:</strong> en vei som er spesielt vakker å kjøre på</div></div>
+      <span class="kilde">📰 NRK</span>
+    </div>
+    <div class="card" style="background:#DCFCE7;border-color:#86EFAC">
+      <h3>Skutt mot hus på Skjetten</h3>
+      <p>Natt til i dag ble det skutt med hagle mot inngangsdøren til et hus på Skjetten i Lillestrøm kommune. Det skjedde klokken fire om natten. Ingen personer ble skadd, men familien som bor der hadde fått trusler på forhånd. Politiet etterforsker saken som grove trusler og ulovlig våpenbruk. De har ikke pågrepet noen ennå, men jobber med å finne ut hvem som står bak. Politiet skal sjekke kameraer i området og snakke med naboer. De ber folk som har informasjon om å ta kontakt.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>hagle:</strong> en type skytevåpen</div><div class="ord-item"><strong>etterforsker:</strong> undersøker for å finne ut hva som skjedde</div></div>
+      <span class="kilde">📰 NRK</span>
+    </div>
+    <div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
+      <h3>Brann i Ålesund sentrum</h3>
+      <p>I dag begynte det å brenne i en bygning som tilhører Sparebanken Møre midt i Ålesund sentrum. Det var røyk og flammer på taket av bygget. Hele 77 personer måtte evakueres fra bygningen, men ingen ble skadd. Brannvesenet kom raskt til stedet og jobbet med å slukke brannen. Det er både forretninger og boliger i området der det brant. Politiet tror brannen hadde en teknisk årsak, og de skal undersøke dette nærmere. I mars var det også en stor terrengbrann i Ålesund som var vanskelig å slukke.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>evakueres:</strong> bli bedt om å forlate et sted raskt på grunn av fare</div><div class="ord-item"><strong>teknisk årsak:</strong> at noe gikk galt med maskiner eller elektriske ting</div></div>
+      <span class="kilde">📰 NRK</span>
+    </div>
+    <div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <h3>Klinikk ga ADHD-diagnose til 299 personer over nett</h3>
+      <p>En liten privat klinikk utredet 333 personer for ADHD i fjor. Hele 90 prosent fikk diagnosen ADHD – og ingen møtte psykologen fysisk. Alt skjedde over video, og det tok bare én uke fra første møte til diagnose. Nå har Statsforvalteren undersøkt klinikken og funnet at dette ikke var forsvarlig. De mener klinikken brøt loven fordi utredningen ikke var grundig nok. Helseministeren er bekymret og sier at det skal lages nye regler for hvordan man skal utrede ADHD. Klinikken sier de tar kritikken på alvor og skal endre måten de jobber på.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ADHD:</strong> en diagnose som gjør det vanskelig å konsentrere seg</div><div class="ord-item"><strong>utredet:</strong> undersøkt grundig for å finne ut om noen har en sykdom</div><div class="ord-item"><strong>Statsforvalteren:</strong> offentlig myndighet som passer på at lover følges</div></div>
+      <span class="kilde">📰 NRK</span>
+    </div>
+    <div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
+      <h3>Tre forsvarsledere pågrepet av Økokrim</h3>
+      <p>I dag ble tre ledere i Forsvarsmateriell pågrepet av politiet. De er mistenkt for grov økonomisk utroskap. Det betyr at de kan ha brukt statens penger på feil måte. Politiet mener de økte prisen på konsulenttjenester med 35 prosent uten lov til det, og at de brøt anskaffelsesreglene. Forsvarsmateriell er den delen av Forsvaret som kjøper inn utstyr og tjenester. Saken ble oppdaget da Forsvarsmateriell selv gjorde en intern kontroll. Forsvarsministeren sier dette er alvorlig og at det er nulltoleranse for korrupsjon i forsvarssektoren.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Økokrim:</strong> politiet som etterforsker økonomisk kriminalitet</div><div class="ord-item"><strong>økonomisk utroskap:</strong> å stjele eller misbruke penger man har ansvar for</div><div class="ord-item"><strong>anskaffelsesregler:</strong> regler for hvordan det offentlige skal kjøpe ting</div></div>
+      <span class="kilde">📰 Aftenposten</span>
+    </div></div>
+  <div class="panel" id="panel-lokal"></div>
+</main>
+
+<footer>JuniorNytt • Laget for nysgjerrige barn 🌟</footer>
+</body>
+</html>
