@@ -1,0 +1,37 @@
+name: Oppdater JuniorNytt
+
+on:
+  schedule:
+    - cron: '0 10 * * *'   # Kjører kl. 12:00 norsk tid (UTC+2 om sommeren)
+  workflow_dispatch:         # Kan også kjøres manuelt med ett klikk
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Hent kode
+        uses: actions/checkout@v4
+
+      - name: Sett opp Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer avhengigheter
+        run: pip install anthropic
+
+      - name: Kjør nyhetsskript
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python generate.py
+
+      - name: Publiser oppdatert side
+        run: |
+          git config user.name "JuniorNytt Bot"
+          git config user.email "bot@juniornytt"
+          git add docs/index.html
+          git diff --cached --quiet || git commit -m "Oppdaterer nyheter $(date +'%Y-%m-%d %H:%M')"
+          git push
