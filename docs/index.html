@@ -9,17 +9,15 @@
   body{font-family:'Segoe UI',sans-serif;background:linear-gradient(to bottom,#e0f2fe,#fff);min-height:100vh}
   header{background:linear-gradient(to right,#3b82f6,#06b6d4);color:white;padding:24px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
   header h1{font-size:2.5rem;font-weight:900;letter-spacing:-1px}
-  header .dato{font-size:.85rem;opacity:.85;margin-top:4px}
-  header .sub{font-size:.75rem;opacity:.7;font-style:italic;margin-top:2px}
-  header .oppdatert{font-size:.7rem;opacity:.6;margin-top:6px}
+  .dato{font-size:.85rem;opacity:.85;margin-top:4px}
+  .sub{font-size:.75rem;opacity:.7;font-style:italic;margin-top:2px}
+  .oppdatert{font-size:.7rem;opacity:.6;margin-top:6px}
   .tabs{display:flex;max-width:720px;margin:24px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
   .tab{flex:1;padding:12px;font-weight:700;font-size:.85rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
   .tab-nat{background:#3b82f6;color:white}
-  .tab-nat.inactive{background:white;color:#6b7280}
-  .tab-nat.inactive:hover{background:#eff6ff}
+  .tab-nat.inactive{background:white;color:#6b7280}.tab-nat.inactive:hover{background:#eff6ff}
   .tab-lok{background:#10b981;color:white}
-  .tab-lok.inactive{background:white;color:#6b7280}
-  .tab-lok.inactive:hover{background:#f0fdf4}
+  .tab-lok.inactive{background:white;color:#6b7280}.tab-lok.inactive:hover{background:#f0fdf4}
   .badge{background:rgba(255,255,255,.3);border-radius:99px;padding:2px 8px;font-size:.7rem}
   .inactive .badge{background:#e5e7eb;color:#6b7280}
   .sources{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}
@@ -42,7 +40,7 @@
     document.getElementById('panel-'+tab).classList.add('active');
     document.querySelectorAll('.tab').forEach(t=>t.classList.add('inactive'));
     document.getElementById('tab-'+tab).classList.remove('inactive');
-    document.getElementById('src-line').textContent = tab === 'nasjonal'
+    document.getElementById('src-line').textContent = tab==='nasjonal'
       ? 'Kilder: NRK · Aftenposten · TV2'
       : 'Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten';
   }
@@ -54,60 +52,81 @@
   <h1>JuniorNytt</h1>
   <div class="dato">Torsdag 23. april 2026</div>
   <div class="sub">Nyheter for deg mellom 8 og 12 år</div>
-  <div class="oppdatert">Oppdatert kl. 17:59</div>
+  <div class="oppdatert">Oppdatert kl. 18:11</div>
 </header>
-
 <div class="tabs">
   <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">
     🇳🇴 Nasjonalt <span class="badge">6</span>
   </button>
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">
-    📍 Lokalt <span class="badge">0</span>
+    📍 Lokalt <span class="badge">6</span>
   </button>
 </div>
 <div class="sources" id="src-line">Kilder: NRK · Aftenposten · TV2</div>
-
 <main>
-  <div class="panel active" id="panel-nasjonal">
-    <div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <h3>Over 3000 hotellarbeidere i streik</h3>
-      <p>I dag trappes hotellstreiken i Norge opp. Over tusen nye arbeidere legger ned arbeidet, slik at totalt over 3000 personer nå streiker. De krever høyere lønn og at arbeidsgiverne skal betale lønnen når de er syke. Hotellarbeidere er blant de som tjener minst i Norge. Når de blir syke, må de ofte vente lenge på penger fra NAV, og mange har ikke råd til det. Nå streiker de på hoteller i Oslo, Bergen, Trondheim, Tromsø og Sandefjord. Noen hoteller må stenge restauranter og redusere frokosttilbudet. Det er ikke avtalt når de skal møtes for å løse streiken.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>streik:</strong> når arbeidere slutter å jobbe for å protestere</div><div class="ord-item"><strong>NAV:</strong> det offentlige kontoret som betaler penger når du er syk</div></div>
+  <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
+      <h3>Britiske barn får aldri lov til å røyke</h3>
+      <p>I Storbritannia har myndighetene laget en ny regel: Barn og unge som er 17 år eller yngre, får aldri lov til å kjøpe sigaretter. Dette gjelder selv når de blir eldre. Regelen er veldig streng, men politikere mener det er bra for helsen til unge mennesker. I Norge diskuterer politikere nå om vi bør gjøre noe lignende. Partiet KrF synes det er en god idé. De mener at hvis vi gjør det vanskeligere for unge å kjøpe sigaretter, røyker færre mennesker når de blir voksne.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Myndighetene:</strong> De folka som leder landet og lager regler</div></div>
       <span class="kilde">📰 NRK</span>
-    </div>
-    <div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <h3>Trollstigen åpner rekordtidlig</h3>
-      <p>Den kjente turistveien Trollstigen åpner mandag 27. april – det er tidligere enn noen gang! Vanligvis åpner veien i midten av mai, men i år er det så lite snø at den kan åpnes allerede nå. Trollstigen har elleve skarpe hårnålssvinger og er en av Norges mest kjente turistveier. Den ligger i Møre og Romsdal og går mellom Åndalsnes og Valldal. Forrige rekord for tidligste åpning var 8. mai i 2014. I 2024 måtte veien stenges i nesten et år på grunn av steinras, men nå er det gjort mye arbeid for å gjøre veien tryggere.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>hårnålssvinger:</strong> veldig skarpe svinger som ser ut som en hårnål</div><div class="ord-item"><strong>turistvei:</strong> en vei som er spesielt vakker å kjøre på</div></div>
+    </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
+      <h3>Russebusser har farlige feil</h3>
+      <p>En verksted som reparerer busser ble stengt fordi alle russebussene hadde store problemer. Statens vegvesen sjekket bussene og fant at de var i dårlig stand. Noen hadde rust, andre hadde hull i gulvet, og mange hadde andre feil som kan være farlige. Russen er 17- og 18-åringer som feirer at de er ferdig med videregående skole. De kjører rundt i spesielle busser under feiringen. Nå advarer ekspertene: Pass dere selv og sjekk at bussen er sikker før dere setter dere inn!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Rust:</strong> Når metall blir brunt og skjør når det blir vått</div><div class="ord-item"><strong>Statens vegvesen:</strong> En statlig organisasjon som sjekker at kjøretøy er sikre</div></div>
       <span class="kilde">📰 NRK</span>
-    </div>
-    <div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <h3>Skutt mot hus på Skjetten</h3>
-      <p>Natt til i dag ble det skutt med hagle mot inngangsdøren til et hus på Skjetten i Lillestrøm kommune. Det skjedde klokken fire om natten. Ingen personer ble skadd, men familien som bor der hadde fått trusler på forhånd. Politiet etterforsker saken som grove trusler og ulovlig våpenbruk. De har ikke pågrepet noen ennå, men jobber med å finne ut hvem som står bak. Politiet skal sjekke kameraer i området og snakke med naboer. De ber folk som har informasjon om å ta kontakt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>hagle:</strong> en type skytevåpen</div><div class="ord-item"><strong>etterforsker:</strong> undersøker for å finne ut hva som skjedde</div></div>
+    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
+      <h3>Stor brann på fiskebåt</h3>
+      <p>En fiskebåt tok fyr ved Færder fyr på Oslofjorden. Båten brant så kraftig at flammene kunne sees helt fra land. Skipperen, som er kapteinen på båten, ble skadet i brannen og måtte dra til sykehus for å få hjelp. Politiet sier at båten brant helt ned. Det var heldig at det var andre båter i nærheten som kunne hjelpe. Brannen viser hvor viktig det er å ha sikkerhetsutstyr på båter.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Skipper:</strong> Kapteinen som leder en båt</div><div class="ord-item"><strong>Færder fyr:</strong> Et fyrtårn som hjelper båter med navigation på Oslofjorden</div></div>
       <span class="kilde">📰 NRK</span>
-    </div>
-    <div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <h3>Brann i Ålesund sentrum</h3>
-      <p>I dag begynte det å brenne i en bygning som tilhører Sparebanken Møre midt i Ålesund sentrum. Det var røyk og flammer på taket av bygget. Hele 77 personer måtte evakueres fra bygningen, men ingen ble skadd. Brannvesenet kom raskt til stedet og jobbet med å slukke brannen. Det er både forretninger og boliger i området der det brant. Politiet tror brannen hadde en teknisk årsak, og de skal undersøke dette nærmere. I mars var det også en stor terrengbrann i Ålesund som var vanskelig å slukke.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>evakueres:</strong> bli bedt om å forlate et sted raskt på grunn av fare</div><div class="ord-item"><strong>teknisk årsak:</strong> at noe gikk galt med maskiner eller elektriske ting</div></div>
-      <span class="kilde">📰 NRK</span>
-    </div>
-    <div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <h3>Klinikk ga ADHD-diagnose til 299 personer over nett</h3>
-      <p>En liten privat klinikk utredet 333 personer for ADHD i fjor. Hele 90 prosent fikk diagnosen ADHD – og ingen møtte psykologen fysisk. Alt skjedde over video, og det tok bare én uke fra første møte til diagnose. Nå har Statsforvalteren undersøkt klinikken og funnet at dette ikke var forsvarlig. De mener klinikken brøt loven fordi utredningen ikke var grundig nok. Helseministeren er bekymret og sier at det skal lages nye regler for hvordan man skal utrede ADHD. Klinikken sier de tar kritikken på alvor og skal endre måten de jobber på.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ADHD:</strong> en diagnose som gjør det vanskelig å konsentrere seg</div><div class="ord-item"><strong>utredet:</strong> undersøkt grundig for å finne ut om noen har en sykdom</div><div class="ord-item"><strong>Statsforvalteren:</strong> offentlig myndighet som passer på at lover følges</div></div>
-      <span class="kilde">📰 NRK</span>
-    </div>
-    <div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <h3>Tre forsvarsledere pågrepet av Økokrim</h3>
-      <p>I dag ble tre ledere i Forsvarsmateriell pågrepet av politiet. De er mistenkt for grov økonomisk utroskap. Det betyr at de kan ha brukt statens penger på feil måte. Politiet mener de økte prisen på konsulenttjenester med 35 prosent uten lov til det, og at de brøt anskaffelsesreglene. Forsvarsmateriell er den delen av Forsvaret som kjøper inn utstyr og tjenester. Saken ble oppdaget da Forsvarsmateriell selv gjorde en intern kontroll. Forsvarsministeren sier dette er alvorlig og at det er nulltoleranse for korrupsjon i forsvarssektoren.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Økokrim:</strong> politiet som etterforsker økonomisk kriminalitet</div><div class="ord-item"><strong>økonomisk utroskap:</strong> å stjele eller misbruke penger man har ansvar for</div><div class="ord-item"><strong>anskaffelsesregler:</strong> regler for hvordan det offentlige skal kjøpe ting</div></div>
+    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
+      <h3>Leilighet og jobb: Ikke lett å få begge deler</h3>
+      <p>Et pilotprosjekt prøver å hjelpe mennesker som har det vanskelig. Prosjektet gir folk hjelp til både å finne jobb og et sted å bo. Det viser seg at det er viktig å løse begge problemene samtidig. Hvis du har et godt sted å bo, er det lettere å finne jobb. Og hvis du har jobb, er det lettere å få råd til å leie eller kjøpe bolig. Resultatene fra forsøket viser at denne metoden fungerer veldig bra. Nå ønsker man å gjøre dette i flere steder.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Pilotprosjekt:</strong> Et forsøk som tester om en idé fungerer, før man gjør det overalt</div></div>
       <span class="kilde">📰 Aftenposten</span>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <h3>Psykolog deler hemmeligheten sin mot stress</h3>
+      <p>I 25 år har psykolog Mari Kjølseth Bræin hjulpet mennesker som er stresset og redde. Hun har funnet ut at det finnes et system som alle kan lære seg for å bli roligere. Systemet trener hjernen og kroppen til å slappe av når det blir for mye. Det finest ut at hvis du øver på dette systemet regelmessig, blir du mye bedre til å håndtere stress. Mari vil dele denne kunnskapen med så mange mennesker som mulig. Kanskje kan du også lære deg dette trikset for å bli roligere!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Psykolog:</strong> En person som er utdannet til å hjelpe mennesker med følelser og tanker</div><div class="ord-item"><strong>System:</strong> En metode eller plan som man følger</div></div>
+      <span class="kilde">📰 Aftenposten</span>
+    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
+      <h3>Kvinnen må vente veldig lenge på lønn når hun er syk</h3>
+      <p>En kvinne som heter Karen, må vente hele 20 uker på å få sjukepenger når hun er syk og ikke kan jobbe. Samtidig mener hun at andre arbeidere på samme arbeidsplassen får pengene mye raskere. Dette er urettferdig, mener arbeidstakerorganisasjonen Fellesforbundet. De sier at det er helt uakseptabelt at noen blir behandlet annerledes enn andre. Bedriften ISS skal ha en avtale som lar noen få penger raskere enn andre. Fellesforbundet mener dette er diskriminering og krever at det må endres.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Sjukepenger:</strong> Penger du får fra staten når du er syk og ikke kan jobbe</div><div class="ord-item"><strong>Diskriminering:</strong> Når noen blir behandlet dårligere enn andre på grunn av hvem de er</div></div>
+      <span class="kilde">📰 NRK</span>
     </div></div>
-  <div class="panel" id="panel-lokal"></div>
+  <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
+      <h3>Stor brann i Ålesund – mange måtte forlate bygget</h3>
+      <p>Torsdag oppsto det brann i Sparebanken Møres bygning i Ålesund sentrum. Hele 81 personer måtte forlate bygget raskt og trygt. Politiet tror at arbeidere som holdt på med renovering av bygget kan ha forårsaket brannen. Det var en skummel situasjon, men det gikk heldigvis bra med alle mennesker.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>renovering:</strong> når man fikser opp og gjør bygget nytt igjen</div><div class="ord-item"><strong>forårsaket:</strong> å gjøre noe som starter en hendelse</div></div>
+      <span class="kilde">📰 Sunnmørsposten</span>
+    </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
+      <h3>Torv på taket – sånn gjør de det på Petterbakken</h3>
+      <p>En arbeidsgjenk på Petterbakken har begynt å legge torv på taket til et hus. Torv er jordlag med røtter og planter som gjør taket spesielt og miljøvennlig. Kåre Løvoll fra Byggtrad sier at torven de bruker har veldig god kvalitet. Slik tak med torv er blitt mer populært fordi det er fint og bra for naturen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>torv:</strong> jordlag med røtter og planter</div><div class="ord-item"><strong>miljøvennlig:</strong> bra for naturen og ikke skader den</div></div>
+      <span class="kilde">📰 Vikebladet</span>
+    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
+      <h3>Fugl kom tilbake etter lang fravær – og la egg</h3>
+      <p>Fru Lunde er en fugl som hadde forsvunnet fra reiret sitt i flere dager. Men så kom hun tilbake! Og det var en fin overraskelse – hun hadde lagt egg i reiret sitt. Dette er tegn på at fuglen er frisk og trygg. Snart kan det bli flere små fugler på plass.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>reir:</strong> fuglers hjem som de bygger med grein og strå</div></div>
+      <span class="kilde">📰 Vikebladet</span>
+    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
+      <h3>Far og sønn feirer jubileum sammen på samme dag</h3>
+      <p>På bedriften Vestsink skjedde det noe veldig sjeldent – en far og sønn som jobbet der skulle begge feires for lang arbeidstid på samme dag! Det er ikke ofte man ser at hele familier jobber så lenge på samme sted. Dette er noe virkelig spesielt som bedriften ville markere på en fin måte.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jubileum:</strong> når man feirer at noe varte i mange år</div></div>
+      <span class="kilde">📰 Vestlandsnytt</span>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <h3>Fjellet får oppussing – folket oppfordres til å hjelpe</h3>
+      <p>En gruppe arrangører har startet "Prosjekt folkehelse" for å pusseoppbygdene. De vil reparere stier i fjellet så flere kan vandre der hele året. Prosjektet trenger mye hjelp fra lokalfolk som kjenner området godt. Dersom du og familien din liker å gå i fjellet, kan dere hjelpe til med at stiene blir fine og trygge.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>arrangører:</strong> personer som planlegger og leder arrangementer</div><div class="ord-item"><strong>stier:</strong> små veier man går på i naturen</div></div>
+      <span class="kilde">📰 Vestlandsnytt</span>
+    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
+      <h3>Ørsta får være med i fotball-cupturneringen</h3>
+      <p>Fotballlaget Ørsta fikk god nyhet fra ankeutvalet i NFF – de får være med i NM-kvalifiseringen! De skulle ha spilt omkamp mot Bergsøy, men ankeutvalet sa nei til det. Ørsta kan nå fokusere på å spille best mulig for å komme videre i turneringen. Bergsøy-treneren sier at de tar avgjørelsen til etterretning.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ankeutvalet:</strong> en gruppe som avgjør tvister i idrett</div><div class="ord-item"><strong>omkamp:</strong> å spille en kamp om igjen</div></div>
+      <span class="kilde">📰 Vestlandsnytt</span>
+    </div></div>
 </main>
-
 <footer>JuniorNytt • Laget for nysgjerrige barn 🌟</footer>
 </body>
 </html>
