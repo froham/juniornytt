@@ -424,13 +424,25 @@ def build_html(nasjonal, lokal, spel, vaer):
   .ord-title{{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:8px}}
   .ord-item{{font-size:.85rem;color:#374151;margin-bottom:4px}}
   .ord-item strong{{color:#1f2937}}
-  .card-footer{{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:4px}}
-  .les-meir{{font-size:.72rem;color:#6b7280;text-decoration:none;opacity:.7;transition:.2s}}
+  .foreldre-knapp{{display:flex;align-items:center;gap:8px;max-width:720px;margin:8px auto 0;padding:0 20px;cursor:pointer;width:fit-content}}
+  .foreldre-knapp span{{font-size:.75rem;color:#9ca3af}}
+  .toggle{{width:36px;height:20px;background:#d1d5db;border-radius:99px;position:relative;transition:.2s;cursor:pointer}}
+  .toggle.on{{background:#3b82f6}}
+  .toggle::after{{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}}
+  .toggle.on::after{{left:18px}}
+  .les-meir{{font-size:.72rem;color:#6b7280;text-decoration:none;opacity:.8;transition:.2s;display:none}}
   .les-meir:hover{{opacity:1;color:#3b82f6}}
+  .lenker-på .les-meir{{display:inline}}
   footer{{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:1.8}}
   @media(max-width:480px){{header h1{{font-size:2rem}}}}
 </style>
 <script>
+  function toggleLenker() {{
+    const toggle = document.getElementById('toggle');
+    const on = toggle.classList.toggle('on');
+    document.body.classList.toggle('lenker-på', on);
+    toggle.previousElementSibling.textContent = on ? '🔓 Foreldremodus' : '🔒 Foreldremodus';
+  }}
   const SRC = {{
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
@@ -463,7 +475,10 @@ def build_html(nasjonal, lokal, spel, vaer):
   <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">🎮 Spel & Sport <span class="badge">{len(spel)}</span></button>
 </div>
 
-<div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
+<div class="foreldre-knapp" onclick="toggleLenker()">
+  <span>🔒 Foreldremodus</span>
+  <div class="toggle" id="toggle"></div>
+</div>
 <div class="varsel-boks" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
 
 <main>
