@@ -32,9 +32,10 @@ RSS_LOKAL = [
     ("https://www.vestlandsnytt.no/rss/",  "Vestlandsnytt"),
 ]
 RSS_SPEL = [
-    ("https://www.vg.no/rss/feed/?categories=sport",  "VG Sport"),
-    ("https://www.nintendolife.com/feeds/news",        "Nintendo Life"),
-    ("https://www.pocketgamer.com/rss/",              "Pocket Gamer"),
+    ("https://www.vg.no/rss/feed/?categories=sport",   "VG Sport"),
+    ("https://www.aftenposten.no/sport/rss",           "Aftenposten Sport"),
+    ("https://www.nintendolife.com/feeds/news",         "Nintendo Life"),
+    ("https://www.pocketgamer.com/rss/",               "Pocket Gamer"),
 ]
 
 # ── Emoji-kart ────────────────────────────────────────────────────────────────
@@ -186,18 +187,17 @@ Svar KUN med JSON-array:
 
 SPEL_PROMPT = """Du er redaktør for JuniorNytt si spel- og sportsseksjon for barn mellom 8 og 12 år.
 
-Vel dei {antall} mest eigna sakene og skriv dei om til barnevenleg nynorsk. Ver entusiastisk!
+Vel dei {antall} mest eigna sakene – fordel jamnt mellom sport (4 saker) og spel (4 saker). Ver entusiastisk!
 
 PRIORITER saker om:
 - Sport: fotball, ski, svømming, friidrett, handball – gjerne norske utøvarar
-- Spel som passar for barn under 12 år: Minecraft, Roblox, Mario, Pokémon, Fortnite (berre barnevenleg innhald)
-- Nye spel og oppdateringar for barn
-- Esport for ungdom
+- Spel som passar for barn under 12 år: Minecraft (PEGI 7), Roblox, Mario, Pokémon, Fortnite (berre barnevenleg innhald)
+- Nye spel og oppdateringar med PEGI 3 eller PEGI 7
 
 FILTRER BORT:
-- Spel med PEGI 16 eller 18 (vald, horror, krigsspel for vaksne)
+- Spel med PEGI 12, 16 eller 18
 - Saker som primært handlar om gambling eller pengebruk i spel
-- Vaksent innhald
+- Vaksent innhald, vald og horror
 
 Reglar:
 - Nynorsk Sunnmøre-stil: "ikkje", "òg", "kva", "dei"
@@ -389,7 +389,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   const SRC = {{
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
-    spel:     "Kjelder: VG Sport · Nintendo Life · Pocket Gamer"
+    spel:     "Kjelder: VG Sport · Aftenposten Sport · Nintendo Life · Pocket Gamer"
   }};
   function show(tab) {{
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
