@@ -39,10 +39,9 @@ RSS_LOKAL = [
 RSS_SPEL = [
     ("https://blog.roblox.com/feed/",              "Roblox"),
     ("https://www.minecraft.net/en-us/feeds/community-content.atom", "Minecraft"),
-    ("https://blog.playstation.com/feed/",         "PlayStation"),
-    ("https://news.xbox.com/en-us/feed/",          "Xbox"),
     ("https://www.nintendo.com/en-US/feed.rss",    "Nintendo"),
     ("https://www.pokemon.com/us/pokemon-news/rss","Pokémon"),
+    ("https://www.vg.no/rss/feed/?categories=sport", "VG Sport"),
     ("https://www.nrk.no/sport/rss.xml",           "NRK Sport"),
 ]
 
@@ -210,7 +209,99 @@ Svar KUN med JSON-array, ingen annan tekst:
 [{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
 
 
-def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
+def hent_kinofilmar():
+    """Hentar nye kinofilmar frå TMDB med aldersgrense maks 8 år (G/PG i USA, eller No rating)."""
+    api_key = os.environ.get("TMDB_API_KEY", "")
+    if not api_key:
+        print("  Ingen TMDB_API_KEY funnen, hoppar over kinofilmar.")
+        return []
+    try:
+        # Hent filmar på kino i Noreg
+        url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={api_key}&language=nb-NO&region=NO&page=1"
+        req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read())
+        filmar = []
+        for film in data.get("results", []):
+            # Hent detaljar inkl. aldersgrense
+            fid = film["id"]
+            detail_url = f"https://api.themoviedb.org/3/movie/{fid}?api_key={api_key}&language=nb-NO&append_to_response=release_dates"
+            req2 = urllib.request.Request(detail_url, headers={"User-Agent": "JuniorNytt/1.0"})
+            with urllib.request.urlopen(req2, timeout=10) as r2:
+                detaljar = json.loads(r2.read())
+            # Finn norsk aldersgrense
+            aldersgrense = None
+            for entry in detaljar.get("release_dates", {}).get("results", []):
+                if entry["iso_3166_1"] == "NO":
+                    for rd in entry.get("release_dates", []):
+                        cert = rd.get("certification", "")
+                        if cert:
+                            aldersgrense = cert
+                            break
+            # Godta filmar utan norsk aldersgrense eller med A/6 (dvs. 6 år eller yngre)
+            godkjente = ["A", "6", ""]
+            if aldersgrense not in godkjente:
+                print(f"  Filtrert bort (aldersgrense {aldersgrense}): {film.get('title')}")
+                continue
+            filmar.append({
+                "tittel": film.get("title", ""),
+                "originaltittel": film.get("original_title", ""),
+                "oversikt": film.get("overview", "")[:300],
+                "aldersgrense": aldersgrense or "A",
+                "dato": film.get("release_date", ""),
+            })
+            if len(filmar) >= 6:
+                break
+        return filmar
+    except Exception as e:
+        print(f"  Kunne ikkje hente kinofilmar: {e}")
+        return []
+
+
+KINO_PROMPT = """Du er redaktør for JuniorNytt si kino-seksjon for barn mellom 8 og 12 år.
+
+Her er nye kinofilmar som går no. Skriv ein kort og engasjerande presentasjon av kvar film på nynorsk.
+
+Språkregler:
+- Nynorsk Sunnmøre-stil: "ikkje", "òg", "kva", "dei"
+- 3–4 setningar per film – fang nysgjerrigheita til barnet!
+- Aldersgrense skal visast tydeleg
+- Legg til emoji som passar til filmen
+
+Filmar:
+{filmar}
+
+Svar KUN med JSON-array:
+[{{"tittel":"...","brodtekst":"...","aldersgrense":"...","emoji":"..."}}]"""
+
+
+def omskriv_kino(filmar):
+    if not filmar:
+        return []
+    tekst = "\n\n".join(
+        f"Tittel: {f['tittel']}\nAldersgrense: {f['aldersgrense']}\nHandling: {f['oversikt']}"
+        for f in filmar
+    )
+    prompt = KINO_PROMPT.format(filmar=tekst)
+    try:
+        resp = client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=2000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        text = resp.content[0].text.replace("```json","").replace("```","").strip()
+        s, e = text.find("["), text.rfind("]")
+        if s == -1: return []
+        saker = json.loads(text[s:e+1])
+        for sak in saker:
+            sak["tidspunkt"] = datetime.now().strftime("%H:%M")
+            sak["kilde"] = "Filmweb / TMDB"
+        return saker
+    except Exception as ex:
+        print(f"  Feil ved omskriving av kino: {ex}")
+        return []
+
+
     if prompt_mal is None:
         prompt_mal = OMSKRIV_PROMPT
     tekst = "\n\n".join(f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artiklar)
@@ -337,13 +428,33 @@ def card(sak, idx, er_spel=False):
     </div>'''
 
 
-def build_html(nasjonal, lokal, spel, vaer):
+def kino_card(sak, idx):
+    colors  = ["#FEF9C3","#DBEAFE","#DCFCE7","#FCE7F3","#F3E8FF","#FFEDD5"]
+    borders = ["#FDE047","#93C5FD","#86EFAC","#F9A8D4","#C4B5FD","#FCA5A1"]
+    bg, border = colors[idx % len(colors)], borders[idx % len(borders)]
+    emoji = sak.get("emoji", "🎬")
+    alder = sak.get("aldersgrense", "A")
+    alder_farge = "background:#dcfce7;color:#166534" if alder in ["A","6"] else "background:#fef9c3;color:#854d0e"
+    return f'''<div class="card" style="background:{bg};border-color:{border}">
+      <div class="card-meta">
+        <span class="tidspunkt">🎬 No på kino</span>
+        <span style="font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;{alder_farge}">
+          {'Alle' if alder == 'A' else alder + ' år'}
+        </span>
+      </div>
+      <div class="card-emoji">{emoji}</div>
+      <h3>{sak["tittel"]}</h3>
+      <p>{sak["brodtekst"]}</p>
+      <span class="kilde">📰 {sak["kilde"]}</span>
+    </div>'''
+
     ukedagar = ["Måndag","Tysdag","Onsdag","Torsdag","Fredag","Laurdag","Sundag"]
     ukedag = ukedagar[datetime.now().weekday()]
     dato = datetime.now().strftime("%-d. %B %Y").lower()
     nat_cards  = "".join(card(s, i) for i, s in enumerate(nasjonal))
     lok_cards  = "".join(card(s, i) for i, s in enumerate(lokal))
     spel_cards = "".join(card(s, i, er_spel=True) for i, s in enumerate(spel))
+    kino_cards = "".join(kino_card(s, i) for i, s in enumerate(kino))
     vaer_boks  = vaer_html(vaer)
 
     return f"""<!DOCTYPE html>
@@ -384,7 +495,8 @@ def build_html(nasjonal, lokal, spel, vaer):
   .tab-nat.inactive{{background:white;color:#6b7280}}.tab-nat.inactive:hover{{background:#eff6ff}}
   .tab-lok{{background:#10b981;color:white}}
   .tab-lok.inactive{{background:white;color:#6b7280}}.tab-lok.inactive:hover{{background:#f0fdf4}}
-  .tab-spel{{background:#8b5cf6;color:white}}
+  .tab-kino{{background:#f59e0b;color:white}}
+  .tab-kino.inactive{{background:white;color:#6b7280}}.tab-kino.inactive:hover{{background:#fffbeb}}
   .tab-spel.inactive{{background:white;color:#6b7280}}.tab-spel.inactive:hover{{background:#f5f3ff}}
   .badge{{background:rgba(255,255,255,.3);border-radius:99px;padding:2px 7px;font-size:.68rem}}
   .inactive .badge{{background:#e5e7eb;color:#6b7280}}
@@ -419,10 +531,12 @@ def build_html(nasjonal, lokal, spel, vaer):
     const src = {{
       nasjonal: "Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet",
       lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
-      spel:     "Kjelder: Roblox · Minecraft · PlayStation · Xbox · Nintendo · Pokémon · NRK Sport"
+      spel:     "Kjelder: Roblox · Minecraft · Nintendo · Pokémon · VG Sport · NRK Sport",
+      kino:     "Kjelde: The Movie Database (TMDB)"
     }};
     document.getElementById("src-line").textContent = src[tab] || "";
     document.getElementById("spel-varsel").style.display = tab === "spel" ? "block" : "none";
+    document.getElementById("kino-info").style.display = tab === "kino" ? "block" : "none";
   }}
 </script>
 </head>
@@ -447,6 +561,9 @@ def build_html(nasjonal, lokal, spel, vaer):
   <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">
     🎮 Spel & Sport <span class="badge">{len(spel)}</span>
   </button>
+  <button class="tab tab-kino inactive" id="tab-kino" onclick="show('kino')">
+    🎬 Kino <span class="badge">{len(kino)}</span>
+  </button>
 </div>
 
 <div class="sources" id="src-line">Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet</div>
@@ -454,11 +571,15 @@ def build_html(nasjonal, lokal, spel, vaer):
 <div class="spel-varsel" id="spel-varsel" style="display:none">
   ⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.
 </div>
+<div class="spel-varsel" id="kino-info" style="display:none;background:#fef3c7;border-color:#fde047">
+  🎬 Her finn du filmar som går på norske kinoar no – berre filmar for barn under 8 år er med!
+</div>
 
 <main>
   <div class="panel active" id="panel-nasjonal">{nat_cards}</div>
   <div class="panel" id="panel-lokal">{lok_cards}</div>
   <div class="panel" id="panel-spel">{spel_cards}</div>
+  <div class="panel" id="panel-kino">{kino_cards}</div>
 </main>
 
 <footer>
@@ -517,7 +638,25 @@ if __name__ == "__main__":
                 spel = json.load(f)
         print(f"  → Spel ikkje oppdatert (kl. 19-køyring), brukar {len(spel)} eksisterande saker")
 
-    html = build_html(nasjonal, lokal, spel, vaer)
+    # Kino: oppdater berre kl. 07 (morgen) og kl. 12 (middag)
+    SAKER_FIL_KINO = "docs/saker_kino.json"
+    if er_morgen or er_middag:
+        print("Hentar kinofilmar frå TMDB...")
+        rå_kino = hent_kinofilmar()
+        print(f"  → {len(rå_kino)} filmar (filtrert for aldersgrense)")
+        kino = omskriv_kino(rå_kino)
+        os.makedirs("docs", exist_ok=True)
+        with open(SAKER_FIL_KINO, "w", encoding="utf-8") as f:
+            json.dump(kino, f, ensure_ascii=False, indent=2)
+        print(f"  → {len(kino)} kinofilmar klare")
+    else:
+        kino = []
+        if os.path.exists(SAKER_FIL_KINO):
+            with open(SAKER_FIL_KINO, encoding="utf-8") as f:
+                kino = json.load(f)
+        print(f"  → Kino ikkje oppdatert (kl. 19-køyring), brukar {len(kino)} eksisterande filmar")
+
+    html = build_html(nasjonal, lokal, spel, kino, vaer)
     os.makedirs("docs", exist_ok=True)
     with open("docs/index.html", "w", encoding="utf-8") as f:
         f.write(html)
