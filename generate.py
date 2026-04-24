@@ -33,9 +33,9 @@ RSS_LOKAL = [
 ]
 RSS_SPEL = [
     ("https://www.vg.no/rss/feed/?categories=sport",  "VG Sport"),
+    ("https://www.nrk.no/sport/toppsaker.rss",        "NRK Sport"),
     ("https://www.eurogamer.net/feed",                "Eurogamer"),
     ("https://www.pcgamer.com/rss/",                  "PC Gamer"),
-    ("https://www.rockpapershotgun.com/feed",         "Rock Paper Shotgun"),
 ]
 
 # ── Emoji-kart ────────────────────────────────────────────────────────────────
@@ -156,12 +156,25 @@ def hent_rss(feeds, maks_per_kilde=6):
 # ── Promptar ──────────────────────────────────────────────────────────────────
 OMSKRIV_PROMPT = """Du er redaktør for JuniorNytt – ei nyhetsside for barn mellom 8 og 12 år.
 
-Vel dei {antall} mest interessante og viktige sakene (ingen kjendisnyheiter/underhaldningssladder) og skriv dei om til barnevenleg nynorsk i stilen til Sunnmøre-aviser (Vikebladet, Vestlandsnytt).
+Vel dei {antall} mest interessante og viktige sakene og skriv dei om til barnevenleg nynorsk i stilen til Sunnmøre-aviser (Vikebladet, Vestlandsnytt).
+
+VIKTIG – prioriter saker om:
+- Natur, dyr, miljø og klima
+- Vitskap og teknologi
+- Sport og idrett
+- Politikk og samfunn (forklart enkelt)
+- Lokale og nasjonale hendingar
+
+VIKTIG – unngå eller ton ned:
+- Drap, drapssaker og kriminalitet med mange detaljar
+- Skremmande ulukker med grafiske detaljar
+- Saker som er for tunge eller angstfremkallande for barn
+- Viss ei sak om noko alvorleg MÅ vere med, skriv ho nøkternt utan skremmande detaljar
 
 Reglar:
 - Nynorsk: "ikkje", "òg", "kva", "dei", "ho", "heime", "skule"
 - 6–9 setningar per sak, engasjerande og sakleg
-- Viss ein kjend person vert nemnt, legg til ei kort forklaring i parentes første gong, t.d. «Jonas Gahr Støre (statsministeren i Noreg)»
+- Viss ein kjend person vert nemnt, legg til ei kort forklaring i parentes første gong
 - Ordforklaring (1–4 ord) for vanskelege omgrep
 - Felt "emoji" med passande emoji
 - Felt "land" med namn og flagg viss saka er frå eit anna land enn Noreg
@@ -176,7 +189,16 @@ SPEL_PROMPT = """Du er redaktør for JuniorNytt si spel- og sportsseksjon for ba
 
 Vel dei {antall} mest eigna sakene og skriv dei om til barnevenleg nynorsk. Ver entusiastisk!
 
-VIKTIG – filtrer bort saker om vald, horror eller spel med PEGI 16/18.
+PRIORITER saker om:
+- Sport: fotball, ski, svømming, friidrett, handball – gjerne norske utøvarar
+- Spel som passar for barn under 12 år: Minecraft, Roblox, Mario, Pokémon, Fortnite (berre barnevenleg innhald)
+- Nye spel og oppdateringar for barn
+- Esport for ungdom
+
+FILTRER BORT:
+- Spel med PEGI 16 eller 18 (vald, horror, krigsspel for vaksne)
+- Saker som primært handlar om gambling eller pengebruk i spel
+- Vaksent innhald
 
 Reglar:
 - Nynorsk Sunnmøre-stil: "ikkje", "òg", "kva", "dei"
