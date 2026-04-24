@@ -12,7 +12,15 @@
   .dato{font-size:.85rem;opacity:.85;margin-top:4px}
   .sub{font-size:.75rem;opacity:.7;font-style:italic;margin-top:2px}
   .oppdatert{font-size:.7rem;opacity:.6;margin-top:6px}
-  .tabs{display:flex;max-width:720px;margin:24px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .vaer-boks{display:flex;align-items:center;gap:12px;max-width:720px;margin:16px auto 0;
+    background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px;backdrop-filter:blur(4px)}
+  .vaer-symbol{font-size:2.5rem}
+  .vaer-info{display:flex;flex-direction:column;gap:2px;flex:1}
+  .vaer-temp{font-size:1.4rem;font-weight:800}
+  .vaer-besk{font-size:.8rem;opacity:.9}
+  .vaer-vind{font-size:.72rem;opacity:.75}
+  .vaer-sted{font-size:.72rem;opacity:.7;text-align:right;font-style:italic}
+  .tabs{display:flex;max-width:720px;margin:20px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
   .tab{flex:1;padding:12px;font-weight:700;font-size:.85rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
   .tab-nat{background:#3b82f6;color:white}
   .tab-nat.inactive{background:white;color:#6b7280}.tab-nat.inactive:hover{background:#eff6ff}
@@ -23,10 +31,11 @@
   .sources{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}
   main{max-width:720px;margin:0 auto;padding:16px}
   .panel{display:none}.panel.active{display:block}
-  .card{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
-  .card-img{width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:12px;display:block}
-  .card-meta{display:flex;justify-content:flex-end;margin-bottom:4px}
+  .card{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .card-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
   .tidspunkt{font-size:.7rem;color:#9ca3af}
+  .land-badge{font-size:.72rem;font-weight:600;background:rgba(255,255,255,.6);
+    border:1px solid #e5e7eb;border-radius:99px;padding:2px 10px}
   .card-emoji{font-size:2rem;margin-bottom:8px}
   .card h3{font-size:1.15rem;font-weight:800;color:#1f2937;margin-bottom:10px;line-height:1.3}
   .card p{font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:12px}
@@ -36,17 +45,58 @@
   .ord-item strong{color:#1f2937}
   .kilde{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}
   footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 0}
-  @media(max-width:480px){header h1{font-size:2rem}}
+  @media(max-width:480px){header h1{font-size:2rem}.vaer-boks{flex-wrap:wrap}}
 </style>
 <script>
-  function show(tab){
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    document.getElementById('panel-'+tab).classList.add('active');
-    document.querySelectorAll('.tab').forEach(t=>t.classList.add('inactive'));
-    document.getElementById('tab-'+tab).classList.remove('inactive');
-    document.getElementById('src-line').textContent = tab==='nasjonal'
-      ? 'Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG'
-      : 'Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten';
+  // Hent vær basert på brukerens posisjon
+  function oppdaterVaer(lat, lon, stedNavn) {
+    fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`, {
+      headers: {"User-Agent": "JuniorNytt/1.0"}
+    })
+    .then(r => r.json())
+    .then(data => {
+      const ts = data.properties.timeseries[0].data;
+      const temp = Math.round(ts.instant.details.air_temperature);
+      const vind = Math.round(ts.instant.details.wind_speed);
+      const symbol = (ts.next_1_hours || ts.next_6_hours || {}).summary?.symbol_code || "";
+      const nedbor = ((ts.next_1_hours || ts.next_6_hours || {}).details?.precipitation_amount || 0).toFixed(1);
+      const symbolMap = {
+        clearsky:"☀️",fair:"🌤️",partlycloudy:"⛅",cloudy:"☁️",
+        rainshowers:"🌦️",rain:"🌧️",heavyrain:"🌧️",sleet:"🌨️",
+        snow:"❄️",snowshowers:"🌨️",fog:"🌫️",thunder:"⛈️",
+        rainandthunder:"⛈️",heavyrainandthunder:"⛈️"
+      };
+      const beskrivelseMap = {
+        clearsky:"Klarvær",fair:"Pent vær",partlycloudy:"Delvis skyet",cloudy:"Overskyet",
+        rainshowers:"Regnbyger",rain:"Regn",heavyrain:"Kraftig regn",sleet:"Sludd",
+        snow:"Snø",snowshowers:"Snøbyger",fog:"Tåke",thunder:"Torden",
+        rainandthunder:"Regn og torden",heavyrainandthunder:"Kraftig regn og torden"
+      };
+      const base = symbol.replace(/_(day|night|polartwilight)$/, "");
+      document.querySelector(".vaer-symbol").textContent = symbolMap[base] || "🌡️";
+      document.querySelector(".vaer-temp").textContent = temp + "°C";
+      document.querySelector(".vaer-besk").textContent = beskrivelseMap[base] || base;
+      document.querySelector(".vaer-vind").textContent = `💨 ${vind} m/s · 🌧 ${nedbor} mm`;
+      if (stedNavn) document.getElementById("vaer-sted").textContent = stedNavn;
+    })
+    .catch(() => {});
+  }
+
+  // Spør om posisjon
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      oppdaterVaer(pos.coords.latitude, pos.coords.longitude, "Din posisjon");
+    }, () => {}, {timeout: 5000});
+  }
+
+  function show(tab) {
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    document.getElementById("panel-" + tab).classList.add("active");
+    document.querySelectorAll(".tab").forEach(t => t.classList.add("inactive"));
+    document.getElementById("tab-" + tab).classList.remove("inactive");
+    document.getElementById("src-line").textContent = tab === "nasjonal"
+      ? "Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG"
+      : "Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten";
   }
 </script>
 </head>
@@ -56,130 +106,132 @@
   <h1>JuniorNytt</h1>
   <div class="dato">Fredag 24. april 2026</div>
   <div class="sub">Nyheter for deg mellom 8 og 12 år</div>
-  <div class="oppdatert">Oppdatert kl. 06:33</div>
+  <div class="oppdatert">Oppdatert kl. 06:55</div>
+  <div class="vaer-boks">
+      <span class="vaer-symbol">🌡️</span>
+      <div class="vaer-info">
+        <span class="vaer-temp">6°C</span>
+        <span class="vaer-besk">Lightrain</span>
+        <span class="vaer-vind">💨 4 m/s · 🌧 0.1 mm</span>
+      </div>
+      <span class="vaer-sted" id="vaer-sted">Ulsteinvik</span>
+    </div>
 </header>
 <div class="tabs">
   <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">
     🇳🇴 Nasjonalt <span class="badge">8</span>
   </button>
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">
-    📍 Lokalt <span class="badge">8</span>
+    📍 Lokalt <span class="badge">7</span>
   </button>
 </div>
 <div class="sources" id="src-line">Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG</div>
 <main>
   <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
-      <div class="card-emoji">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-      <h3>Trump truer Storbritannia med toll</h3>
-      <p>USAs president Donald Trump sier at han vil innføre en stor toll mot Storbritannia hvis de ikke fjerner en spesiell skatt på amerikanske teknologibedrifter som Apple, Google og Meta. En toll er en ekstra avgift på varer som kommer fra andre land. Trump mener det er urettferdig at Storbritannia skatter på amerikanske teknologibedrifter. Hvis Storbritannia ikke endrer avgjørelsen, kan det bli dyrere for britene å handle amerikanske produkter. Dette viser at det kan bli handelskrig mellom landene. Slike konflikter påvirker også priser vi betaler i Norge.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>toll:</strong> ekstra avgift på varer fra andre land</div><div class="ord-item"><strong>teknologibedrifter:</strong> bedrifter som lager datamaskiner, telefoner og internettjenester</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🔥</div>
+      <h3>Terrengbrann stengte jernbanen</h3>
+      <p>Fredag morgen brøt det ut en gressbrann ved Vinstra. Nødetatene rykket raskt ut for å slukke brannen. Dovrebanen måtte stenges midlertidig fordi brannen var så nær togskinnene. Etter noen timer hadde brannmannskapene kontroll på brannen, og togene kunne kjøre igjen. Slike branner kan være farlige fordi de sprer seg fort i tørt gress.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Nødetatene:</strong> Politi, brannvesen og ambulanse som rykker ut når det er fare eller ulykker</div><div class="ord-item"><strong>Lyngbrann:</strong> Brann i tørt gress og lyng på bakken</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
-      <div class="card-emoji">🏙️</div>
-      <h3>Oslo får nye navn på bydelene</h3>
-      <p>Oslo kommune skal gi nye navn til noen bydeler, og nå går fristen ut for folk som vil foreslå hva de skal hete. Noen forslag som «Vestkanten» eller «Gamle Penger» er allerede kommet inn. Dette skal gjøre det lettere for folk å forstå hvor de bor, og bydelene blir mer synlige. Over 2000 forslag har blitt sendt inn fra folk rundt omkring i byen. Fristen går ut fredag, så folk som har gode ideer må skynde seg!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bydel:</strong> en del av en større by med sitt eget område</div></div>
-      <span class="kilde">📰 NRK</span>
-    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
       <div class="card-emoji">📱</div>
       <h3>Støre vil forby sosiale medier for unge</h3>
-      <p>Statsminister Jonas Gro Støre vil at unge under videregående skole ikke skal kunne være på sosiale medier som TikTok, Instagram og Snapchat. Datatilsynet (som passer på at bedrifter ikke misbruker personopplysninger dine) er bekymret for at de store teknologibedriftene skal ha ansvar for å sjekke alderen på brukerne. Hvis dette blir lov, må unge vente til de begynner på videregående før de kan bruke slike apper. Dette er for å beskytte barn fra ting som mobbing og dårlig påvirkning på nettet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>datatilsynet:</strong> et offentlig organ som passer på at bedrifter bruker personopplysninger dine riktig</div><div class="ord-item"><strong>videregående:</strong> skolen du går på etter ungdomsskolen, vanligvis fra 16 år</div></div>
+      <p>Statsminister Jonas Gahr Støre ønsker å forbys sosiale medier for barn før de starter på videregående skole. Han er bekymret for at store teknologiselskaper som TikTok og Instagram ikke passer godt for veldig unge barn. Datatilsynet er også bekymret, fordi teknologiselskapene selv skal sjekke alderen til brukerne. Det er ikke alltid de klarer det. Regjeringen vil nok lage nye regler for når barn kan bruke sosiale medier.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Datatilsynet:</strong> En myndighet som passer på at personopplysninger dine er trygt</div><div class="ord-item"><strong>Videregående skole:</strong> Skolen du går på etter ungdomsskolen, vanligvis fra du er 16 år</div></div>
+      <span class="kilde">📰 NRK</span>
+    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🏙️</div>
+      <h3>Oslo skal få nye bydelnavn</h3>
+      <p>Oslo kommune ønsker å endre navn på noen bydeler. Folk har kunnet foreslå nye navn, og det har kommet tusen forslag! Fredag går fristen ut for å foreslå navn. Noen av forslagene er "Vestkanten" og "Gamle Penger". Etter at fristen går ut, skal kommunen velge hvilke navn som skal brukes. Dette blir spennende for alle som bor i Oslo!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Bydel:</strong> En del eller område av en stor by som har sitt eget navn og administrasjon</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
-      <div class="card-emoji">🗳️</div>
-      <h3>Grensejustering kan påvirke Stortinget</h3>
-      <p>Hvis grensa mellom fylkene Innlandet og nabofylkene blir flyttet, kan det få stor betydning for hvilke politikere som blir valgt til Stortinget (Norges parlament). Omkring 14.000 mennesker bor i området som kan bli påvirket. Når grenser flyttes, endres også hvor mange representanter hvert område får. Dette kan gjøre at andre politikere blir valgt enn før. NRK har regnet ut at dette kan påvirke hvem som får det siste representant-plassen fra Innlandet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Stortinget:</strong> Norges viktigste parlament, hvor politikerne bestemmer lover for hele landet</div><div class="ord-item"><strong>mandat:</strong> en plass i Stortinget som politikere kan sitte på</div></div>
-      <span class="kilde">📰 NRK</span>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
       <div class="card-emoji">🏠</div>
-      <h3>Boligbransjen skal bygge mange nye hjem</h3>
-      <p>Arbeiderpartiet har et stort mål: å få 130.000 nye boliger innen året 2030. Det betyr mange flere hus og leiligheter for folk som trenger et sted å bo. En måte å oppnå dette på er å ombygge gamle bygninger som ikke brukes lenger, i stedet for bare å bygge helt nye. Politikeren Bjørnar Skjæran teller også slik ombygging når han måler mot målet. Dette er smartere enn bare å rive gamle bygg, fordi det sparer miljøet og bruker færre penger.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ombygging:</strong> å endre et gammelt bygning slik at det blir noe nytt, for eksempel fra lager til leiligheter</div></div>
+      <h3>Norge skal bygge mange nye boliger</h3>
+      <p>Regjeringen har et mål om å få 130.000 nye boliger innen år 2030. Det betyr at det skal bygges eller ombygges mange hus og leiligheter. Arbeiderpartiets Bjørnar Skjæran teller både helt nye hus og gamle hus som blir oppusset. Målet er at flere skal ha et fint sted å bo. Det er veldig mange mennesker som trenger nye og gode boliger i Norge.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Ombygging:</strong> Når man reparerer og gjør gamle bygninger vakre og moderne igjen</div></div>
+      <span class="kilde">📰 Aftenposten</span>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🏂</div>
+      <h3>Jan-Erik Aalbu leder hopplaget videre</h3>
+      <p>Jan-Erik Aalbu fortsetter som sjef for Norges hopplag! Han skal lede de beste hopperene våre i den kommende VM-sesongen. Aalbu sier at han er veldig motivert og gleder seg til arbeidet. Norske hoppergrupper pleier å gjøre det veldig bra i VM, så det er flott at Aalbu fortsetter i jobben.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>VM:</strong> Verdensmesterskap – når de beste sportsfølkene fra hele verden konkurrerer mot hverandre</div><div class="ord-item"><strong>Hopperlag:</strong> Idrettslag som driver med skihopp, der man hopper langt ned en skibakke</div></div>
       <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
       <div class="card-emoji">🚌</div>
-      <h3>Bussjåfører får bedre lønn</h3>
-      <p>De som jobber med bussing i Norge har fått enighet om lønnsforbedringer. Det betyr at bussjåfører og andre ansatte i bussnæringen får mer i lønn framover. Enigheten er i tråd med en større lønnsavtale som er blitt gjort tidligere. Dette er bra for arbeiderne, og viser at det har gått bra i forhandlingene mellom arbeiderne og arbeiderne. Arbeidstakerorganisasjonen NHO Transport var enige om vilkårene.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>tariffoppgjør:</strong> en avtale mellom arbeidsgiver og arbeidstaker om lønn og arbeidsforhold</div></div>
-      <span class="kilde">📰 Aftenposten</span>
+      <h3>Bussåværer får bedre lønn</h3>
+      <p>De som arbeider i bussnæringen skal få høyere lønn! NHO Transport og arbeidstakernes organisasjoner ble enige om det. Lønnsøkningen følger det som kalles frontfagsoppgjøret, som setter standarden for lønnstilskudd i Norge. Dette er bra nyheter for alle som jobber med busser og transporterer folk rundt omkring.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Tariffoppgjør:</strong> En avtale mellom arbeidsgiver og arbeidstaker om lønn og arbeidsvilkår</div><div class="ord-item"><strong>NHO:</strong> En organisasjon som representerer norske bedrifter og arbeidsgivere</div></div>
+      <span class="kilde">📰 NHO Transport</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
-      <div class="card-emoji">📈</div>
-      <h3>Norges gjødsel- og gasselskap presterer godt</h3>
-      <p>Yara, som er et norsk selskap som produserer gjødsel, leverte veldig gode tall for første kvartal av året. Det betyr at bedriften tjente mer penger enn året før. Selv om det har vært problemer i både gass- og gjødselmarkedet på grunn av krigen ved Iran, klarte Yara seg bra. Dette viser at selskapet er sterkt og kan håndtere vanskelige tider. Yara er viktig for Norge, fordi det gir mange arbeidsplasser og tjener penger til landet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kvartal:</strong> tre måneder; året deles opp i fire kvartaler</div><div class="ord-item"><strong>gjødsel:</strong> stoff man gir til jord for at planter skal vokse bedre</div></div>
-      <span class="kilde">📰 VG</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span><span class="land-badge">🇬🇧 Storbritannia</span></div>
+      <div class="card-emoji">💼</div>
+      <h3>Trump truer Storbritannia med toll</h3>
+      <p>USA-president Donald Trump sier han kanskje legger toll på britiske varer hvis Storbritannia ikke fjerner en spesiell skatt på amerikanske teknologiselskaper. Denne skatten gjelder store selskaper som Apple, Google og Meta. Trump mener skatten er urettferdig overfor amerikanske bedrifter. Toll betyr at varene blir dyrere når de tas inn i et land.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Toll:</strong> En avgift eller skatt som du må betale når du kjøper noe fra et annet land</div><div class="ord-item"><strong>Digitalskatt:</strong> En skatt på selskaper som tjener penger på internett og digitale tjenester</div></div>
+      <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:32</span></div>
-      <div class="card-emoji">⚠️</div>
-      <h3>USA forbyr ikke atomvåpen mot Iran</h3>
-      <p>USAs president Donald Trump sier at han ikke vil bruke atomvåpen hvis USA skulle angripe Iran. Dette er viktig å vite, fordi atomvåpen er ekstremt farlige og kan skade millioner av mennesker. Selv om Trump utelukker bruk av atomvåpen nå, viser det at det er spenninger mellom USA og Iran. Verden passer nøye på disse situasjonene fordi de påvirker fredsstabiliteten i verden. Dette er et eksempel på hvordan stor politikk kan påvirke hele verden.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>atomvåpen:</strong> en veldig farlig bombe som kan ødelegge hele byer</div><div class="ord-item"><strong>utelukker:</strong> sier at noe ikke kommer til å skje</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🌾</div>
+      <h3>Kunstgjødselselskapet Yara leverer gode resultater</h3>
+      <p>Norske Yara, som lager kunstgjødsel som bønder bruker, hadde veldig gode tall for første kvartal i år. Selskapet gjorde det bedre enn året før. Dette skyldes blant annet at det har vært mindre forstyrrelser i både gass- og gjødselmarkedet. Yara er et viktig norsk selskap som hjelper verden med å produsere mat.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Kunstgjødsel:</strong> Gjødsel som er laget i fabrikk og brukes på jorder for å gjøre planter større og sterkere</div><div class="ord-item"><strong>Kvartal:</strong> En tredjedel av året, altså 3 måneder</div></div>
       <span class="kilde">📰 VG</span>
     </div></div>
   <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
       <div class="card-emoji">🐟</div>
       <h3>Fra fiskefôr til milliardbedrift</h3>
-      <p>André Skarbøs karriere startet veldig tidlig. Som seksåring fikk han betalt i fisk for å hjelpe til på et oppdrettsanlegg. I dag eier og leder han bedriften Platina Seafood, som tjener milliarder av kroner hvert år. Det viser at små jobber når du er liten, kan føre til store drømmer når du blir større. André har arbeidet hardt og fulgt sin interesse for fisk hele livet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oppdrettsanlegg:</strong> Et sted hvor man dyrker fisk eller andre dyr for salg</div><div class="ord-item"><strong>bedrift:</strong> Et selskap som selger produkter eller tjenester</div></div>
+      <p>André Skarbøo begynte å jobbe da han var bare seks år gammel. Han fikk betalt i fisk for å hjelpe på en fiskeoppdrettsfarm. Nå er han voksen og eier en kjempestor bedrift som heter Platina Seafood. Bedriften omsetter for milliarder kroner, selv om den bare har tre ansatte. Det viser at du kan komme langt hvis du jobber hardt og har gode ideer!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>omsetter for:</strong> selger varer og tjener penger</div><div class="ord-item"><strong>oppdrettsfarm:</strong> plass hvor man dyrker fisk eller dyr</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
       <div class="card-emoji">⚽</div>
-      <h3>Alle glad for ny kunstgressbane</h3>
-      <p>Spjelkavik idrettslag ønsket å lage en miljøvennlig kunstgressbane. Det er en kunstig fotballbane som er bedre for miljøet enn vanlige kunstgressbaner. Da de søkte kommunen om hjelp til å betale for det, sa alle politikerne ja! Det er veldig sjeldent at alle er enige, men alle ville støtte denne planen. Nå kan barn og voksne få en fin plass å spille fotball og andre idretter.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kunstgressbane:</strong> En fotballbane laget av kunstig gress i stedet for ekte gress</div><div class="ord-item"><strong>miljøvennlig:</strong> Ikke skadelig for naturen</div></div>
+      <h3>Ny kunstgressbane blir miljøvennlig</h3>
+      <p>En idrettslag i Spjelkavik søkte om penger fra kommunen til å bygge en kunstgressbane. Det fine var at alle politikerne var enige! De mente det var en god idé å lage en miljøvennlig bane hvor unge kan trene på fotball og andre idretter. Miljøvennlig betyr at den ikke skader naturen. Nå kan byggingen begynne.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kunstgressbane:</strong> fotballbane laget av kunstig gress</div><div class="ord-item"><strong>miljøvennlig:</strong> ikke skadelig for naturen</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
-      <div class="card-emoji">📱</div>
-      <h3>Aldersgrense kommer for sosiale medier</h3>
-      <p>Mange foreldre og voksne har ønsket seg aldersgrenser for sosiale medier som TikTok, Instagram og Snapchat. Før året er omme, vil regjeringen presentere et lovforslag som gjør akkurat det. En aldersgrense betyr at du må være en viss alder før du kan bruke appen. Dette er gjort fordi sosiale medier noen ganger ikke er bra for unge, og kan påvirke deres helse og søvn.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>aldersgrense:</strong> En regel som sier at du må være en viss alder for å gjøre noe</div><div class="ord-item"><strong>lovforslag:</strong> En ide om en ny regel som politikerne skal bestemme om</div></div>
-      <span class="kilde">📰 Sunnmørsposten</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🔬</div>
+      <h3>Realfag blir gøy for sjetteklassinger</h3>
+      <p>Sjetteklassinger sier vanligvis ikke at realfag er gøy. Men nå har noen gjort noe som gjør matematikk, naturfag og vitenskap mye mer interessant! Elevene synes det er så spennende at de ikke engang merker at de lærer. Det er viktig å gjøre skolen morsom, slik at flere barn får lyst til å lære.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>realfag:</strong> fag som matematikk, naturfag og vitenskap</div></div>
+      <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
-      <div class="card-emoji">🧪</div>
-      <h3>Realfag er gøy!</h3>
-      <p>Det er ikke ofte du hører sjetteklassinger si at fag som matematikk, naturfag og fysikk er gøy. Men noen skoler har startet noe nytt som gjør realfag mye mer spennende. Elevene sier selv at de synes det er veldig morsomt! Når unge mennesker finner realfag interessant, er det ett tegn på at vi gjør noe riktig i skolen. Det er viktig at barn lærer å elske fagene som handler om vitenskap og tall.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>realfag:</strong> Fag som matematikk, naturfag, fysikk og kjemi</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🚢</div>
+      <h3>Turistskip kommer til Hareid</h3>
+      <p>Et stort cruiseskip som heter Artania kommer til Hareid på lørdag 13. juni. Det er mange turister på skipet som gjerne vil gjøre noe morsomt på land. Derfor åpner noen lokale gårder dørene for besøk. Turistene kan se hvordan folk lever og arbeider på en norsk gård, og kanskje kjøpe lokale produkter.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cruiseskip:</strong> stort skip hvor turister bor og reiser rundt</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
-      <div class="card-emoji">🚢</div>
-      <h3>Cruise-skip kommer til Hareid</h3>
-      <p>Det cruise-skipet Artania kommer til Hareid lørdag 13. juni. Turister fra hele verden skal besøke området. Nå har mennesker fra området planlagt mange spennende aktiviteter for gjestene. De kan for eksempel besøke lokale bedrifter, natur og få se hvordan folk bor her. Det er gøy for Hareid fordi det betyr at flere mennesker får oppleve hvor fin plassen vår er!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cruise-skip:</strong> Et stort skip som tar turister rundt på havet for ferie</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🐴</div>
+      <h3>Islandshestar vinner klubbmesterskap</h3>
+      <p>I Vestnes holdt rideklubben sitt eget mesterskap for de som rider på islandshestar. Disse hestene er mindre enn vanlige hester, men veldig sterke og søte! De lokale ryttarane og hestene deres viste hva de kunne gjøre. Det var spennende å se hvor godt mennesker og hester kan arbeide sammen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>islandshest:</strong> liten og sterk heseart fra Island</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
-      <div class="card-emoji">🏔️</div>
-      <h3>Rekord på turene i vinter</h3>
-      <p>Denne vinteren har veldig mange mennesker i Møre og Romsdal gått på tur. Det er mer enn noen gang før! Folk har tatt på seg varme klær og gått ut i snøen og kulden for å nyte frisk luft og natur. Særlig i Herøy og Sande var det mange som tok turmål som er veldig populære. Det viser at mange liker å være ute i naturen selv når det er kaldt ute.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>turmål:</strong> Et sted man går til for å være i naturen</div></div>
-      <span class="kilde">📰 Vestlandsnytt</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🏠</div>
+      <h3>Torvtak blir populært igjen</h3>
+      <p>I gamle dager hadde norske hytter tak av torv. Nå gjør det noen igjen! Torv er jord med røtter fra planter, og det holder huset varmt om vinteren. Et byggefirma legger torv på taket av en hytte i Petterbakken. Det ser ikke bare fint ut, men det er også bra for naturen fordi planter og dyr kan bo på taket.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>torv:</strong> jord med røtter og planter</div></div>
+      <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
-      <div class="card-emoji">👨‍👦</div>
-      <h3>Far og sønn feirer arbeidsmerke sammen</h3>
-      <p>Det er veldig sjeldent at en far og sønn feirer at de har jobbet 50 år og 25 år på samme bedrift på samme tid. Men det skjedde hos Vestsink! To generasjoner av samme familie har vært lojale mot bedriften sin. Nå jobber sønnen hardt og drømmer om kanskje å bli enda bedre enn faren. Det er en fin historie om at familier kan jobbe sammen og støtte hverandre.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>arbeidsmerke:</strong> En pris man får når man har jobbet lenge på samme sted</div></div>
-      <span class="kilde">📰 Vestlandsnytt</span>
-    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 06:33</span></div>
-      <div class="card-emoji">🏞️</div>
-      <h3>Stort prosjekt for å verne fjella</h3>
-      <p>En gruppe mennesker har startet «Prosjekt folkehelse». De vil gjøre fjella våre flottere og tryggere, slik at flere kan gå på turene hele året. De trenger hjelp fra mennesker i bygdene, grunneiere og frivillige. Hvis du eller familien din bor i fjellbygdene og liker å hjelpe, kan dere bli del av noe veldig viktig. Sammen kan vi ta vare på naturskjuvelene våre!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>frivillige:</strong> Mennesker som hjelper til uten å få betalt</div><div class="ord-item"><strong>folkehelse:</strong> At hele befolkningen er frisk og glad</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 06:55</span></div>
+      <div class="card-emoji">🥾</div>
+      <h3>Rekord mange turer i fjellet</h3>
+      <p>Mange mennesker i Møre og Romsdal gikk på tur i fjellene denne vinteren. I år var det flere turer enn noen gang før! Folk likte å gå på tur i den friske luften, selv om det var kaldt. Noen steder var det spesielt populært å gå på tur, og det viser at nordmenn elsker naturen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>tur:</strong> å gå eller vandre i naturen</div></div>
       <span class="kilde">📰 Vestlandsnytt</span>
     </div></div>
 </main>
