@@ -502,7 +502,7 @@ def build_html(nasjonal, lokal, spel, kino, vaer):
 </style>
 <script>
   const SRC = {{
-    nasjonal: "Kjelder: NRK · Aftenposten · VG · Dagbladet · Nettavisen",
+    nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
     spel:     "Kjelder: Minecraft · Roblox · Pokémon · VG Sport · NRK Sport",
     kino:     "Kjelde: The Movie Database (TMDB)"
