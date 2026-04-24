@@ -147,8 +147,24 @@ def hent_rss(feeds, maks_per_kilde=6):
                           item.findtext("{http://www.w3.org/2005/Atom}summary") or
                           item.findtext("{http://www.w3.org/2005/Atom}content") or "").strip()
                 desc = re.sub(r"<[^>]+>", "", desc).strip()
+                # Hent publiseringsdato
+                pub_date = (item.findtext("pubDate") or
+                            item.findtext("{http://www.w3.org/2005/Atom}updated") or
+                            item.findtext("{http://www.w3.org/2005/Atom}published") or "").strip()
+                # Formater dato til lesleg norsk format
+                dato_str = ""
+                for fmt in ["%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S %Z",
+                            "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%SZ"]:
+                    try:
+                        from datetime import timezone
+                        dt = datetime.strptime(pub_date[:len(fmt)+10].strip(), fmt)
+                        dato_str = dt.strftime("%-d. %b %Y")
+                        break
+                    except Exception:
+                        continue
                 if tittel:
-                    artiklar.append({"kilde": kilde, "tittel": tittel, "ingress": desc[:300]})
+                    artiklar.append({"kilde": kilde, "tittel": tittel,
+                                     "ingress": desc[:300], "dato": dato_str})
         except Exception as e:
             print(f"  Kunne ikkje hente {kilde}: {e}")
     return artiklar
@@ -219,7 +235,10 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
         return []
     if prompt_mal is None:
         prompt_mal = OMSKRIV_PROMPT
-    tekst = "\n\n".join(f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artiklar)
+    tekst = "\n\n".join(
+        f"[{a['kilde']}] {a.get('dato','')} – {a['tittel']}\n{a['ingress']}"
+        for a in artiklar
+    )
     prompt = prompt_mal.format(antall=antall, artiklar=tekst)
     for attempt in range(retries):
         try:
@@ -279,6 +298,9 @@ def card(sak, idx):
     bg, border = COLORS[idx % len(COLORS)], BORDERS[idx % len(BORDERS)]
     emoji = sak.get("emoji") or velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
     ts  = f'<span class="tidspunkt">🕐 {sak["tidspunkt"]}</span>' if sak.get("tidspunkt") else ""
+    kjelde_info = sak.get("kilde","")
+    if sak.get("pub_dato"):
+        kjelde_info += f" · {sak['pub_dato']}"
     land = ""
     if sak.get("land") and sak["land"].get("namn"):
         land = f'<span class="land-badge">{sak["land"].get("flagg","")} {sak["land"]["namn"]}</span>'
@@ -293,7 +315,7 @@ def card(sak, idx):
       <h3>{sak["tittel"]}</h3>
       <p>{sak["brodtekst"]}</p>
       {ordf}
-      <span class="kilde">📰 {sak["kilde"]}</span>
+      <span class="kilde">📰 {kjelde_info}</span>
     </div>'''
 
 def vaer_html(vaer):
