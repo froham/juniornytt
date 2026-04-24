@@ -494,7 +494,7 @@ if __name__ == "__main__":
     print(f"  → {vaer}")
 
     print("Henter RSS – nasjonalt...")
-    nat_rss = hent_rss(RSS_NASJONAL)
+    nat_rss = hent_rss(RSS_NASJONAL, maks_per_kilde=6)
     print(f"  → {len(nat_rss)} artikler")
     print("Omskriver nasjonale nyheter...")
     nye_nat = omskriv(nat_rss, antall=NYE_PER_RUNDE + BUFFER)
@@ -502,7 +502,7 @@ if __name__ == "__main__":
     print(f"  → {len(nasjonal)} saker totalt")
 
     print("Henter RSS – lokalt...")
-    lok_rss = hent_rss(RSS_LOKAL)
+    lok_rss = hent_rss(RSS_LOKAL, maks_per_kilde=6)
     print(f"  → {len(lok_rss)} artikler")
     print("Omskriver lokale nyheter...")
     nye_lok = omskriv(lok_rss, antall=NYE_PER_RUNDE + BUFFER)
