@@ -10,7 +10,8 @@
   header{background:linear-gradient(to right,#3b82f6,#06b6d4);color:white;padding:24px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
   header h1{font-size:2.5rem;font-weight:900;letter-spacing:-1px}
   .dato{font-size:.85rem;opacity:.85;margin-top:4px}
-  .sub{font-size:.75rem;opacity:.7;font-style:italic;margin-top:2px}
+  .sub{font-size:.8rem;opacity:.85;margin-top:4px;padding:0 12px}
+  .ki-merknad{font-size:.7rem;opacity:.65;margin-top:4px;font-style:italic}
   .oppdatert{font-size:.7rem;opacity:.6;margin-top:6px}
   .vaer-boks{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:16px auto 0;
     background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px;backdrop-filter:blur(4px)}
@@ -30,14 +31,19 @@
   .dag-maks{font-size:.9rem;font-weight:800}
   .dag-min{font-size:.78rem;opacity:.65}
   .tabs{display:flex;max-width:720px;margin:20px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-  .tab{flex:1;padding:12px;font-weight:700;font-size:.85rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .tab{flex:1;padding:10px 4px;font-weight:700;font-size:.78rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
   .tab-nat{background:#3b82f6;color:white}
   .tab-nat.inactive{background:white;color:#6b7280}.tab-nat.inactive:hover{background:#eff6ff}
   .tab-lok{background:#10b981;color:white}
   .tab-lok.inactive{background:white;color:#6b7280}.tab-lok.inactive:hover{background:#f0fdf4}
-  .badge{background:rgba(255,255,255,.3);border-radius:99px;padding:2px 8px;font-size:.7rem}
+  .tab-spel{background:#8b5cf6;color:white}
+  .tab-spel.inactive{background:white;color:#6b7280}.tab-spel.inactive:hover{background:#f5f3ff}
+  .badge{background:rgba(255,255,255,.3);border-radius:99px;padding:2px 7px;font-size:.68rem}
   .inactive .badge{background:#e5e7eb;color:#6b7280}
   .sources{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}
+  .spel-varsel{max-width:720px;margin:8px auto 0;padding:10px 20px;
+    background:#fef3c7;border:1px solid #fde047;border-radius:12px;
+    font-size:.78rem;color:#92400e;line-height:1.5}
   main{max-width:720px;margin:0 auto;padding:16px}
   .panel{display:none}.panel.active{display:block}
   .card{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
@@ -53,62 +59,22 @@
   .ord-item{font-size:.85rem;color:#374151;margin-bottom:4px}
   .ord-item strong{color:#1f2937}
   .kilde{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}
-  footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 0}
+  footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:1.8}
   @media(max-width:480px){header h1{font-size:2rem}.vaer-boks{flex-wrap:wrap}}
 </style>
 <script>
-  // Hent vær basert på brukerens posisjon
-  function oppdaterVaer(lat, lon, stedNavn) {
-    fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`, {
-      headers: {"User-Agent": "JuniorNytt/1.0"}
-    })
-    .then(r => r.json())
-    .then(data => {
-      const ts = data.properties.timeseries[0].data;
-      const temp = Math.round(ts.instant.details.air_temperature);
-      const vind = Math.round(ts.instant.details.wind_speed);
-      const symbol = (ts.next_1_hours || ts.next_6_hours || {}).summary?.symbol_code || "";
-      const nedbor = ((ts.next_1_hours || ts.next_6_hours || {}).details?.precipitation_amount || 0).toFixed(1);
-      const symbolMap = {
-        clearsky:"☀️",fair:"🌤️",partlycloudy:"⛅",cloudy:"☁️",
-        rainshowers:"🌦️",lightrainshowers:"🌦️",rain:"🌧️",lightrain:"🌧️",
-        heavyrain:"🌧️",sleet:"🌨️",lightsleet:"🌨️",sleetshowers:"🌨️",
-        snow:"❄️",lightsnow:"❄️",snowshowers:"🌨️",fog:"🌫️",
-        thunder:"⛈️",rainandthunder:"⛈️",lightrainandthunder:"⛈️",
-        heavyrainandthunder:"⛈️",rainshowersandthunder:"⛈️",
-        snowandthunder:"⛈️",sleetandthunder:"⛈️"
-      };
-      const toEmoji = s => symbolMap[s.replace(/_(day|night|polartwilight)$/, "")] || "🌡️";
-      const toFare = (vind, base, nedbor) => {
-        let f = "";
-        if (vind >= 15) f += "💨🚨";
-        if ("thunder".includes(base)) f += "⚡";
-        return f;
-      };
-      const base = symbol.replace(/_(day|night|polartwilight)$/, "");
-      document.querySelector(".vaer-symbol").textContent = toEmoji(symbol);
-      document.querySelector(".vaer-temp").innerHTML = `${temp}°C ${toFare(vind, base, nedbor)}`;
-      document.querySelector(".vaer-vind").textContent = `💨 ${vind} m/s · 🌧 ${nedbor} mm`;
-      if (stedNavn) document.getElementById("vaer-sted").textContent = stedNavn;
-    })
-    .catch(() => {});
-  }
-
-  // Spør om posisjon
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      oppdaterVaer(pos.coords.latitude, pos.coords.longitude, "Din posisjon");
-    }, () => {}, {timeout: 5000});
-  }
-
   function show(tab) {
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
     document.getElementById("panel-" + tab).classList.add("active");
     document.querySelectorAll(".tab").forEach(t => t.classList.add("inactive"));
     document.getElementById("tab-" + tab).classList.remove("inactive");
-    document.getElementById("src-line").textContent = tab === "nasjonal"
-      ? "Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet"
-      : "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten";
+    const src = {
+      nasjonal: "Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet",
+      lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
+      spel:     "Kjelder: Roblox · Minecraft · PlayStation · Xbox · Nintendo · Pokémon · NRK Sport"
+    };
+    document.getElementById("src-line").textContent = src[tab] || "";
+    document.getElementById("spel-varsel").style.display = tab === "spel" ? "block" : "none";
   }
 </script>
 </head>
@@ -117,19 +83,20 @@
   <div style="font-size:2.5rem">📰</div>
   <h1>JuniorNytt</h1>
   <div class="dato">Fredag 24. april 2026</div>
-  <div class="sub">Nyheter for deg mellom 8 og 12 år</div>
-  <div class="oppdatert">Oppdatert kl. 07:31</div>
+  <div class="sub">Nyhende på nynorsk for deg mellom 8 og 12 år – nye saker vert publisert kl. 07.00, 12.00 og 19.00 kvar dag.</div>
+  <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
+  <div class="oppdatert">Oppdatert kl. 08:34</div>
   <div class="vaer-boks">
       <div class="vaer-no">
         <span class="vaer-symbol">🌧️</span>
         <div class="vaer-detaljar">
-          <span class="vaer-temp">6°C </span>
+          <span class="vaer-temp">7°C </span>
           <span class="vaer-vind">💨 4 m/s · 🌧 0.1 mm</span>
-          <span class="vaer-sted" id="vaer-sted">Ulsteinvik</span>
+          <span class="vaer-sted">Ulsteinvik</span>
         </div>
       </div>
       <div class="vaer-dagar"><div class="dag">
-          <span class="dag-namn">Lør</span>
+          <span class="dag-namn">Lau</span>
           <span class="dag-emoji">☁️</span>
           
           <span class="dag-temp"><span class="dag-maks">5°</span><span class="dag-min">3°</span></span>
@@ -137,12 +104,12 @@
           <span class="dag-namn">Sun</span>
           <span class="dag-emoji">⛅</span>
           
-          <span class="dag-temp"><span class="dag-maks">6°</span><span class="dag-min">3°</span></span>
+          <span class="dag-temp"><span class="dag-maks">6°</span><span class="dag-min">4°</span></span>
         </div><div class="dag">
           <span class="dag-namn">Man</span>
           <span class="dag-emoji">⛅</span>
           
-          <span class="dag-temp"><span class="dag-maks">10°</span><span class="dag-min">2°</span></span>
+          <span class="dag-temp"><span class="dag-maks">10°</span><span class="dag-min">3°</span></span>
         </div><div class="dag">
           <span class="dag-namn">Tys</span>
           <span class="dag-emoji">☁️</span>
@@ -151,6 +118,7 @@
         </div></div>
     </div>
 </header>
+
 <div class="tabs">
   <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">
     🇳🇴 Nasjonalt <span class="badge">10</span>
@@ -158,152 +126,224 @@
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">
     📍 Lokalt <span class="badge">10</span>
   </button>
+  <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">
+    🎮 Spel & Sport <span class="badge">8</span>
+  </button>
 </div>
+
 <div class="sources" id="src-line">Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet</div>
+
+<div class="spel-varsel" id="spel-varsel" style="display:none">
+  ⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.
+</div>
+
 <main>
   <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">⚖️</div>
-      <h3>Leiar i Forsvarsmateriell sikta for juks med pengar</h3>
-      <p>Tre leiarar i ei statleg etat blei sikta fordi dei gjorde noko ulovleg med pengar. Ein av dei leidde seg sjølv som rådgivar frå sitt eige selskap og auka prisen si med 35 prosent. No seier forsvaren hans at han vil samarbeida med etterforskarane.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sikta:</strong> når politiet trur nokon har gjort noko galt</div><div class="ord-item"><strong>ulovleg:</strong> i strid med lova</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span><span class="land-badge">🇸🇪 Sverige</span></div>
+      <div class="card-emoji">🔫</div>
+      <h3>To menn pågrepne etter skudd mot hus</h3>
+      <p>Det ble skote hagle mot eit rekkehus på Skjetten natt til torsdag. To menn – ein svenskar og ein nordmann – er pågrepne i Sverige. Dei er sikta for ulovleg bruk av skytevåpen. Politiet arbeider med saka og skal finne ut meir om kva som hende.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sikta:</strong> mistenkt for å ha gjort noko ulovleg</div><div class="ord-item"><strong>hagle:</strong> eit skytevåpen</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🔥</div>
-      <h3>Brand på Vinstra — togbanen stengt</h3>
-      <p>Det brann i gras og lyng på Vinstra fredag morgon. Brannvesenet rykka ut med ein gong. Dovrebanen, som er ein viktig togstrekking gjennom Noreg, blei midlertidig stengt medan dei fekk kontroll på brannen.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>terrengbrann:</strong> brann i naturen, i gras og lyng</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">💔</div>
+      <h3>15-åring døydde av overdose</h3>
+      <p>Ein 15 år gamal gut døydde på eit barnevernsheim etter ei overdose av narkotika. Riksadvokaten har avslutta granskinga av saka. Farmora hans meiner at barn i barnevernsheim ikkje blir høyrte og tatt på alvor. Ho vil at systemet skal bli betre til å passe på ungdomar.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>overdose:</strong> når ein tar for mykje av ein farleg stoff</div><div class="ord-item"><strong>barnevernsheim:</strong> plass der barn som treng hjelp, bur</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">💰</div>
-      <h3>Trump truar Storbritannia med toll</h3>
-      <p>Amerikanske president Donald Trump seier at Storbritannia må fjerne ei spesiell skatt på store teknologiselskap som Apple og Google. Viss dei ikkje gjer det, lovar han å leggja ein stor toll på britiske varer. Toll er ekstra pengar du må betala når du kjøper noko frå eit anna land.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>toll:</strong> ekstra pengar ein må betala på varer frå andre land</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">⚠️</div>
+      <h3>Åtvaring mot billettpjuger til VM</h3>
+      <p>Billettar til Norges VM-kampar i fotball blir veldig dyre. Fordi dei er så dyre, kjem det folk som prøver å lure andre ved å selje falske billettar. Folk varslar no andre i ei Facebook-gruppe om dette. Det er viktig å vere forsiktig når ein kjøper billettar på nettet.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>VM:</strong> verdensmesterskap – den største konkurransen i fotball</div><div class="ord-item"><strong>billettpjuger:</strong> folk som lurer andre med falske billettar</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🏘️</div>
-      <h3>Kva skal dei nye bydelane i Oslo heita?</h3>
-      <p>Oslo skal få nye bydelar, og no kan folk foreslå kva dei skal heita. Fredag går fristen ut for å senda inn navn. Det har kome inn over to tusen forslag så langt. Nokre har foreslått namn som Vestkanten eller Gamle Penger.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bydelar:</strong> mindre områder i ein by</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">⚖️</div>
+      <h3>Tre leiarar sikta for tjuving av pengar</h3>
+      <p>Tre leiarar i ei statleg bedrift som heiter Forsvarsmateriell er sikta for grov utroskap. Det vil seie at dei tek pengar på feil måte. Ein av dei skulle vere konsulent og fekk mykje meir løn enn han skulle få. Politiet undersøkjer saka nøye.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>utroskap:</strong> å misbruke pengar eller tillit på ulovleg måte</div><div class="ord-item"><strong>konsulent:</strong> ein person som gjev råd til bedrifter</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">📱</div>
-      <h3>Støre vil forby sosiale medier før vidaregåande</h3>
-      <p>Statsministeren Støre vil at barn ikkje skal få bruka sosiale medier før dei er gamle nok til vidaregåande skule. Datatilsynet er bekymra fordi dei gigantane som lagar desse appa må sjekka at det er vaksne som brukar dei. Det kan vere vanskeleg å kontrollera.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Datatilsynet:</strong> ein etat som passar på at nettstader og appar ikkje gjorde noko galt med personopplysningane dine</div></div>
-      <span class="kilde">📰 NRK</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">⛷️</div>
+      <h3>Marit Bjørgen blir skitrenar for fruenteamet</h3>
+      <p>Marit Bjørgen er ein av dei beste skiløparane i Noreg. No skal ho bli trenar for kvinnelandslaget i Norge. Ho er 46 år gamal og vil bruke heile si tid på jobben som trenar. Det er ein stor oppgåve, men ho gleder seg til det.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>trenar:</strong> ein person som lærer andre å verte betre på ein idrett</div><div class="ord-item"><strong>landslag:</strong> beste spelarar frå ein land</div></div>
+      <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🏦</div>
-      <h3>Nordea-kundar venta på lønn</h3>
-      <p>Mange folk som jobbar venta på lønna si fredag fordi det var problem i Nordea-banken. Pressesjef Cathrine Graff sa at det var forsinkingar i datasystemet deira i løpet av natta. No arbeider dei med å fiksa problemet så folk skal få pengane sine.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>forsinkingar:</strong> når noko tar lengre tid enn det skulle</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">🐋</div>
+      <h3>Kvitkvalen svøm inn i elva igjen</h3>
+      <p>Ein kvithval svøm langt inn i Drammenselva. Folk trudde ho skulle til havet, men så ombestemde ho seg og svøm tilbake igjen. Det er usikkert kvifor ho gjorde det. Kvithvalar er store og spennande dyr som lever i dei kalde vata.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kvithval:</strong> ein stor kvit wal som lever i nord</div><div class="ord-item"><strong>ombestemte:</strong> endra meining</div></div>
       <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🆘</div>
-      <h3>Rekordmange søkjer hjelp mot tvang</h3>
-      <p>Fleire barn og ungdomar enn nokon gong før ba om hjelp frå myndigheitene fordi dei blir tvinga til å gjera ting dei ikkje vil. Dette kan vera tvangsekteskap eller andre former for kontroll. Det er alvorleg, og myndigheitene arbeider for å hjelpa dei.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>negativ sosial kontroll:</strong> når andre tvingar deg til å gjera noko eller ikkje gjera noko</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span><span class="land-badge">🇸🇪 Sverige</span></div>
+      <div class="card-emoji">🕵️</div>
+      <h3>Britisk agent sprengte jernbanen i 1941</h3>
+      <p>I 1941 var det ein hemmeleg agentnettverk som arbeidde saman mellom Britannia og Noreg. Ein liten raud hest var det hemmelege symbolet deira. Desse agentane gjorde farleg arbeid under krigen og sprengte jernbaner. Dei var som James Bond-karakterane frå filmane.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>agent:</strong> ein person som arbeider hemmeleg for staten</div><div class="ord-item"><strong>agentnettverk:</strong> ei gruppe hemmelege agentar som arbeider saman</div></div>
       <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🤧</div>
-      <h3>Mangel på allergimedisinar</h3>
-      <p>Mange folk som er allergiske mot pollen har problem med å finna allergimedisinar i apotek no. Etterspørselen etter desse medisinane er uventet høg. Leger råder folk til å starta tidlig med å ta medisin dersom dei veit at dei får pollenallergiar.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>allergi:</strong> når kroppen din reagerer dårleg på noko som pollen eller mat</div></div>
-      <span class="kilde">📰 VG</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">⚽</div>
+      <h3>NFF må slutte å bruke løvelogoen</h3>
+      <p>Norges Fotballforbund (NFF) har brukt ein løvelogo på supporterkolleksjon – det vil seie plagg for fotballfanar. No seier staten at NFF må slutte med det. Dei har til 30. april på seg til å svare. Logoen var umiddelbar frå Sørlandet og hadde eit betydning som folk ikkje ville ha.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>supporterkolleksjon:</strong> plagg og ting for dei som heiar på eit lag</div><div class="ord-item"><strong>logo:</strong> eit bilete som viser namnet på noko</div></div>
+      <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">📚</div>
-      <h3>Leander Djønne får stor litteraturpris</h3>
-      <p>Forfattaren Leander Djønne fekk ein stor pris for sitt arbeide frå Nynorsk litteraturselskapet. Han mottok prisen fredag under eit landssamfunne for nynorskfolk. Dette er ei stor ære for han.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>litteraturpris:</strong> ei pris til nokon som har skrive flotte bøker</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">🍕</div>
+      <h3>Pizza under 200 kroner i Oslo</h3>
+      <p>Ei ny pizzeria har opna i Oslo. Der kostar alle pizzaene mindre enn 200 kroner. Det er billeg og godt nytt for alle som elskar pizza! No kan fleire famiglia få seg pizza utan å bruke så mange pengar.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>pizzeria:</strong> ein restaurant som sel pizza</div></div>
       <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">✈️</div>
-      <h3>Flybransjen i krise — kva får du?</h3>
-      <p>Det er store problem i flybransjen rundt heile verda no. Mange flyselskap har problem og kanselerer flygingar. Viss du har bestilt sommarvakansen din og flyet blir kanselerert, har du rett til erstatning. Det er viktig å veta kva rettar du har.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kanselerert:</strong> når noko blir avlyst og ikkje skjer</div></div>
-      <span class="kilde">📰 Aftenposten</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:33</span></div>
+      <div class="card-emoji">🔐</div>
+      <h3>Ritual-kundar fekk hemmelege opplysningar</h3>
+      <p>Butikkkjeda Rituals seljer fine ting for bad og skjønnskap. No har opplysningar om kundane deira blitt lekka på nettet. Det vil seie at folk andre enn Rituals fekk vite kven som kjøpte kva der. Det er utilsikta og dårleg for privatlivet til kundane.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>lekka:</strong> når hemmelege opplysningar blir kjende</div><div class="ord-item"><strong>privatliv:</strong> det som er personleg og privat for deg</div></div>
+      <span class="kilde">📰 VG</span>
     </div></div>
   <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
       <div class="card-emoji">🐟</div>
       <h3>Frå fiskefôr til milliardbedrift</h3>
-      <p>André Skarbø fekk si første jobb då han var berre seks år gammal. Han skulle spyle fôrrester på oppdrettsanlegg og fekk betalt i fisk. I dag eig og leiar han bedrifta Platina Seafood som seld for milliardar kroner. Frå å vere barn med små oppgåver har han vakse opp til å driva ein av dei største bedriftene i området.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oppdrettsanlegg:</strong> Plass der ein held og fôrar fisk eller andre dyr</div></div>
+      <p>André Skarbø starta då han var berre seks år gamal og fekk betalt i fisk for å hjelpe på fiskeoppdrett. I dag eig og leier han ein kjempestore bedrift som heiter Platina Seafood. Bedrifta hans er verd milliardar kroner! Han har berre tre tilsette. Det viser at det er mogleg å starte lite og bli stor med hardt arbeid og gode idear.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oppdrett:</strong> når ein held og fôrar fisk eller dyr for å selje dei</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
       <div class="card-emoji">⚽</div>
-      <h3>Kunstgressbanen i Spjelkavik får grønt lys</h3>
-      <p>Spjelkavik idrettslag ønskte å byggje ei ny og miljøvennleg kunstgressbane. Alle politikarane i kommunen var einige - det var ein stor seier! Idrettslaget fekk løyving til å byggje. No kan barn og vaksne få ein fin stadion å spele fotball på, og det er bra for miljøet òg.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>miljøvennleg:</strong> Noko som ikkje skadar naturen</div></div>
+      <h3>Kunstgressbane blir verkeleg</h3>
+      <p>Spjelkavik idrettslag vil lage ein ny kunstgressbane som er god for miljøet. Alle politikarane var samde og glad – det skjer ikkje så ofte! No kan dei få pengar frå kommunen for å byggje banen. Dette blir kjempe bra for alle som vil drive idrett og mosjon på staden.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>miljøvennleg:</strong> ikkje vondt for naturen og jorda</div><div class="ord-item"><strong>tverrpolitisk:</strong> når alle politiske parti er samde</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">☀️</div>
-      <h3>Slik blir vêret utanfor og på 17. mai</h3>
-      <p>Værmålar har sett på kva vêr me kan vente oss i slutten av april, heile mai og særleg på 17. mai. Det er spanande å vita korleis vêret blir når du skal ut og feira med familie og vener. Sjekk værrapporten før du planlegg aktivitetane dine!</p>
-      
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">📱</div>
+      <h3>Aldersgrense på sosiale medier kjem</h3>
+      <p>Mange foreldre og barn har vendt på at sosiale medier er vanskelege for små. No kjem ein ny lov innan året som set ein aldersgrense. Det betyr at berre større barn og vaksne kan bruke Facebook, TikTok og Instagram. Lovforslaget skal gjere internett trygare for unge.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>aldersgrense:</strong> ein minimumsalder du må vere før du kan bruke noko</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🔥</div>
-      <h3>Brann på taket - arbeidarar måtte rømme</h3>
-      <p>To arbeidarar var på taket og jobba med takmembran då det plutseleg tok fyr. Dei gjorde sitt beste for å slokke brannen sjølv, men ho vart større og større. Då måtte dei rømme og få hjelp frå brannmennene. Det var ein skummel hendelse som kunne ha endt mykje verre.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>takmembran:</strong> Eit lag av material som skyttar taket</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">☀️</div>
+      <h3>Slik blir vêret på 17. mai</h3>
+      <p>Vêrekspertar seier at det blir fint vêr i slutten av april og heile mai – og det er kjempebra! Det betyr at 17. mai-feiringa kan bli fin med sol og varme. Ivar Hol, som er vêrekspert, seier kva me kan vente oss av vêr den viktige dagen.</p>
+      
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🏪</div>
-      <h3>Ukrainsk par opnar butikk i Ulsteinvik</h3>
-      <p>Daria og Nazar flykta frå Ukraina til Noreg i 2023 fordi det var krig i heimen deira. No har dei bygd opp nytt liv her, og dei opnar si eiga butikk! Dei sel gode råvarer og bryggeutstyr. Det er ei fin historie om folk som startar på nytt på ein annan stad.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bryggeutstyr:</strong> Ting du brukar når du lagar kaffe eller te</div></div>
-      <span class="kilde">📰 Vikebladet</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🔥</div>
+      <h3>Arbeidaren på taket såg brannen starte</h3>
+      <p>Ole Kristian jobba på eit tak då det plutseleg tok fyr. To arbeidarar var der og gjorde sitt beste for å sløkke brannen. Men brannen vaks fort, så dei måtte gje seg. Heldigvis kom brannmennene fort og stoppa brannen innan ho blei altfor stor.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>takmembran:</strong> ein tett plaststoff på tak som held vatn ute</div></div>
+      <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🔬</div>
-      <h3>Sjetteklassingane tykkjer realfag er gøy!</h3>
-      <p>Det er ikkje vanleg at barn seier at matematikk, naturvitenskap og slike fag er kjempe gøy. Men no har sjetteklassingane funne ut at det faktisk kan vere spanande! Dette er eit kjempegodt teikn og viser at lærarane gjer ein flott jobb med å få elevane interesserte.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>realfag:</strong> Fag som matematikk, naturfag og kjemi</div></div>
-      <span class="kilde">📰 Vikebladet</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span><span class="land-badge">🇺🇸 USA</span></div>
+      <div class="card-emoji">🎵</div>
+      <h3>Anna Lille fekk merksemda frå Justin Bieber</h3>
+      <p>Norske Anna Lille lagde ein musikkvideo som Justin Bieber såg og likte! Han likte videoen hans, som var av ein ny song som kjem ut på seinsommaren. Det var kjempe spennande for unge Anna, som håpar mange fleire skal høyre musikken hennar.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>merksemda:</strong> når nokre legg merke til deg</div></div>
+      <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">⛴️</div>
-      <h3>Cruiseskipet Artania kjem til Hareid</h3>
-      <p>Skipet Artania skal besøkje Hareid laurdag 13. juni, og det kjem mange turistar om bord! No er det klart kva dei kan gjere medan dei er her. Det blir spennande for både besøkjarane og folk i Hareid å møtast og dele opplevingar.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>tourist:</strong> Nokon som reiser rundt for å sjå nye stadar</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">⚽</div>
+      <h3>Lokalderby med mykje å hente</h3>
+      <p>Hareid fotball spelar mot Hødd sin nest beste lag på fredag kveld. Det er eit lokalderby, som tyder at laga er nabolar. Hareid har ikkje vunne over dem sidan 2006 – det er fleire år sidan! No håpar Hareid-supporterane at det endrar seg.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>lokalderby:</strong> ein fotballkamp mellom lag som bur nær kvarandre</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🏡</div>
-      <h3>Torv på taket - ikkje på bakken!</h3>
-      <p>I Petterbakken legg arbeidarar torv på taket til ei stove. Det høyrest rart ut, men det er faktisk ein fin måte å isolere huset på! Kåre Løvoll seier at torvene dei brukar er av god kvalitet. Dette er ein tradisjonell norsk måte å byggje på som kjem tilbake.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>torv:</strong> Jordlag med rotar og plantestoffer</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span><span class="land-badge">🇺🇦 Ukraina</span></div>
+      <div class="card-emoji">🏪</div>
+      <h3>Flyktningar opnar butikk</h3>
+      <p>Daria og Nazar kom frå Ukraina til Noreg i 2023 fordi det var krig heime. No har dei byggt opp att liva sine og vil starte si eiga butikk i Ulsteinvik. Butikken skal selje gode ingrediensar for brygg og alt du treng for å laga det sjølv. Det er flott at dei vågar å starte noe nytt i Noreg!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>brygg:</strong> når du miksar ingrediensar for å laga drikk eller kaffe</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">🐴</div>
-      <h3>Lokale hestekuskar viste seg fram</h3>
-      <p>Vestnes Islandshestforening heldt klubbmeisterskap der lokale ryttarar ridde på islandshestar. Dei gjorde det veldig bra og viste kva god hestesport handlar om. Det var ei fin konkurranse med mykje glede og bra atmosfære.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>islandshest:</strong> Ein frå Island - ein spesiell rase med små og sterke hestar</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🚢</div>
+      <h3>Turistar på garden</h3>
+      <p>Cruiseskipet Artania kjem til Hareid laurdag 13. juni med mange turistar. Garden på Hareid opnar dørene sine så turistane kan sjå korleis folk bur og arbeider på ein norsk gard. Dei kan velje mellom mange aktivitetar og få oppleva norsk natur og kultur.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cruiseskip:</strong> eit stort skip som tar folk rundt på ferie</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:31</span></div>
-      <div class="card-emoji">💼</div>
-      <h3>Ny toppjobb for Andreas Ingjerd</h3>
-      <p>Andreas Ingjerd frå Ulsteinvik har fått ein ny og viktig jobb! Han skal vere CFO - det betyr at han skal styre pengane og økonomien - i det store Ålesund-baserte H.I. Giørtz-konsernet. Det er ei stor utfordring og ein fin anerkjenning av hans dugleik.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>CFO:</strong> Ein leidar som ser etter pengane i ein bedrift</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🏠</div>
+      <h3>Naturleg tak av torv</h3>
+      <p>Torv er plantar som veks veldig sakte og blir hard over mange år. Kåre Løvoll og arbeidsgjengen hans legg torv på taket til ei stove i Petterbakken. Torv på taket hjelper til med å halda varmen inne og er veldig naturleg og fint. Det er ei gammal norsk tradisjon!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>torv:</strong> gamle plantar som blei til jord over tusenvis av år</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div></div>
+  <div class="panel" id="panel-spel"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🏴‍☠️</div>
+      <h3>Assassin's Creed Black Flag blir totally på nytt!</h3>
+      <p>Etter heile 13 år skal vi igjen seile over sjøen med piraten Edward Kenway! Assassin's Creed Black Flag var ein av dei beste spelane i serien, og no får det eit totally nytt anstryk. Spelet kjem til PlayStation 5 den 9. juli. Anten du har spelt det før eller er heilt ny, skal det bli kjempemorsomt å oppleve eventyra hans på nytt. Dette blir garantert ein spennande sommar for spelarane!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Resynced:</strong> Når eit gammalt spel blir gjort heilt nytt med betre grafikk og spelemåte</div><div class="ord-item"><strong>Pirat:</strong> Nokon som rø rundt på sjøen og jaktar på skattar og skip</div></div>
+      <span class="kilde">📰 PlayStation</span>
+    </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🕵️</div>
+      <h3>Zero Parades: For Dead Spies - morsomt spionspel!</h3>
+      <p>Eit heilt nytt og kjekt spel på veg til PlayStation! Zero Parades: For Dead Spies handlar om spionar med artige karakterar som du vil bli glad i. Spelet har sin eigen måte å spele på som gjer det annleis enn andre spel. Dei viste litt av spelet før, og no skal vi få sjå meir av personane i spelet. Dette blir garantert moro og spennande!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Spion:</strong> Nokon som arbeider hemmelegt og skal finna ut saker utan at andre veit det</div><div class="ord-item"><strong>Karakterar:</strong> Personane i eit spel som du spelar som eller møter</div></div>
+      <span class="kilde">📰 PlayStation</span>
+    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">✨</div>
+      <h3>Saros - nytt magisk spel er klar!</h3>
+      <p>Det kjem eit spennande nytt spel som heiter Saros, og det skal slåppast 30. april på PlayStation 5! Spelet har mange kule innstillingar som gjer at kvar kan spele på si eiga måte. Det finst mange valmoglegheiter slik at spelet passar for alle spelarar. Dei har laga ein kjempeflott trailer som viser korleis spelet ser ut. Dette blir eit spel mange vil ville spele!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Accessibility options:</strong> Innstillingar som gjer spelet enklare å spele for folk med ulike behov</div><div class="ord-item"><strong>Trailer:</strong> Ein kort filmklipp som viser korleis eit nytt spel ser ut</div></div>
+      <span class="kilde">📰 PlayStation</span>
+    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🏎️</div>
+      <h3>Gran Turismo 7 får kjemperaske bilar!</h3>
+      <p>Gran Turismo 7 har fått eit nytt oppdatering med heilt utruleg raske bilar! Den nye Yangwang U9 er så rask at ho går frå 0 til 100 kilometer i berre 2,36 sekund - det er skakande fort! Dei har òg lagt til ein litt rolegare og praktisk Renault Twingo for dei som vil ha noko mindre speedy. Alle desse nya bilane er gratis å få, så no kan du teste dei! Dette blir bra for alle som likar kjøring og racing!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Oppdatering:</strong> Når eit spel får nytt innhald og forbetring etter det er slåppt</div><div class="ord-item"><strong>Horsepower (BHP):</strong> Kor kraftig motoren i ein bil er</div></div>
+      <span class="kilde">📰 PlayStation</span>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">💣</div>
+      <h3>Call of Duty får nytt innhald no!</h3>
+      <p>Call of Duty: Black Ops 7 og Warzone har fått nytt og spennande innhald midt i sesongen! Det er mykje nytt å oppdage for alle som spelar desse spillane. Med Season 03 kjem det mange nye ting som gjer spelet meir gøy og spennande. Er du glad i action og slagsmål? Då blir dette noko for deg! Kom og sjå kva som er nytt og bli ein del av aksjonen!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Season:</strong> Ein periode i eit onlinespel med nytt innhald og oppdateringar</div><div class="ord-item"><strong>Warzone:</strong> Ein del av Call of Duty der mange spelarar spelar saman på same kart</div></div>
+      <span class="kilde">📰 Xbox</span>
+    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🧙‍♀️</div>
+      <h3>Kalanoro - eit magisk spel frå Madagaskar!</h3>
+      <p>Eit heilt nytt og spesielt spel kjem snart! Kalanoro blander sagn frå Madagaskar med dyr og trolldom på ein veldig artig måte. I spelet møter du lemur-band - det er små dyr som dansar og spelar musikk saman! Det er òg heksar og magisk trolldom som gjer spelet super spennande. Dette er eit indie-spel, som tyder at det er laga av ein liten gruppe skaparkraft menneske. Ein sjelden sjanse til å oppleve noko heilt annleis!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Indie-spel:</strong> Spel som er laga av små grupper i staden for store selskap</div><div class="ord-item"><strong>Lemur:</strong> Små dyr som kjem frå Madagaskar og liknar på apar</div><div class="ord-item"><strong>Folkore:</strong> Gamle historier og sagn frå eit land eller folk</div></div>
+      <span class="kilde">📰 Xbox</span>
+    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🎮</div>
+      <h3>ID@Xbox viser dei kule nye spela!</h3>
+      <p>Xbox held ein stor presentasjon der dei viser mange nye og spanande spel! Det er indie-spelarar og større spel som skal slåppast snart. Dersom du liker å oppdage nye og spennande speloppleveringar, er dette noko for deg! Det er mange samanhengar av ulike slag, så det er garantert noko for alle. Halda auga opne for dei villaste og beste spela som kjem!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Showcase:</strong> Ein stor presentasjon der dei viser fram nye og kommande spel</div><div class="ord-item"><strong>ID@Xbox:</strong> Eit Xbox-program som hjelper små spelutviklarar</div></div>
+      <span class="kilde">📰 Xbox</span>
+    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
+      <div class="card-meta"><span class="tidspunkt">🕐 08:34</span></div>
+      <div class="card-emoji">🎯</div>
+      <h3>Xbox viser kva dei handlar om!</h3>
+      <p>Xbox kjem med eit stort budskap: "We Are Xbox" - det tyder at Xbox handlar om å vera ein del av eit community av spelarar! Xbox-konsollen og alle spela er for alle som likar gaming og vil ha moro saman med andre. Det er ikkje berre om å vinne - det er om å ha det kjempemorsomt saman! Viss du likar spelar og vil vera med ein fin gjeng, er Xbox for deg!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Community:</strong> Ein gruppe menneske som deltek i noko saman, som spelande</div><div class="ord-item"><strong>Konsoll:</strong> Ein maskin som du spelar spel på, som Xbox eller PlayStation</div></div>
+      <span class="kilde">📰 Xbox</span>
+    </div></div>
 </main>
-<footer>JuniorNytt • Laget for nysgjerrige barn 🌟</footer>
+
+<footer>
+  JuniorNytt • Laga for nysgjerrige barn 🌟<br>
+  © 2026 JuniorNytt – Innhald er utvalt, tilpassa og omskrive frå opne nyheitskjelder av kunstig intelligens.<br>
+  JuniorNytt omtalar spel og tenester som informasjon, og dette er ikkje å rekne som ei tilråding eller eit samarbeid.<br>
+  Foreldre oppfordrast til å følgje med på kva spel barna nyttar.
+</footer>
 </body>
 </html>
