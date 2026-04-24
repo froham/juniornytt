@@ -156,9 +156,8 @@ def hent_rss(feeds, maks_per_kilde=6):
                 for fmt in ["%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S %Z",
                             "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%SZ"]:
                     try:
-                        from datetime import timezone
-                        dt = datetime.strptime(pub_date[:len(fmt)+10].strip(), fmt)
-                        dato_str = dt.strftime("%-d. %b %Y")
+                        dt = datetime.strptime(pub_date[:30].strip(), fmt)
+                        dato_str = dt.strftime("%-d. %b %Y kl. %H:%M")
                         break
                     except Exception:
                         continue
@@ -195,7 +194,7 @@ Reglar:
 - Viss ein kjend person vert nemnt, legg til ei kort forklaring i parentes første gong
 - Ordforklaring (1–4 ord) for vanskelege omgrep
 - Felt "emoji" med passande emoji
-- Felt "land" med namn og flagg viss saka er frå eit anna land enn Noreg
+- Felt "land" med namn og flagg KUN viss saka handlar om noko som skjer i eit ANNA land enn Noreg. For norske saker skal "land"-feltet vere tomt eller utelatt.
 
 Artiklar:
 {artiklar}
@@ -235,6 +234,8 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
         return []
     if prompt_mal is None:
         prompt_mal = OMSKRIV_PROMPT
+    # Lag dato-mapping: tittel → dato
+    dato_map = {a["tittel"]: a.get("dato", "") for a in artiklar}
     tekst = "\n\n".join(
         f"[{a['kilde']}] {a.get('dato','')} – {a['tittel']}\n{a['ingress']}"
         for a in artiklar
@@ -257,6 +258,12 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                 sak["tidspunkt"] = ts
                 if not sak.get("emoji"):
                     sak["emoji"] = velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
+                # Finn dato frå original RSS-tittel
+                for orig_tittel, dato in dato_map.items():
+                    if dato and any(w in sak.get("tittel","").lower()
+                                   for w in orig_tittel.lower().split()[:3] if len(w) > 3):
+                        sak["pub_dato"] = dato
+                        break
             return saker
         except json.JSONDecodeError as je:
             print(f"  JSON-feil ({attempt+1}/{retries}): {je}")
