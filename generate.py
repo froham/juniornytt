@@ -536,7 +536,7 @@ def build_html(nasjonal, lokal, spel, kino, vaer):
   <button class="tab tab-kino inactive" id="tab-kino" onclick="show('kino')">🎬 Kino <span class="badge">{len(kino)}</span></button>
 </div>
 
-<div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · Dagbladet · Nettavisen</div>
+<div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
 <div class="varsel-boks varsel-spel" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
 <div class="varsel-boks varsel-kino" id="varsel-kino">🎬 Her finn du filmar som går på norske kinoar no – berre filmar for barn under 8 år er med!</div>
 
