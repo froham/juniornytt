@@ -365,27 +365,6 @@ def fjern_duplikatar(lokale, nasjonale, terskel=0.4):
             ut.append(sak)
     return ut
 
-# ── Lagring ───────────────────────────────────────────────────────────────────
-def oppdater_saker(nye, fil, er_morgen, maks=None, faller_ut=None):
-    if maks is None: maks = MAKS_SAKER
-    if faller_ut is None: faller_ut = FALLER_UT
-    eksist = []
-    if not er_morgen and os.path.exists(fil):
-        try:
-            with open(fil, encoding="utf-8") as f:
-                eksist = json.load(f)
-        except Exception:
-            pass
-    titlar = {s["tittel"].lower() for s in eksist}
-    kombinert = [s for s in nye if s["tittel"].lower() not in titlar] + eksist
-    if not er_morgen and len(kombinert) >= faller_ut:
-        kombinert = kombinert[:-faller_ut]
-    kombinert = kombinert[:maks]
-    os.makedirs("docs", exist_ok=True)
-    with open(fil, "w", encoding="utf-8") as f:
-        json.dump(kombinert, f, ensure_ascii=False, indent=2)
-    return kombinert
-
 # ── HTML-bygging ──────────────────────────────────────────────────────────────
 COLORS  = ["#FEF9C3","#DBEAFE","#DCFCE7","#FCE7F3","#F3E8FF","#FFEDD5",
            "#FEF3C7","#E0F2FE","#F0FDF4","#FDF2F8","#F5F3FF","#FFF7ED",
@@ -587,14 +566,7 @@ def build_html(nasjonal, lokal, spel, kino, vaer):
 # ── Hovudprogram ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     now = datetime.now()
-    er_morgen = now.hour < 9
-    er_middag = 9 <= now.hour < 15
-    # Ved manuell køyring (workflow_dispatch) køyr alltid full oppdatering
-    er_manuell = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
-    if er_manuell:
-        er_morgen = False
-        er_middag = True
-    print(f"Køyring kl. {now.strftime('%H:%M')} – {'manuell' if er_manuell else 'morgen' if er_morgen else 'middag' if er_middag else 'kveld'}")
+    print(f"Køyring kl. {now.strftime('%H:%M')}")
 
     print(f"Hentar vêr for {STD_STAD}...")
     vaer = hent_vaer()
@@ -603,47 +575,32 @@ if __name__ == "__main__":
     nat_rss = hent_rss(RSS_NASJONAL)
     print(f"  → {len(nat_rss)} artiklar")
     print("Skriv om nasjonale nyhende...")
-    nye_nat = omskriv(nat_rss, antall=NYE_PER_RUNDE + BUFFER)
-    if not nye_nat:
-        print("  Første forsøk feila, prøver med færre saker...")
-        nye_nat = omskriv(nat_rss[:12], antall=6)
-    nasjonal = oppdater_saker((nye_nat or [])[:NYE_PER_RUNDE], SAKER_FIL_NAT, er_morgen)
-    print(f"  → {len(nasjonal)} saker totalt")
+    nasjonal = omskriv(nat_rss, antall=SAKER_NAT) or omskriv(nat_rss[:12], antall=6)
+    nasjonal = (nasjonal or [])[:SAKER_NAT]
+    os.makedirs("docs", exist_ok=True)
+    print(f"  → {len(nasjonal)} saker")
 
     print("Hentar RSS – lokalt...")
     lok_rss = hent_rss(RSS_LOKAL)
     print(f"  → {len(lok_rss)} artiklar")
     print("Skriv om lokale nyhende...")
-    nye_lok = omskriv(lok_rss, antall=NYE_PER_RUNDE + BUFFER)
-    if not nye_lok:
-        print("  Første forsøk feila, prøver med færre saker...")
-        nye_lok = omskriv(lok_rss[:12], antall=6)
-    nye_lok = fjern_duplikatar(nye_lok or [], nye_nat or [])
-    lokal = oppdater_saker(nye_lok[:NYE_PER_RUNDE], SAKER_FIL_LOK, er_morgen)
-    print(f"  → {len(lokal)} saker totalt")
+    lokal = omskriv(lok_rss, antall=SAKER_LOK) or omskriv(lok_rss[:12], antall=6)
+    lokal = fjern_duplikatar(lokal or [], nasjonal or [])[:SAKER_LOK]
+    print(f"  → {len(lokal)} saker")
 
-    if er_morgen or er_middag:
-        print("Hentar RSS – spel & sport...")
-        spel_rss = hent_rss(RSS_SPEL, maks_per_kilde=5)
-        print(f"  → {len(spel_rss)} artiklar")
-        print("Skriv om spel & sport...")
-        nye_spel = omskriv(spel_rss, antall=NYE_SPEL, prompt_mal=SPEL_PROMPT)
-        spel = oppdater_saker(nye_spel or [], SAKER_FIL_SPEL, er_morgen, maks=MAKS_SPEL, faller_ut=4)
-        print(f"  → {len(spel)} saker totalt")
+    print("Hentar RSS – spel & sport...")
+    spel_rss = hent_rss(RSS_SPEL, maks_per_kilde=5)
+    print(f"  → {len(spel_rss)} artiklar")
+    print("Skriv om spel & sport...")
+    spel = omskriv(spel_rss, antall=SAKER_SPEL, prompt_mal=SPEL_PROMPT) or []
+    spel = spel[:SAKER_SPEL]
+    print(f"  → {len(spel)} saker")
 
-        print("Hentar kinofilmar frå TMDB...")
-        rå_kino = hent_kinofilmar()
-        print(f"  → {len(rå_kino)} filmar")
-        kino = omskriv_kino(rå_kino)
-        kino = kino[:MAKS_KINO]
-        os.makedirs("docs", exist_ok=True)
-        with open(SAKER_FIL_KINO, "w", encoding="utf-8") as f:
-            json.dump(kino, f, ensure_ascii=False, indent=2)
-        print(f"  → {len(kino)} kinofilmar klare")
-    else:
-        spel = json.load(open(SAKER_FIL_SPEL, encoding="utf-8")) if os.path.exists(SAKER_FIL_SPEL) else []
-        kino = json.load(open(SAKER_FIL_KINO, encoding="utf-8")) if os.path.exists(SAKER_FIL_KINO) else []
-        print(f"  → Kveld: brukar {len(spel)} spelsaker og {len(kino)} kinofilmar frå middag")
+    print("Hentar kinofilmar frå TMDB...")
+    rå_kino = hent_kinofilmar()
+    print(f"  → {len(rå_kino)} filmar etter filtrering")
+    kino = omskriv_kino(rå_kino)[:SAKER_KINO]
+    print(f"  → {len(kino)} kinofilmar klare")
 
     html = build_html(nasjonal, lokal, spel, kino, vaer)
     os.makedirs("docs", exist_ok=True)
