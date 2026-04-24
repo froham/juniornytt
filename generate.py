@@ -202,17 +202,22 @@ def hent_kinofilmar():
                         if cert:
                             aldersgrense = cert
                             break
-            # Berre filmar for alle eller maks 6 år
-            if aldersgrense not in ["A", "6", ""]:
+            # Berre filmar med aldersgrense maks 11 år
+            if aldersgrense not in ["A", "6", "7", "9", "10", "11", ""]:
                 print(f"  Filtrert bort ({aldersgrense} år): {film.get('title')}")
                 continue
-            # Dobbeltsjekk – aldri over 8 år
             try:
-                if aldersgrense.isdigit() and int(aldersgrense) > 6:
+                if aldersgrense.isdigit() and int(aldersgrense) > 11:
                     print(f"  Filtrert bort ({aldersgrense} år): {film.get('title')}")
                     continue
             except Exception:
                 pass
+            filmar.append({
+                "tittel": film.get("original_title", "") or film.get("title", ""),
+                "norsk_tittel": film.get("title", ""),
+                "oversikt": film.get("overview", "")[:300],
+                "aldersgrense": aldersgrense or "A",
+            })
             filmar.append({
                 "tittel": film.get("title", ""),
                 "oversikt": film.get("overview", "")[:300],
@@ -268,10 +273,11 @@ KINO_PROMPT = """Du er redaktør for JuniorNytt si kino-seksjon for barn mellom 
 
 Skriv ein kort og engasjerande presentasjon av kvar film på nynorsk. Fang nysgjerrigheita til barnet!
 
-VIKTIG – hopp over filmar som:
-- Er ukjente utanfor heimlandet sitt og lite relevante for norske barn
-- Verkar uinteressante eller framande for målgruppa
-- Er på eit framandt språk utan norsk teksting
+VIKTIG:
+- Bruk ALLTID originaltittelen på filmen – ikkje omset han
+- Viss filmen har ein kjend norsk tittel, kan du nemne han i parentes
+- Hopp over filmar som er lite relevante for norske barn
+- Ikkje omset filmtitlar
 
 Reglar:
 - Nynorsk Sunnmøre-stil
@@ -326,7 +332,7 @@ def omskriv_kino(filmar):
     if not filmar:
         return []
     tekst = "\n\n".join(
-        f"Tittel: {f['tittel']}\nAldersgrense: {f['aldersgrense']}\nHandling: {f['oversikt']}"
+        f"Originaltittel: {f['tittel']}\nNorsk tittel: {f.get('norsk_tittel','')}\nAldersgrense: {f['aldersgrense']}\nHandling: {f['oversikt']}"
         for f in filmar
     )
     prompt = KINO_PROMPT.format(filmar=tekst)
@@ -588,7 +594,12 @@ if __name__ == "__main__":
     now = datetime.now()
     er_morgen = now.hour < 9
     er_middag = 9 <= now.hour < 15
-    print(f"Køyring kl. {now.strftime('%H:%M')} – {'morgen' if er_morgen else 'middag' if er_middag else 'kveld'}")
+    # Ved manuell køyring (workflow_dispatch) køyr alltid full oppdatering
+    er_manuell = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+    if er_manuell:
+        er_morgen = False
+        er_middag = True
+    print(f"Køyring kl. {now.strftime('%H:%M')} – {'manuell' if er_manuell else 'morgen' if er_morgen else 'middag' if er_middag else 'kveld'}")
 
     print(f"Hentar vêr for {STD_STAD}...")
     vaer = hent_vaer()
