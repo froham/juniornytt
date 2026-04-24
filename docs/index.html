@@ -55,24 +55,25 @@
   .ord-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:8px}
   .ord-item{font-size:.85rem;color:#374151;margin-bottom:4px}
   .ord-item strong{color:#1f2937}
-  .foreldre-knapp{display:flex;align-items:center;gap:8px;max-width:720px;margin:8px auto 0;padding:0 20px;cursor:pointer;width:fit-content}
+  .foreldre-knapp{display:inline-flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;padding:8px 16px;background:rgba(255,255,255,.15);border-radius:99px;border:1px solid #e5e7eb}
   .foreldre-knapp span{font-size:.75rem;color:#9ca3af}
-  .toggle{width:36px;height:20px;background:#d1d5db;border-radius:99px;position:relative;transition:.2s;cursor:pointer}
+  .toggle{width:36px;height:20px;background:#d1d5db;border-radius:99px;position:relative;transition:.2s}
   .toggle.on{background:#3b82f6}
   .toggle::after{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
   .toggle.on::after{left:18px}
   .les-meir{font-size:.72rem;color:#6b7280;text-decoration:none;opacity:.8;transition:.2s;display:none}
   .les-meir:hover{opacity:1;color:#3b82f6}
-  .lenker-på .les-meir{display:inline}
+  body.lenker-på .les-meir{display:inline}
   footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:1.8}
   @media(max-width:480px){header h1{font-size:2rem}}
 </style>
 <script>
   function toggleLenker() {
     const toggle = document.getElementById('toggle');
+    const tekst = document.getElementById('foreldre-tekst');
     const on = toggle.classList.toggle('on');
     document.body.classList.toggle('lenker-på', on);
-    toggle.previousElementSibling.textContent = on ? '🔓 Foreldremodus' : '🔒 Foreldremodus';
+    tekst.textContent = on ? '🔓 Foreldremodus' : '🔒 Foreldremodus';
   }
   const SRC = {
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
@@ -96,7 +97,7 @@
   <div class="dato">Fredag 24. april 2026</div>
   <div class="sub">Nyhende på nynorsk for deg mellom 8 og 12 år – nye saker vert publisert kl. 07.00, 12.00 og 19.00 kvar dag.</div>
   <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ei privat, ikkje-kommersiell barneside og er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
-  <div class="oppdatert">Oppdatert kl. 13:38</div>
+  <div class="oppdatert">Oppdatert kl. 13:44</div>
   <div class="vaer-boks">
       <div class="vaer-no">
         <span class="vaer-symbol">🌧️</span>
@@ -115,7 +116,7 @@
       <span class="dag-namn">Sun</span>
       <span class="dag-emoji">⛅</span>
       
-      <span class="dag-temp"><span class="dag-maks">6°</span><span class="dag-min">4°</span></span>
+      <span class="dag-temp"><span class="dag-maks">6°</span><span class="dag-min">3°</span></span>
     </div><div class="dag">
       <span class="dag-namn">Man</span>
       <span class="dag-emoji">⛅</span>
@@ -144,202 +145,202 @@
 
 <main>
   <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
       <div class="card-emoji">🐋</div>
-      <h3>Hvithvalen i Drammenselva treng hjelp til å kome seg tilbake til havet</h3>
-      <p>Ein kvit hval har vorte observert i Drammenselva ved Drammen. Dyret er langt frå sitt naturlege område og treng å kome seg tilbake til havet. I helga skal det vera ei stor båtregatta på elva, og ekspertar er redde for at hvithvalen kan bli skremdd eller koma i vegen for båtane. Då kan det bli vanskeleg å få dyret tryggt ut på havet igjen. Hvithvalar lever normalt i iskaldt vatn langt nord, så det er uvanleg å sjå dei så langt sør i Noreg. Spesialistane håpar at hvithvalen sjølv vil finne vegen ut på havet innan båtane kjem.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>regatta:</strong> ein stor båtkappseiling eller båtfestival</div></div>
+      <h3>Hvithvalen i elva treng hjelp til å kome seg ut</h3>
+      <p>Ein hvithval har dukka opp i Drammenselva, og det kan bli problematisk viss han vil tilbake til havet snart. Det er fordi det er planlagt ein stor båtkappleik på elva i helgen, med mange båtar og menneske. Dersom hvithvalen prøver å svømme ut då, kan han kome i vegen for båtane. Fagfolk arbeider no med å finne den beste løysinga for å hjelpe dyret.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>regatta:</strong> ein båtkappleik der mange båtar konkurrerer mot kvarandre</div></div>
       <span class="kilde">📰 NRK · 24. Apr 2026 kl. 12:02</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🌍</div>
-      <h3>Ny værtilstand El Niño kan endra vêret rundt heile verden</h3>
-      <p>Vêrekspertar åtvarar om at det kan koma ein kraftig værfenomen som heiter El Niño i år. El Niño er ei naturleg tilstand der varmt vatn i Stillehavet gjer at vêret blir annleis på mange stader rundt jordkloten. Det kan bety tørkesutetter nokre område og mykje regn i andre. Organisasjonen som måler vêret over heile verden seier at vi bør bu oss på at vêret kan bli uvanleg i året som kjem. Denne El Niño kan bli ekstra sterk, noko som betyr at mange menneske rundt omkring kan oppleve uvanleg vêr.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>El Niño:</strong> eit naturleg værfenomen som påverkar vêret rundt heile verden</div></div>
-      <span class="kilde">📰 TV2</span>
-    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">⛷️</div>
-      <h3>Emil Iversen skal satse vidare i langrenn og vil bli endå betre</h3>
-      <p>Langrennsløparen Emil Iversen (han er 34 år og ein av Noregs beste skiløparar) har endeleg gjort opp si meining. Han skal halda fram med langrenn og satsa på verdsmeisterskapen som skal verta arrangert seinare. Iversen har vore usikker på om han skulle halda fram eller slutta i idretten, men no er han sikker på sitt val. Han seier at han ynskjer å bli endå meir «syk i hodet» av langrenning – det betyr at han skal trena hardare og vere endå meir fokusert enn før.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>langrenn:</strong> skiidrett der ein løper lange strekningar i terrenget</div></div>
-      <span class="kilde">📰 VG · 24. Apr 2026 kl. 13:18</span>
-    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🚂</div>
-      <h3>Togbanesporet ved Drammen vert reparert etter brann</h3>
-      <p>Det var brann ved jernbanebanesporet mellom Holmestrand og Drammen på fredag. Brannvesenet rykka ut og fekk kontroll over brannen. Togtrafikken vart stansa medan brannen blei slokka, men banen opna igjen same dag rundt klokken 15. Passasjerar som skulle ta tog måtte venta litt ekstra, men heldigvis vart problemet løyst raskt. No går toget normalt igjen på strekninga.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jernbanebanesporet:</strong> dei skinnene som toget køyrer på</div></div>
-      <span class="kilde">📰 NRK · 24. Apr 2026 kl. 12:35</span>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🏛️</div>
-      <h3>Asbest funne i rådhuset – ansatte send heim</h3>
-      <p>Arbeidarar ved Modum rådhus vart bedt om å forlata bygget då farleg stoff som heiter asbest vart funne der. Asbest er eit stoff som kan gjera folk sjuke viss dei pustar det inn over lang tid. Når asbest blir funne, må ein vera veldig forsiktig og ta det ut på rett måte. Rådhuset blir no reinsa og asbesten blir fjerna av fagfolk som kan gjera det trygt. Arbeidarane kan hoppa att når bygget er trygt igjen.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>asbest:</strong> eit farleg stoff som kan gjera folk sjuke viss det blir andpussa</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">🏢</div>
+      <h3>Asbest funne i rådhuset – arbeidarar måtte forlate bygget</h3>
+      <p>Arbeidarane ved Modum rådhus har fått beskjed om å forlate bygget etter at det vart oppdaga asbest der. Asbest er eit stoff som kan vere farleg for helsen viss det kjem inn i lufta. No må fagfolk sjekke bygget nøye og renske det. Asbest vart brukt i mange gamle bygningar fordi folk ikkje visste kor farleg det var på den tida.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>asbest:</strong> eit farleg stoff som vart brukt i gamle bygningar</div></div>
       <span class="kilde">📰 NRK · 24. Apr 2026 kl. 13:00</span>
-    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">💻</div>
-      <h3>Microsoft sitt operativsystem Windows får konkurranse frå Linux</h3>
-      <p>Fleire menneske vel no å køyra Linux på bærbare PC-ar i staden for Windows, som er det operativsystemet dei fleste brukar. Et selskap som heiter Framework lagar nye bærbare PC-ar med Linux, og dei sel betre enn dei hadde venta. Linux er gratis, medan Windows kostar pengar. Linux er òg eit operativsystem som mange syn på som meir sikkert. Det viser at folk ynskjer fleire val når dei kjøper PC, og ikkje berre det gamle som alle brukar.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>operativsystem:</strong> programmet som får PC-en til å fungera</div><div class="ord-item"><strong>Linux:</strong> eit gratis operativsystem som står i motsetnad til Windows</div></div>
-      <span class="kilde">📰 VG · 24. Apr 2026 kl. 13:13</span>
-    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🚄</div>
-      <h3>Dei nye toget for Oslo blir forseinka endå meir</h3>
-      <p>Nye tog som skal gå i Oslo-området blir no forseinka enda lenger enn før. Ein feil som vart oppdaga i haust gjer at byggjeprosessen tar lengre tid enn planlagt. Mange menneske som køyrer tog kvar dag til jobb eller skule må venta lenger på at dei nye og betre toget skal koma. Når dei nye toget endelig kjem, skal dei vere betre for miljøet og meir komfortable for alle som reiser med tog.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>forseinka:</strong> når noko tar lengre tid enn planlagt</div></div>
-      <span class="kilde">📰 TV2 · 24. Apr 2026 kl. 13:18</span>
-    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🛡️</div>
-      <h3>Soldatar øver på å forsvara Noreg mot digitale angrep</h3>
-      <p>Tusenvis av norske soldatar øver på korleis dei skal forsvara Noreg mot digitale angrep frå fiendar. Dei sit ved PC-ar og simulerer slag som skjer bak skjermane. Det som hender digitalt kan vera like farleg som eit vanleg militært angrep. Hvis nokon angrip Noreg digitalt, kan det ikkje berre verta teknisk problem – det kan påverka sjukhus, kraftsystema og andre viktige ting som folk treng. Derfor er det viktig å trena og sjølv finne og retta feil som kan gjera Noreg sårbar (lettangripe).</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>digitale angrep:</strong> når nokon prøver å skada eller ta kontroll over datasystema våre</div><div class="ord-item"><strong>sårbar:</strong> lett å skada eller angripa</div></div>
+    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">🚂</div>
+      <h3>Togtrafikkens bane er open att etter brann</h3>
+      <p>Togane mellom Holmestrand og Drammen kunne endeleg køyre att etter ein brann ved jernbanesporet. Ein brann på eller nær jernbanen gjer det usikkert å køyre tog, så stasjonane måtte stengje medan brannen vart slokkt. No går alt tilbake til det normalt, og folk kan ta toget sitt som vanleg igjen.</p>
+      
+      <span class="kilde">📰 NRK · 24. Apr 2026 kl. 12:35</span>
+    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">⛷️</div>
+      <h3>Emil Iversen held fram med langrennsløping</h3>
+      <p>Langrennsløparen Emil Iversen (34) har endeleg bestemt seg: han skal halde fram med å løpe på topp nasjonalt og internasjonalt nivå. I lang tid var han usikker på om han skulle halde fram eller slutta, men no seier han ja til fleire år som profesjonell idrettsutøvar. Iversen planlegg no å satse mot VM og andre store arrangement.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>langrennsløping:</strong> skisport der ein løper lange distansar på flat eller lite bratt terreng</div></div>
+      <span class="kilde">📰 Aftenposten · 24. Apr 2026 kl. 13:18</span>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">🌍</div>
+      <h3>Vêret kan bli annleis over heile verden – meteorologar advarer</h3>
+      <p>Meteorologane (vêrfagfolk) forventar at eit kraftig vêrfenomen kalla El Niño kan utvikle seg i år. El Niño er når varmt vatn i havet påverkar vêret rundt omkring på jordkloden. Det kan gi ekstremvêr som sterk regn, torke og uventa temperaturar på mange stadar. Vêrfagfolk over heile verda skal følgje nøye med på om dette skjer.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>El Niño:</strong> eit vêrfenomen som skjer når varmt vatn i Stillehavet påverkar vêret på jordkloden</div></div>
       <span class="kilde">📰 TV2</span>
-    </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">📈</div>
-      <h3>Intel-selskapet seljar betre enn ventet og Wall Street blir glad</h3>
-      <p>Intel, som er eit stort selskap som lagar datastoff og datakrefter, hadde eit oppmuntrande resultat når dei slapp tal på korleis det gjekk økonomisk. Dei selde meir og tente meir pengar enn det mange trua dei ville. Wall Street er namn på børsen i Amerika der folk handlar aksjar (smådelar av selskap). Folk som handlar aksjar blir gladeleg når selskap gjer det bra og leverer betre resultat enn forventa. Intel seier òg at det skal gå betre framover.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>aksjar:</strong> små delar av eit selskap som folk kan kjøpa</div></div>
+    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">🚆</div>
+      <h3>Nye tog blir enno meir forseinka</h3>
+      <p>Dei nye toga som skulle køyre i Oslo-området må vente endå litt lenger. Arbeidarane oppdaga ein feil på togane i haust, og no må dei fiksa ho før toga kan køyre med passasjerar. Det er irriterande for alle som venta på desse nye og fine toga, men det er viktig at alt er trygt og fungerer før dei startar å køyre.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>forseinka:</strong> når noko tar lengre tid enn det som var planlagt</div></div>
+      <span class="kilde">📰 TV2 · 24. Apr 2026 kl. 13:18</span>
+    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">💻</div>
+      <h3>Intel-selskapet gleder investorane med gode tal</h3>
+      <p>Tech-selskapet Intel gav beskjed om at dei gjorde det betre enn mange venta. Dei legg også fram planer som ser lovande ut for den neste perioden. Dette gleda folk som har pengar i selskapet (investorar), så aksjeverdien gjekk opp. Intel er eit stort selskap som lagar brikker til datamaskiner og andre elektroniske ting.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>investorar:</strong> menneske som gir pengar til selskap og venter å få meir pengar att</div></div>
       <span class="kilde">📰 VG · 24. Apr 2026 kl. 13:32</span>
-    </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">⌨️</div>
+      <h3>Fleire menneske vel Linux framfor Windows</h3>
+      <p>Det blir fleire og fleire som vel operativsystemet Linux når dei kjøper nye bærbare datamaskiner. Framework, eit selskap som lagar datamaskiner, sel fleire datorar med Linux enn dei venta. Linux er gratis og gir folk stor fridom til å gjere det dei vil med datamaskinen sin, og det likar mange.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>operativsystem:</strong> programvare som gjer at datamaskinen fungerer</div></div>
+      <span class="kilde">📰 VG · 24. Apr 2026 kl. 13:13</span>
+    </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
       <div class="card-emoji">🌱</div>
-      <h3>Finansminister meiner avgiftskutt på CO₂ bryt reglane</h3>
-      <p>Finansminister Jens Stoltenberg frå Arbeiderpartiet meiner at Stortinget sitt vedtak om å senka avgifta på CO₂ sannsynlegvis bryt reglane for statsstøtte. CO₂ er ein gass som gjer klimaet varmere, og avgift på det skal få folk til å bruka mindre fossilt brensel. Stoltenberg seier at viss staten gjer det billegare å bruka fossilt brensel, bryt dei EU-reglane. Det er viktig fordi det handlar om korleis vi skal passe på miljøet vårt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>CO₂-avgift:</strong> ekstra kostnad på ting som forureinar og skadar klimaet</div><div class="ord-item"><strong>statsstøtte:</strong> når staten gjev pengar til selskap eller aktivitetar</div></div>
+      <h3>Finansminister: Avgiftskutt er sannsynlegvis ulovleg</h3>
+      <p>Finansminister Jens Stoltenberg (fra Arbeiderpartiet) meiner at Stortinget gjorde noko som truleg ikkje er tillate når dei kutta CO₂-avgiften. CO₂-avgiften er pengar folk må betale når dei lagar forureining, og avgiften skal hjelpe til å redusere forureining. Stoltenberg seier at å kutte denne avgiften utan god grunn bryt internasjonale reglar om statsstøtte.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>CO₂-avgift:</strong> pengar folk og bedrifter må betale for å forureine miljøet</div><div class="ord-item"><strong>statsstøtte:</strong> når staten gir pengar eller fordelar til bedrifter eller folk</div></div>
       <span class="kilde">📰 TV2 · 24. Apr 2026 kl. 10:02</span>
+    </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
+      <div class="card-meta"><span class="tidspunkt">🕐 13:43</span></div>
+      <div class="card-emoji">🛡️</div>
+      <h3>Soldatar øver på å verje Norge mot cyberangrep</h3>
+      <p>Tusenvis av soldatar øver på å forsvare Norge mot angrep på datamaskiner og internett. Desse "cyberangreparena" kan vere farleg fordi ein kan hacke viktige system og skade samfunnet. NSM (Nasjonal sikkerheitsmyndighet) seier at Norge må gjere det vanskeleg for menneske som vil gjere skade, ved å reparere så mange "hull" og svakheiter som mogleg i systemane våre.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cyberangrep:</strong> angrep på datamaskiner og internett frå fiendar</div><div class="ord-item"><strong>hacke:</strong> å bryte seg inn i datamaskiner ulovleg</div></div>
+      <span class="kilde">📰 TV2</span>
     </div></div>
   <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">🏪</div>
-      <h3>Ukrainere opnar eigen butikk i Ulsteinvik</h3>
-      <p>Daria og Nazar flykta frå Ukraina til Noreg i 2023 og har no opna si eiga butikk i Ulsteinvik. Dei sel gode råvarer og bryggeutstyr. Paret har jobba hardt for å byggje opp att liva sitt etter å ha kome til Noreg, og no ønskjer dei å dele det dei likar best med andre.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bryggeutstyr:</strong> redskap og ting ein treng for å lage øl eller kaffe</div></div>
-      <span class="kilde">📰 Sunnmørsposten / Vikebladet · 24. Apr 2026 kl. 06:45</span>
+      <h3>Ukrainarar opnar eigen butikk i Ulsteinvik</h3>
+      <p>Daria og Nazar flykta frå Ukraina til Noreg i 2023 og har no bygt opp att liva sine. Dei satsar på eigen butikk med fokus på gode råvarer og bryggeutstyr. Butikken deira skal hjelpe folk som vil lage sitt eige øl heime. Det er ein fin historie om korleis folk kan starte på nytt i eit nytt land og skape noko bra.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bryggeutstyr:</strong> utstyr du brukar når du skal lage øl sjølv</div></div>
+      <span class="kilde">📰 Sunnmørsposten og Vikebladet · 24. Apr 2026 kl. 06:45</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">📚</div>
-      <h3>Mange søkjarar til vikarstillingar ved ungdomsskule</h3>
-      <p>Heile 36 personar har søkt på to vikarstillingar ved Sykkylven ungdomsskule. Det er mange som ønskjer å arbeide på skulen! Vikarstillingar er jobbar for kortare tid når nokon annan er sjuk eller borte.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>vikarstilling:</strong> midlertidig jobb når nokon er borte</div></div>
+      <h3>Mange søkjarar til vikaristar på ungdomsskule</h3>
+      <p>Heile 36 personar søkte på to vikarstillingar ved Sykkylven ungdomsskule. Det er veldig mange søkjarar på så få jobb! Det viser at mange ønskjer å arbeide på skulen og hjelpe barn med undervisninga. Å vere vikar betyr å arbeide ei eller fleire veker på ein plass og så slutte igjen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>vikarstilling:</strong> ei midlertidig jobb som du arbeider ein kortare tid</div></div>
       <span class="kilde">📰 Sunnmørsposten · 24. Apr 2026 kl. 12:52</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">🐴</div>
-      <h3>Lokale ryttarar viser seg fram på hesteryggen</h3>
-      <p>Ryttarar og islandshestar frå området møttest til klubbmeisterskapet til Vestnes Islandshestforening. Det var ei fin stelling der mange visste at dei kunne både ri godt og passe seg sjøl. Islandshestar er små og sterke hestar som kjem opphavleg frå Island.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>islandshest:</strong> ei lita og sterk hesetype frå Island</div></div>
+      <h3>Lokale ryttarar glimra på islandshestane</h3>
+      <p>Lokale ryttarar og islandshestar viste seg positivt fram under klubbmeisterskapet til Vestnes Islandshestforening. Islandshestar er små, sterke hestar som er veldig gode til å springe og hoppa. Det var spennande å sjå korleis ryttarane og dei flinke hestane jobba saman. Dei som deltok må ha trent mykje for å vera så god!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>islandshest:</strong> ei rasehest som kommer frå Island og er kjend for å vere liten og sterk</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">⛴️</div>
-      <h3>Kystruten hadde betre tal enn året før</h3>
-      <p>Havila Kystruten melder om god vekst. Fleire menneske reiste med båten, og det vart sendt meir gods (tunge ting) enn i 2024. Det er gledeleg for dei som arbeiter med ferjer og båtturar på Vestlandet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>gods:</strong> tunge eller store ting som skal transporterast</div></div>
-      <span class="kilde">📰 Vestlandsnytt · 24. Apr 2026 kl. 13:07</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">🏔️</div>
+      <h3>Folk kjem ut i frisk luft – ny rekord!</h3>
+      <p>Stikk UT! Vinter har sett ny rekord i Møre og Romsdal, og mange folk i Herøy og Sande har teke turen ut i naturen gjennom vinteren. Fleire og fleire skjønar kor kjempe-viktig det er å vere ute i frisk luft og røre seg, sjøl når det er kaldt. Det er veldig bra for kroppen og sinnet å stranda ut i snø, fjell og natur!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>rekord:</strong> det høgste eller beste resultatet som nokon har oppnådd</div></div>
+      <span class="kilde">📰 Vestlandsnytt · 24. Apr 2026 kl. 08:30</span>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🤧</div>
-      <h3>Mange har vorte sjuke av virus dei siste vekene</h3>
-      <p>Mange personar lokalt har vorte sjuke av virussjukdomar i den siste tida. Nokre fekk det så alvorleg at dei måtte på sjukehus. Det er viktig å vaske hendene og vere hygieinisk når ein er sjuk, så ikkje andre får det same.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>virus:</strong> små skadedyr som kan gjere deg sjuk</div></div>
-      <span class="kilde">📰 Sunnmørsposten · 24. Apr 2026 kl. 13:07</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">⛴️</div>
+      <h3>Havila Kystruten veks og veks</h3>
+      <p>Havila Kystruten hadde ein markant auke både i talet på distansepassasjerar og godsmengda frå 2024 til 2025. Det betyr at fleire folk reiser med dei båtane langs kysten vår! Fleire folk som vil sjå den vakre norskekysten, og fleire ting som skal fraktast til og frå stader. Det er kjempegodt for arbeidsstader og besøkjarar.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>distansepassasjerar:</strong> folk som reiser lange strekningar med båt</div><div class="ord-item"><strong>markant auke:</strong> ein merkeleg og stor auke</div></div>
+      <span class="kilde">📰 Vestlandsnytt · 24. Apr 2026 kl. 13:07</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">⛷️</div>
-      <h3>Stikk UT! sette ny rekord i Møre og Romsdal</h3>
-      <p>Stikk UT! Vinter har sette ny rekord i Møre og Romsdal. Mange menneske i Herøy og Sande har teke turen ut i frisk luft gjennom den kalde årstida. Det er bra at folk likar å vere ute og røre på seg òg når det er kaldt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Stikk UT!:</strong> ein konkurranse der folk tel kor mange gonger dei er ute i naturen</div></div>
-      <span class="kilde">📰 Vestlandsnytt</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">⛵</div>
+      <h3>Sommartaksen for ferje kjem snart</h3>
+      <p>I sommarmånadene er det dyrare å ta ferje. Det er fordi fleire folk reiser og ferja har meir arbeid i den fine tida. Viss du skal ta ferje i sommar, må du kanskje planlegga litt meir og rekna med at det kostar meir. Det er som når det er mange folk på ki­nosal – billettane kostar gjerne meir!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sommartaksen:</strong> høgare pris på ferje i sommarmånadene</div></div>
+      <span class="kilde">📰 Vikebladet · 24. Apr 2026 kl. 08:30</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">🎓</div>
-      <h3>Ny sjef på Møreakademiet</h3>
-      <p>Møreakademiet i Hødd har tilsett ein ny sjef. Han heiter Tarjei Smågesjø og får no eit stort ansvar. Møreakademiet er ein skule som underviser ungdomar i fagfelt som teknikk og praktisk arbeid.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>akademi:</strong> ein skule eller læreinstitusjon</div></div>
+      <h3>Ny sjef for Møreakademiet i Hødd</h3>
+      <p>Møreakademiet i Hødd har tilsett ny sjef. Han heiter Tarjei Smågesjø og får eit stort ansvar. Han skal leie ein viktig skule som hjelper unge menneske med å lære fag og finna rette karriæreveg. Det er ein stor jobb å vere sjef for ein heile skule, men Tarjei er no klar for oppgåva.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>akademi:</strong> ei læringsinstitusjon der folk lærer fag og praktiske kunnskapar</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🚢</div>
-      <h3>Sommartaksten for ferjer kjem snart</h3>
-      <p>Når sommar kjem, blir det dyrare å ta ferje. I sommarmånadene må du betale meir for å reise med båt. Det er fordi mange fleire menneske reiser i ferien, så ferjeselskapane treng meir pengar for å køyre alle.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>takst:</strong> pris eller kostnad for å reise</div></div>
-      <span class="kilde">📰 Vikebladet · 24. Apr 2026 kl. 08:30</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">⚡</div>
+      <h3>Hareid Group får ny maritim kontrakt</h3>
+      <p>Hareid Group har signert avtale om levering av komplette elektroinstallasjonar til eit nytt fartøy frå Larsnes Mek. Verksted. Det er fordi Hareid Group er veldig dyktig på elektrikk og utstyr som skal i båtar. Når dei får slike store oppdrag, betyr det at fleire folk kan få arbeid og at bedrifta veks. Det er bra for heile området vårt!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>elektroinstallasjoner:</strong> all den elektriske utstyra og ledningane som er i ein båt</div><div class="ord-item"><strong>fartøy:</strong> ei båt eller skip</div></div>
+      <span class="kilde">📰 Vikebladet og Vestlandsnytt</span>
     </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">⚽</div>
-      <h3>Sande FK fekk tøff start i 5.-divisjon</h3>
-      <p>Etter ein bra start i 5.-divisjon vart det vanskeleg for Sande FK då dei gjekk borte mot Giske torsdag kveld. Fotballen kan vere uforutsigbar – nokre gonger går det bra, andre gonger går det dårlegare. Laget skal no arbeide for å bli sterkare.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>5.-divisjon:</strong> ein av dei lågare divisjonane i norsk fotball</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">🏗️</div>
+      <h3>Folk oroa seg for brakkeriggane i Dragsund</h3>
+      <p>Under eit folkemøte har mange folk uttrykt uro for dei planlagde brakkeriggane i Dragsund. Dei er redde for at det kan påverka skulemiljøet, trafikken, bustadområda og tryggleiken. Når det skal byggast noko nytt som passar ikkje alle, er det viktig å høyre kva folk meiner. Kommunen må lytte til bekymringane og prøva å finne ei løysing som passar for alle.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>brakkeriggar:</strong> store mobile bygningar som blir brukte midlertidig</div></div>
       <span class="kilde">📰 Vestlandsnytt</span>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🚧</div>
-      <h3>Byggearbeid på Lerstad skapar bekymring</h3>
-      <p>Fleire steiner skal ha falle ned under byggearbeid på Lerstad dei siste vekene. Ein stein skal ha øydelagd både ei terrasse og ei sandkasse. Nokre er no uroa for sikkerheten og held kommunen ansvarleg. Kommunen må sjekke at byggearbeidet blir gjort trygt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ansvarleg:</strong> den som skal passe på eller ordne noko</div></div>
-      <span class="kilde">📰 Sunnmørsposten</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">⚽</div>
+      <h3>Sande FK fekk tøff kamp mot Giske</h3>
+      <p>Etter ein flott start i 5.-divisjon vart det tøft for Sande FK då dei spelte borte mot Giske på torsdag kveld. Fotballen er som det – nokre gonger vinn du og nokre gonger mister du. Det viktigaste er at dei held fram med å trena hardt og stiller opp for laget sitt. Alle fotballag har både gode og mindre gode dagar!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>5.-divisjon:</strong> ei fotballkamp-serie på eit viss nivå</div></div>
+      <span class="kilde">📰 Vestlandsnytt</span>
     </div></div>
   <div class="panel" id="panel-spel"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">⛷️</div>
-      <h3>Emil Iversen skal bli endå meir «sjuk i hovudet» på ski!</h3>
-      <p>Skiløparen Emil Iversen (34) har endeleg bestemt seg! Han skal satse vidare og bli endå betre på ski. Emil seier at han skal bli meir «sjuk i hovudet» – det betyr at han skal vere endå meir fokusert og dedikert. Det er kjempeflott at ein så erfaren løpar ikkje gir seg! Skal vi heie på Emil når han konkurrerer vidare?</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>VM-satsing:</strong> Når ein gjere sitt beste for å vinnne i verdsmesterskapen i ein idrett</div><div class="ord-item"><strong>sjuk i hovudet:</strong> Å vere veldig fokusert og dedikert til noko</div></div>
+      <h3>Emil Iversen skal bli enda meir «sjuk i hovudet» på ski!</h3>
+      <p>Norsk skiløpar Emil Iversen (34) har endeleg bestemt seg! Han skal halde fram med toppidrett og satsa på VM. Emil seier han skal bli enda meir «sjuk i hovudet» – det tyder at han vil øva ekstra mykje og vere super fokusert. Det er kjempeflott at han held fram! Kan du tenkje deg å øva så hardt at du blir så god at du kan konkurrere i VM?</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>VM:</strong> Verdsmeisterskap – den største konkurransen i ein sport</div><div class="ord-item"><strong>toppidretts:</strong> Når du øvar så mykje at du blir ein av dei beste</div><div class="ord-item"><strong>satsa:</strong> Å arbeide hardt for å nå eit mål</div></div>
       <span class="kilde">📰 VG Sport · 24. Apr 2026 kl. 13:18</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🔷</div>
-      <h3>Pokémon Pokopia: Sableye sin gullgraving startar snart!</h3>
-      <p>Kjempeflott nyheit for alle Pokémon-elevar! Neste veke startar den store «Sableye's Gem Hunt»-arrangementet i Pokémon Pokopia. Det betyr at du kan fange og trene Sableye – ein skummel og spennande Pokémon som likar å graveetter gullklinande ting. Arrangementet varer frå 29. april til 14. mai, så du har litt tid til å samle så mange gemar du kan! Skal du delta i jakta?</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Sableye:</strong> Ein Pokémon av skugge- og spøkelses-type som er kjent for å vere mystisk og mørk</div><div class="ord-item"><strong>arrangementet:</strong> Ein spesiell begivenskap i eit spel der du kan få ekstra belønningar og utfordringar</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">👻</div>
+      <h3>Pokémon-eventyr: Sableye leitar etter skattar!</h3>
+      <p>Pokémon Pokopia får eit kjempeflott nytt eventyr! Sableye – ei spøkjefullt Pokémon som likar skattar – skal på gem-jakt frå 29. april. Du kan vinnast kule ting og møte Sableye på ulike stadlar medan du spelar. Dette er ein perfekt grunn til å hoppa inn i Pokémon-verda og søkja etter skattar saman med Sableye!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>eventyr:</strong> Ein spennande historie eller utfordring i eit spel</div><div class="ord-item"><strong>gem:</strong> Edelsteinar eller sjeldan ting du samlast i spelet</div><div class="ord-item"><strong>Pokémon:</strong> Fantastiske skapningar du kan fanga og treina</div></div>
       <span class="kilde">📰 Nintendo Life · 24. Apr 2026 kl. 12:00</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">🐢</div>
-      <h3>Teenage Mutant Ninja Turtles på Switch – og det går bra!</h3>
-      <p>Skjeltpadda-spelet «Teenage Mutant Ninja Turtles: Splintered Fate» er heilt super! Spelet har selt så mange eksemplar at det nådde ein stor milepæl – og no blir det rabatt! Spelet er som ein «Hades-like», som betyr at det liknar på det kjempeflotte spelet Hades. Du slåss med fiender og blir betre og betre for kvar runde. Utviklaren seier at det kjem endå meir spenning snart!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>roguelike:</strong> Ein type spel der du startar på nytt når du fell, men blir sterkare med kvar forsøk</div><div class="ord-item"><strong>milepæl:</strong> Ein viktig framgang eller målpunkt som viser at noko var vellykka</div></div>
+      <h3>Teenage Mutant Ninja Turtles får meir kjempeinnhald!</h3>
+      <p>Det kjempeflotte spelet Teenage Mutant Ninja Turtles: Splintered Fate på Nintendo Switch har selt så mykje at det blir meir innhald! Maktar har sagt at det kjem meir å spela – og dei gjev ein stor rabatt no så det blir billegare for deg. Dette spelet er som eit eventyr der du kjempar deg igjennom nivå, akkurat som i spelet Hades!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>rabatt:</strong> Når noko kostar mindre enn normalt</div><div class="ord-item"><strong>nivå:</strong> Ein del av spelet du må fullføra</div><div class="ord-item"><strong>brawler:</strong> Eit spel der du kjempar mot mange fiendar</div></div>
       <span class="kilde">📰 Nintendo Life</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🧩</div>
-      <h3>Perchang World – puslespelet kjem tilbake med nye utfordringar!</h3>
-      <p>Hugsar du det morsame puslespelet Perchang? No kjem det tilbake som «Perchang World» på Apple Arcade, og det er endå større og flottare enn før! Puslespelet handlar om å få kuler og former til å falla på rett plass. Dei nye nivåa er meir kompliserte og spennande enn før, så det passar perfekt for deg som likar å bryne hjernekraftene dine.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>puslespel:</strong> Eit spel der du må løyse problem og få ting til å passe saman</div><div class="ord-item"><strong>nivå:</strong> Ein del av eit spel som blir vanskeleg for kvar gong du fullfører det</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">🎮</div>
+      <h3>Roblox får nytt sosialt spel – Totopia!</h3>
+      <p>Snart kjem eit nytt spel som heiter Totopia, og det er laga for at du kan spela saman med vennane dine! Totopia er som ein gigantisk stad der du kan møta andre spelarar, byggja ting og ha moro saman. Det minner om Roblox der du og dine vener kan laga eigne eventyr og leika saman når dei kjem neste år.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sosial:</strong> Når du spelar saman med andre menneske</div><div class="ord-item"><strong>hub:</strong> Ein stad der mange samlast og leikar</div><div class="ord-item"><strong>spelar:</strong> Ein person som spelar eit spel</div></div>
       <span class="kilde">📰 Pocket Gamer</span>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🎲</div>
-      <h3>Dicero – det nye terningspelet som er så additivt!</h3>
-      <p>Kjempen Balatro gjorde at mange vart avhengige – og no kjem Dicero! Det er eit spel basert på terningar, lik det gamle spelet Yahtzee frå 1950-åra. I Dicero rullar du terningar og prøver å få dei kombinasjonane som gir flest poeng. Spelet er enkelt å læra, men vanskelig å meistre – akkurat som det beste spelan skal vere!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>additivt:</strong> Så morsomt at du vil spele det igjen og igjen utan å slutte</div><div class="ord-item"><strong>kombinasjon:</strong> Når du set saman fleire ting på ein spesiell måte for å få noko betre</div></div>
-      <span class="kilde">📰 Pocket Gamer</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">🧩</div>
+      <h3>Nyt Pokémon-spelet på Apple Arcade!</h3>
+      <p>Perchang World er eit kjempeflott puslespel som no kjem til Apple Arcade med større og meir spennande nivå! Spelet let deg tenkja og løysa raude puslespel medan du spelar. Det er perfekt for deg som likar å øva hjernene dine og løysa utfordringar – utan tid til å stresse!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>puslespel:</strong> Eit spel der du må løysa oppgåver ved å tenkja</div><div class="ord-item"><strong>Apple Arcade:</strong> Ein teneste der du kan spela mange fine spel</div><div class="ord-item"><strong>nivå:</strong> Ein del av spelet som blir vanskelegare etterhvert</div></div>
+      <span class="kilde">📰 Pocket Gamer · 24. Apr 2026 kl. 12:00</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
-      <div class="card-emoji">🌍</div>
-      <h3>Roblox får ein ny vennskapsstad – Totopia kjem!</h3>
-      <p>Likar du å spele saman med vennane dine online? Då passar Totopia perfekt for deg! Det er ei ny plattform som kjem til mobilen neste år, og det er heilt fokusert på å spele med venner. I Totopia kan du byggja, utforske og ha det kjempemorsomt saman med andre spelarar frå heile verda. Det blir som ein større og betre utgåve av Roblox!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>plattform:</strong> Ein stad på datamaskina eller mobilen der du kan spele mange ulike spel</div><div class="ord-item"><strong>online:</strong> Når du er kopla til internett og spelar med andre folk på andre stader</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
+      <div class="card-emoji">⚔️</div>
+      <h3>Monster Hunter kjem til mobilen din!</h3>
+      <p>Monster Hunter – eit kjempefrekt spel der du jagarFantastiske skapningar – får si andre prøveversjon snart! Dei som vil prøva kan melde seg på og testa spelet før det blir lansert på fullt. Hvis du likar eventyr og spennande kampar, er dette spelet for deg!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>prøveversjon:</strong> Ein utgåve av spelet du kan testa før det er ferdig</div><div class="ord-item"><strong>lansert:</strong> Når noko kjem ut så alle kan bruka det</div><div class="ord-item"><strong>jaga:</strong> Å søkja etter og fanga nokon eller noko</div></div>
       <span class="kilde">📰 Pocket Gamer</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">🎮</div>
-      <h3>Belkin-esken for Switch 2 er blitt endå betre!</h3>
-      <p>Viss du har ein Nintendo Switch 2, treng du ein god eske for å ta med den! Belkin har laga «Charging Case Pro» – ein eske som både verner konsollas di og ladar ho medan du er på farten. Den nye utgåva er endå flottare enn den gamle, med betre design og raskare lading. No kan du spele overalt utan å vore redd for at batteriet blir tomt!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>eske:</strong> Ein beholder som verner elektronikken din når du tek ho med deg</div><div class="ord-item"><strong>lading:</strong> Når du set batteriet på eit elektriskeapparat slik at det får kraft att</div></div>
+      <h3>Belkin-etui gjer Nintendo Switch 2 enno betre!</h3>
+      <p>No finst eit nytt og mykje betre etui for Nintendo Switch 2! Belkin Charging Case Pro kan både beskytta konsulen din og lada ho medan du er på farten. Det gamle etui var ikkje så bra, men det nye er kjempeflott og passar perfekt for deg som skal spela overalt!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>etui:</strong> Ein veske eller beskyttar du brukar til å bera ting</div><div class="ord-item"><strong>lada:</strong> Å gi straum til ein batteri så det fungerer</div><div class="ord-item"><strong>konsol:</strong> Ein spillemåne du brukar til å spela spel</div></div>
       <span class="kilde">📰 Nintendo Life · 24. Apr 2026 kl. 13:00</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 13:38</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 13:44</span></div>
       <div class="card-emoji">⚽</div>
-      <h3>48 lag i VM-fotball – og det blir kjempeflott!</h3>
-      <p>Visste du at det er 48 lag i VM i fotball no? Det betyr at fleire land frå heile verda får sjansen til å spele! Fotballen blir endå meir spennande når det er fleire lag som konkurrerer. Kva land trur du skal vinne? Kanskje kan Norge stille lag ein dag!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>VM:</strong> Verdsmesterskapen – den største fotballturnjeringa i verda</div><div class="ord-item"><strong>lag:</strong> Ein gruppe spelarar frå same landet som spelar saman</div></div>
+      <h3>Kan du vinna VM-medalje i fotball?</h3>
+      <p>No er det 48 lag som skal spela i VM! Det er ei kjempestor konkurranse der lag frå heile verda møtest. Kva lag trur du vinn? Kanskje laget ditt vinn når du veks opp og blir ein fantastisk fotballspelar! Kven veit – kanskje blir du ein stjerne som spelar for Noreg!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>VM:</strong> Verdsmeisterskap – den største konkurransen i fotball</div><div class="ord-item"><strong>lag:</strong> Ein gruppe spelarar som spelar saman</div><div class="ord-item"><strong>medalje:</strong> Ein belønning du får når du er blant dei beste</div></div>
       <span class="kilde">📰 VG Sport</span>
     </div></div>
 </main>
