@@ -107,8 +107,8 @@
     document.querySelectorAll(".tab").forEach(t => t.classList.add("inactive"));
     document.getElementById("tab-" + tab).classList.remove("inactive");
     document.getElementById("src-line").textContent = tab === "nasjonal"
-      ? "Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG"
-      : "Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten";
+      ? "Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet"
+      : "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten";
   }
 </script>
 </head>
@@ -118,7 +118,7 @@
   <h1>JuniorNytt</h1>
   <div class="dato">Fredag 24. april 2026</div>
   <div class="sub">Nyheter for deg mellom 8 og 12 år</div>
-  <div class="oppdatert">Oppdatert kl. 07:19</div>
+  <div class="oppdatert">Oppdatert kl. 07:26</div>
   <div class="vaer-boks">
       <div class="vaer-no">
         <span class="vaer-symbol">🌧️</span>
@@ -153,140 +153,147 @@
 </header>
 <div class="tabs">
   <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">
-    🇳🇴 Nasjonalt <span class="badge">8</span>
+    🇳🇴 Nasjonalt <span class="badge">9</span>
   </button>
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">
     📍 Lokalt <span class="badge">10</span>
   </button>
 </div>
-<div class="sources" id="src-line">Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG</div>
+<div class="sources" id="src-line">Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet</div>
 <main>
   <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
       <div class="card-emoji">⚖️</div>
-      <h3>Leiaren i Forsvarsmateriell sikta for økonomisk juks</h3>
-      <p>Tre leiare i ein statleg etat blei sikta fordi dei gjorde noko ulovleg med pengar. Ein av dei hyra seg sjølv som rådgivar frå sitt eige selskap og auka prisen ulovleg. No seier han at han vil hjelpe til med etterforskinga.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sikta:</strong> når nokon blir mistenkt for å ha gjort noko ulovleg</div><div class="ord-item"><strong>rådgivar:</strong> nokon som gir råd og hjelp</div><div class="ord-item"><strong>etterforskinga:</strong> når politiet søkjer etter sanninga om noko ulovleg</div></div>
+      <h3>Leiarar i Forsvarsmateriell sikta for juks med pengar</h3>
+      <p>Tre leiarar i ei statleg etat blei sikta fordi dei gjorde noko ulovleg med pengar. Ein av dei hyra seg sjøl som rådgjevar frå eige selskap sitt, og auka timelønna si med 35 prosent utan at det var lov. No seier han at han vil hjelpe politiet med etterforskninga.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sikta:</strong> når politiet trur at nokon har gjort noko ulovleg</div><div class="ord-item"><strong>konsulent:</strong> ein som gjev råd og hjelp til bedrifter</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
       <div class="card-emoji">🔥</div>
-      <h3>Gressbrann stengde togturen på Vinstra</h3>
-      <p>Fredag morgon tok det fyr i gras og lyng ved Vinstra. Nødetatene koma til og slo ned brannen. Dovrebanen måtte stengjast medan dei arbeidde med å få kontroll på brannen.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>terrengbrann:</strong> brann i naturen, i gras og buskar</div><div class="ord-item"><strong>nødetatene:</strong> politi, brannvesen og ambulanse som kjem når noko farleg skjer</div></div>
+      <h3>Stor terrengbrann stoppa jernbanen</h3>
+      <p>Det oppstod ein stor gressbrann på Vinstra fredag morgon. Nødtjenestene rykka ut med ein gong for å slokka brannen. Dovrebanen måtte stengast medan dei jobba med å få kontroll på flammene. Planane var at jernbanen skulle opne att så snart som mogleg.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>terrengbrann:</strong> brann i gras og lyngemark</div><div class="ord-item"><strong>nødtjenestene:</strong> brannvesenet og andre som kjem når det er fare</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">💰</div>
-      <h3>Trump vil leggje toll på Storbritannia</h3>
-      <p>Amerikanske presidenten Donald Trump seier at han vil leggje stor toll (ekstra gebyr) på varene frå Storbritannia viss dei ikkje tek bort skatten sin på amerikanske IT-selskap som Apple og Google. Toll gjer at varene blir dyrare.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>toll:</strong> gebyr på varene som kjem frå andre land</div><div class="ord-item"><strong>IT-selskap:</strong> selskap som jobbar med datamaskiner og internett</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🛑</div>
+      <h3>Trump truer med toll på Storbritannia</h3>
+      <p>Presidenten i USA seier han vil leggje stor toll på Storbritannia viss dei ikkje fjerner skatten på store teknologibedrifter som Apple og Google. Toll er ekstra pengar du må betale når du handlar frå andre land. Trump seier det er urettvist at desse bedriftene må betale denne skatten.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>toll:</strong> ekstra pengar som skal betalast når du kjøper frå andre land</div><div class="ord-item"><strong>digitalskatt:</strong> skatt på selskap som sel ting på internett</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">🏦</div>
-      <h3>Mange nordmenn fekk ikkje lønna si frå banken</h3>
-      <p>Nordea-banken har hatt problem og fleire folk fekk ikkje pengane sine til rett tid. Banken bekrefta at det er eit alvorleg problem. No jobbar dei med å løyse problemet så alle får lønna si.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>lønn:</strong> pengane du får for å jobbe</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">💊</div>
+      <h3>Pollenmedisin er sluttsolgt</h3>
+      <p>Mange menneske som er allergisk mot pollen treng medisin for å få det betre. No er det mangel på nokre av dei viktigaste medisinane fordi fleire folk enn vanleg har kjøpt dei. Legar seier at du bør starte med medisin tidleg viss du veit at du er allergisk.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>allergi:</strong> når kroppen din ikkje likar nokre ting, og du blir sjuk av det</div><div class="ord-item"><strong>pollen:</strong> stoff frå blomster og tre som flyt rundt i lufta</div></div>
       <span class="kilde">📰 VG</span>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">🤝</div>
-      <h3>Fleire barn treng hjelp mot tvangsekteskap</h3>
-      <p>Rekordmange barn og unge ba om hjelp frå myndigheitene i fjor. Dei hadde problem med at vaksne prøvde å tvinge dei til å gifte seg, eller dei vart haldne innelåst. Myndigheitene vil hjelpe desse borna betre.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>tvangsekteskap:</strong> når nokon blir tvinga til å gifte seg utan å ville det sjølv</div><div class="ord-item"><strong>myndigheitene:</strong> dei som styrer og tek avgjersler for landet</div></div>
-      <span class="kilde">📰 Aftenposten</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🏦</div>
+      <h3>Nordea-kundar venta på lønna si</h3>
+      <p>Nordea er ein stor bank i Noreg. Natta for var det problem i datasystemet deira, og mange menneske fekk ikkje lønna si på vanleg tid. Banken seier at dei hadde problem med datamaskina si. Mange folk som jobbar var bekymra og venta på å få pengane sine.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bank:</strong> stad der pengar blir sparte og handterte</div><div class="ord-item"><strong>datasystem:</strong> datamaskinar som jobbar saman</div></div>
+      <span class="kilde">📰 VG</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">💊</div>
-      <h3>Mangel på allergimedisinar</h3>
-      <p>Veldig mange menneske handla allergimedisinar fordi pollenallergi byrja tidleg i år. No er det mangel på nokre av dei beste medisina. Legar seier at folk bør starte tidleg med medisinar viss dei har pollenallergi.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>allergi:</strong> når kroppen din reagerer stygt på noko som elles er harmløst</div><div class="ord-item"><strong>pollen:</strong> fint støv frå blomar og tre som flyt gjennom lufta</div></div>
-      <span class="kilde">📰 VG</span>
-    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
       <div class="card-emoji">📱</div>
-      <h3>Frp seier at aldersgrensel på sosiale medium er dårleg</h3>
-      <p>Det er forslag om at barn ikkje skal kunne bruke sosiale medium før dei er 16 år gamle. Fremskrittspartiet seier det er ein dårleg idé. Dei meiner at foreldre må ha ansvar for kva barna gjer på internett, ikkje at det må vere ei ny lov.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sosiale medium:</strong> Instagram, TikTok, Snapchat og andre nettstad der du kan dele bilete og meldingar</div><div class="ord-item"><strong>aldersgrensel:</strong> kor gammal du må vere for å gjere noko</div></div>
+      <h3>Frp meiner aldersgrense på sosiale medier er dårleg</h3>
+      <p>Nokon vil at barn skal vere minst 16 år før dei kan bruke sosiale medier som TikTok og Instagram. Fremskrittspartiet meiner det er ein dårleg idé. Dei trur at foreldra vil gjere barn ei synd ved å halde dei borte frå vennane sine på sosiale medier.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sosiale medier:</strong> nettsider der du kan dele bilete og skrive med vennane dine</div><div class="ord-item"><strong>aldersgrense:</strong> kor gammal du må vere for å få gjere noko</div></div>
       <span class="kilde">📰 NRK</span>
+    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🆘</div>
+      <h3>Rekordmange barn søkjer hjelp mot tvangsekteskap</h3>
+      <p>Stadig fleire barn og unge menneske søkjer hjelp frå staten fordi dei blir tvinga til ting dei ikkje vil. Nokre blir tvinga til å gifte seg, medan andre blir halde inne eller får andre alvorlege problem. Det er det høgaste talet på sånn hjelp som nokon gong er registrert.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>negativ sosial kontroll:</strong> når andre tvingar deg til å gjere ting mot viljen din</div><div class="ord-item"><strong>tvangsekteskap:</strong> når nokon blir tvinga til å gifte seg utan at dei vil</div></div>
+      <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">📈</div>
-      <h3>Børsen gjekk bra for nokre selskap</h3>
-      <p>Yara og Kitron er to norske selskap som skal selje ting dei har produsert. Når dei viste tal for kor mykje pengar dei hadde tjent, gjekk prisane på aksjer deira opp. Det er ein god tendens på Oslo Børs no.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>børs:</strong> ein plass der folk kjøp og sel aksjer (små delar av selskap)</div><div class="ord-item"><strong>aksje:</strong> ein liten del av eit selskap som du kan eige</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🏛️</div>
+      <h3>Frp krev svar frå forsvarsministeren</h3>
+      <p>Fremskrittspartiet vil at forsvarsministeren skal kome til Stortinget og forklare kva som skjedde med dei leiarane som vart sikta. Dei vil vite meir om korleis dette kunne skje og kva som skal gjerast for at det ikkje skal hende igjen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Stortinget:</strong> der dei viktigaste leiarane i Noreg møtest og tek avgjersler</div><div class="ord-item"><strong>forsvarsminister:</strong> leiar av forsvaret og militæret i landet</div></div>
       <span class="kilde">📰 VG</span>
+    </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">✈️</div>
+      <h3>Fly-kaos kan ramme sommarferia di</h3>
+      <p>Det er problem i flyselskapa rundt omkring i verda. Dette kan gjere det vanskeleg for mange menneske som skal reise på sommarferie. Viss flyet ditt blir innstilt, har du rettar og krav på erstatning eller ny flybillett.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>erstatning:</strong> pengar som du får viss noko går galt</div><div class="ord-item"><strong>innstilt:</strong> når noko ikkje kan skje på grunn av problem</div></div>
+      <span class="kilde">📰 Aftenposten</span>
     </div></div>
   <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
       <div class="card-emoji">🐟</div>
       <h3>Frå fiskefôr til milliardbedrift</h3>
-      <p>André Skarbø starta med enkelt arbeid som liten gutt. Han spylte fôrrester på fiskeoppdrett og fekk betalt i fisk. I dag eig og leier han milliardbedrifta Platina Seafood med berre tre tilsette. Det viser at hard innsats og dårlegare forhold i ungdommen kan føre til stor suksess.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>milliardbedrift:</strong> Eit stort selskap som har omsetning på mange milliardar kroner</div><div class="ord-item"><strong>fiskeoppdrett:</strong> Stad der ein dyrkar fisk i anlegg</div></div>
+      <p>André Skarbø var berre seks år når han fekk si første lønn – i form av fisk! Han arbeidde på eit oppdrettsanlegg og spylte fôrrester. I dag eig og leiar han selskapet Platina Seafood, som tener milliardar av kroner. Det viser at små steg kan leia til noko veldig stort.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oppdrettsanlegg:</strong> stad der ein dyrkar og alimenterer fisk</div><div class="ord-item"><strong>milliardbedrift:</strong> selskap som tener milliardar av kroner</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
       <div class="card-emoji">⚽</div>
-      <h3>Spjelkavik får kunstgressbane</h3>
-      <p>Spjelkavik idrettslag har fått klarsignal for å byggje ein miljøvennleg kunstgressbane. Alle politikarane var samde og glada for planane. Dette er bra for ungdommen og friluftsliva i området, og banen skal vere god for miljøet òg.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kunstgressbane:</strong> Fotballbane laga av kunstig gras i staden for naturleg gras</div><div class="ord-item"><strong>miljøvennleg:</strong> Noko som ikkje skadar naturen</div></div>
+      <h3>Kunstgressbanen på veg</h3>
+      <p>Spjelkavik idrettslag fekk ja til å byggje ei ny kunstgressbane! Alle politikarane var samde om at dette var ein god ide. Banen skal vere miljøvenleg, som betyr at ho er god for naturen. Idrettslaget skal få økonomisk hjelp frå kommunen for å gjennomføre prosjektet.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kunstgressbane:</strong> idrettsplan laga av kunstig materiale i staden for naturleg gras</div><div class="ord-item"><strong>miljøvenleg:</strong> noko som ikkje skadar naturen</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">📱</div>
-      <h3>Aldersgrense i sosiale medier kjem</h3>
-      <p>Noreg skal få ein aldersgrense for sosiale medier innan året er omme. Det er eit lovforslag mange har venta på. Aldersgrensa skal beskytte unge menneske og hjelpe dei å ikkje bruke sosiale medier når dei er for små.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>aldersgrense:</strong> Ein bestemt alder du må vere for å gjere noko</div><div class="ord-item"><strong>lovforslag:</strong> Ein forslag til ein ny lov</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🌤️</div>
+      <h3>Slik blir vêret på 17. mai</h3>
+      <p>Meteorolog Ivar Hol har gitt si vêrprognose for slutten av april, mai og spesielt 17. mai. Han fortel kva vêr me kan vente oss i desse månadane. Dette er viktig for alle som planlegg 17. mai-feiring og friluftsdagar.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>meteorolog:</strong> fagperson som studerer og spår vêret</div><div class="ord-item"><strong>prognose:</strong> forutseiing eller spådom</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">☀️</div>
-      <h3>Slik blir vêret på 17. mai</h3>
-      <p>Vêrmannen Ivar Hol har gitt ein prognose for mai og 17. mai-vêret. Han fortel kva me kan vente av temperatur og nedbør i slutten av april og heile mai. Dette er viktig å vite for dei som skal planlegje 17. mai-feiringa si.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>prognose:</strong> Ein føresegjing om kva som skal hende</div></div>
-      <span class="kilde">📰 Sunnmørsposten</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🏪</div>
+      <h3>Flyktningar opnar eigen butikk</h3>
+      <p>Daria og Nazar kom frå Ukraina til Noreg i 2023. No har dei bygd opp nye liv sine her i Ulsteinvik. Dei opnar no eigen butikk der dei sel gode råvarer og utstyr for brygging. Det viser kor sterke og hardtarbeidande dei er.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>brygging:</strong> prosess der man lagar øl eller kaffe</div></div>
+      <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">☕</div>
-      <h3>Ukrainarar opnar bryggje-butikk</h3>
-      <p>Daria og Nazar flykta frå Ukraina til Noreg i 2023. Dei har no bygd opp livet sitt på nytt i Ulsteinvik. Snart opnar dei eigen butikk med fokus på gode råvarer og utstyr til dei som vil brygge kaffe og te sjølve.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bryggje:</strong> Å lage drikke ved å setje planter i het vatn</div><div class="ord-item"><strong>råvarer:</strong> Naturlege ingrediensar som blir brukt til å lage mat eller drikke</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🔬</div>
+      <h3>Sjetteklassingane liker realfag</h3>
+      <p>Det er kjempesjeldsynt å høyre barn seie at realfag som matematikk og naturfag er gøy! Men no gjer dei nettopp det. Dette viser at det finst gode måtar å undervise på som får ungdomane interessert. Me bør lytte når ungdomane viser entusiasme for læring.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>realfag:</strong> fag som matematikk, naturfag og fysikk</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">🔬</div>
-      <h3>Sjetteklassingane tykkjer realfag er gøy</h3>
-      <p>Det er sjeldan at ungdommar seier at realfag er kjempegøy. Men no har nokre sjetteklassingane gjort nøyaktig det! Dette viser at realfag kan vere veldig interessant når det blir undervist på rett måte. Det er eit kjempegodt teikn for skulearbeidet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>realfag:</strong> Fag som matematikk, naturfag og fysikk</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🚢</div>
+      <h3>Cruiseskip kjem til Hareid</h3>
+      <p>Laurdag 13. juni kjem cruiseskipet Artania til Hareid. Dei første turistane kan velje mellom mange kjekke aktivitetar. Folk på bygda har opna gardar og arrangerer ulike tilbod for dei som besøkjer.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cruiseskip:</strong> stort skip som fraktar turistar og sightseeing</div><div class="ord-item"><strong>aktivitetar:</strong> ting ein kan gjere og ta del i</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">🚢</div>
-      <h3>Cruiseskip får besøk i Hareid</h3>
-      <p>Skipet Artania kjem til Hareid laurdag 13. juni med mange turistar ombord. Dei får velje mellom ulike aktivitetar i området. Garden i Hareid er no klar til å ta imot dei første cruiseturistane.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cruiseskip:</strong> Eit stort skip som tar med turistar rundt i verden</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🏠</div>
+      <h3>Torv på taket</h3>
+      <p>Arbeidsfolk legg no torv på taket av ein borstove i Petterbakken. Torven har god kvalitet og er ein tradisjonell måte å isolere hus på. Dette er gammaldags og miljøvenleg måte å byggje på som mange vil bruke att.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>torv:</strong> torvstykke brukt til isolasjon og som dekt på hus</div><div class="ord-item"><strong>borstove:</strong> gammal type byggning, ofte på Vestlandet</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">🐴</div>
-      <h3>Islandshestar viste seg fram</h3>
-      <p>Lokale ryttarar og islandshestar såg kjempegodt ut under klubbmeisterskapet til Vestnes Islandshestforening. Det var mange med hestar som ville vise kva dei kunne på ryggen av desse vakre dyra.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>islandshestar:</strong> Små og sterke hestar frå Island</div></div>
-      <span class="kilde">📰 Vikebladet</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">⚽</div>
+      <h3>Tøft for Sande FK</h3>
+      <p>Sande FK hadde ein flott start i 5.-divisjon, men det vart vanskeleg då dei møtte Giske på torsdag kveld. Lagleiar Haanes vurderer korleis sesongstarten har gått og kva dei kan gjere betre framover.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>5.-divisjon:</strong> fotballserie på eit viss nivå</div></div>
+      <span class="kilde">📰 Vestlandsnytt</span>
     </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
       <div class="card-emoji">🥾</div>
-      <h3>Mange tou tur i vinter</h3>
-      <p>Stikk UT! Vinter har sett ein ny rekord i Møre og Romsdal. Mange menneske i Herøy og Sande har gått på tur i frisk luft heile vinteren. Det viser at folk likar å vere ute i naturen sjølv når det er kaldt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>rekord:</strong> Det beste eller høgaste tal nokon gong har oppnådd</div></div>
+      <h3>Noreg går mest på tur</h3>
+      <p>Vinter 2024 sette ny rekord for turer i Møre og Romsdal! Mange folk frå Herøy og Sande har gått ut i frisk luft gjennom den kalde årstida. Det viser at norske menneske elskar å vere ute i naturen sjølv når det er kaldt.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>rekord:</strong> den beste eller høgaste prestasjon som er oppnådd</div></div>
       <span class="kilde">📰 Vestlandsnytt</span>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 07:19</span></div>
-      <div class="card-emoji">🏛️</div>
-      <h3>Frp tek påstandar om samrøre opp politisk</h3>
-      <p>Håkon Vestnes har gjort oppsiktsvekkjande påstandar om at kommunen og Larsnes IL samarbeider på ein måte som ikkje er ryddig. No skal Framstegspartiet ta dette opp på politisk nivå. Det kan bli ein viktig debatt i kommunen.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>samrøre:</strong> Ulovleg samarbeid mellom menneske som bør vere uavhengige av kvarandre</div><div class="ord-item"><strong>oppsiktsvekkjande:</strong> Noko som er overraskande og aukar merksemd</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:26</span></div>
+      <div class="card-emoji">🎉</div>
+      <h3>Far og son feira 25 år i same bedrift</h3>
+      <p>I Vestsink hadde dei eit spesielt jubileum. Far og son festa at dei begge hadde jobba i bedrifta i 25 år – på same tid! Det er veldig sjeldsynt at to familiemedlemar har så lang erfaring frå same arbeidsstad. Songen vil kanskje arbeide enno lenger enn faren sin.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jubileum:</strong> stor minnedag eller feiring av noko som varte i mange år</div><div class="ord-item"><strong>fartstid:</strong> lengda av tida du har jobba på ei stad</div></div>
       <span class="kilde">📰 Vestlandsnytt</span>
     </div></div>
 </main>
