@@ -16,6 +16,11 @@ FALLER_UT     =  4
 SAKER_FIL_NAT = "docs/saker_nasjonal.json"
 SAKER_FIL_LOK = "docs/saker_lokal.json"
 
+# Standard posisjon: Ulsteinvik
+STD_LAT = 62.3439
+STD_LON =  5.8467
+STD_STAD = "Ulsteinvik"
+
 RSS_NASJONAL = [
     ("https://www.nrk.no/toppsaker.rss",   "NRK"),
     ("https://www.nrk.no/mr/rss",          "NRK Møre og Romsdal"),
@@ -29,7 +34,6 @@ RSS_LOKAL = [
     ("https://www.vestlandsnytt.no/rss/",  "Vestlandsnytt"),
 ]
 
-# Emoji-kategorier som fallback
 EMOJI_MAP = [
     (["krig","ukraina","russland","angrep","soldat","forsvar","nato","våpen"], "⚔️"),
     (["fotball","sport","idrett","vm","em","lag","kamp","turnering","mål"],   "⚽"),
@@ -45,19 +49,55 @@ EMOJI_MAP = [
     (["mat","restaurant","landbruk","jordbruk"],                              "🍽️"),
 ]
 
+VÆR_SYMBOL = {
+    "clearsky":               ("☀️",  "Klarvær"),
+    "fair":                   ("🌤️", "Pent vær"),
+    "partlycloudy":           ("⛅",  "Delvis skyet"),
+    "cloudy":                 ("☁️",  "Overskyet"),
+    "rainshowers":            ("🌦️", "Regnbyger"),
+    "rain":                   ("🌧️", "Regn"),
+    "heavyrain":              ("🌧️", "Kraftig regn"),
+    "sleet":                  ("🌨️", "Sludd"),
+    "snow":                   ("❄️",  "Snø"),
+    "snowshowers":            ("🌨️", "Snøbyger"),
+    "fog":                    ("🌫️", "Tåke"),
+    "thunder":                ("⛈️",  "Torden"),
+    "rainandthunder":         ("⛈️",  "Regn og torden"),
+    "heavyrainandthunder":    ("⛈️",  "Kraftig regn og torden"),
+}
+
 def velg_emoji(tittel, brodtekst=""):
     tekst = (tittel + " " + brodtekst).lower()
     for nokkelord, emoji in EMOJI_MAP:
-        if any(ord in tekst for ord in nokkelord):
+        if any(o in tekst for o in nokkelord):
             return emoji
     return "📰"
 
-
+def hent_vaer(lat=STD_LAT, lon=STD_LON):
+    """Henter værdata fra yr.no/met.no for gitte koordinater."""
+    url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat:.4f}&lon={lon:.4f}"
+    req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read())
+        ts = data["properties"]["timeseries"]
+        # Finn nærmeste tidspunkt
+        now = ts[0]["data"]
+        temp = round(now["instant"]["details"]["air_temperature"])
+        vind = round(now["instant"]["details"]["wind_speed"])
+        symbol_raw = now.get("next_1_hours", now.get("next_6_hours", {})).get("summary", {}).get("symbol_code", "")
+        # Fjern _day/_night-suffiks
+        symbol_base = re.sub(r"_(day|night|polartwilight)$", "", symbol_raw)
+        emoji, tekst = VÆR_SYMBOL.get(symbol_base, ("🌡️", symbol_base.replace("_", " ").capitalize()))
+        nedbor = now.get("next_1_hours", now.get("next_6_hours", {})).get("details", {}).get("precipitation_amount", 0)
+        return {"temp": temp, "vind": vind, "symbol": emoji, "beskrivelse": tekst, "nedbor": round(nedbor, 1)}
+    except Exception as e:
+        print(f"  Kunne ikke hente vær: {e}")
+        return None
 
 def hent_rss(feeds, maks_per_kilde=4):
     artikler = []
     headers = {"User-Agent": "JuniorNytt/1.0"}
-    ns = {"media": "http://search.yahoo.com/mrss/"}
     for url, kilde in feeds:
         try:
             req = urllib.request.Request(url, headers=headers)
@@ -69,11 +109,7 @@ def hent_rss(feeds, maks_per_kilde=4):
                 desc   = (item.findtext("description") or "").strip()
                 desc   = re.sub(r"<[^>]+>", "", desc).strip()
                 if tittel:
-                    artikler.append({
-                        "kilde":   kilde,
-                        "tittel":  tittel,
-                        "ingress": desc[:300],
-                    })
+                    artikler.append({"kilde": kilde, "tittel": tittel, "ingress": desc[:300]})
         except Exception as e:
             print(f"  Kunne ikke hente {kilde}: {e}")
     return artikler
@@ -89,20 +125,18 @@ Regler:
 - Behold det viktigste innholdet
 - Legg til ordforklaring (1–4 ord) for vanskelige begreper
 - Bruk kildenavnet fra artikkelen
-- Legg til et felt "emoji" med én passende emoji for saken
+- Legg til ett felt "emoji" med én passende emoji for saken
+- Hvis saken handler om noe som skjer i et annet land enn Norge, legg til feltet "land" med landets navn på norsk og landets flagg-emoji, f.eks. {{"navn": "Ukraina", "flagg": "🇺🇦"}}. Ikke legg til "land" for saker som kun handler om Norge.
 
 Artikler:
 {artikler}
 
 Svar KUN med JSON-array, ingen annen tekst:
-[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
+[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}],"land":{{"navn":"...","flagg":"..."}}}}]"""
 
 
 def omskriv(artikler, antall=8, retries=4, wait=60):
-    # Ta med bilde-URL i teksten til Claude slik at vi kan mappe det tilbake
-    tekst = "\n\n".join(
-        f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artikler
-    )
+    tekst = "\n\n".join(f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artikler)
     prompt = OMSKRIV_PROMPT.format(antall=antall, artikler=tekst)
     for attempt in range(retries):
         try:
@@ -121,7 +155,7 @@ def omskriv(artikler, antall=8, retries=4, wait=60):
             for sak in saker:
                 sak["tidspunkt"] = ts
                 if not sak.get("emoji"):
-                    sak["emoji"] = velg_emoji(sak["tittel"], sak.get("brodtekst",""))
+                    sak["emoji"] = velg_emoji(sak["tittel"], sak.get("brodtekst", ""))
             return saker
         except anthropic.RateLimitError:
             if attempt < retries - 1:
@@ -132,6 +166,26 @@ def omskriv(artikler, antall=8, retries=4, wait=60):
                 return []
 
 
+def fjern_duplikater(lokale, nasjonale, terskel=0.4):
+    def nokkelord(tittel):
+        stopord = {"og","i","er","på","en","et","de","det","som","til","av","for","med","at","har","om"}
+        return {w.lower() for w in tittel.split() if w.lower() not in stopord and len(w) > 2}
+    nat_ord = [nokkelord(s["tittel"]) for s in nasjonale]
+    filtrerte = []
+    for sak in lokale:
+        lok_ord = nokkelord(sak["tittel"])
+        for n_ord in nat_ord:
+            if not lok_ord or not n_ord:
+                continue
+            overlapp = len(lok_ord & n_ord) / min(len(lok_ord), len(n_ord))
+            if overlapp >= terskel:
+                print(f"  Duplikat fjernet: «{sak['tittel']}»")
+                break
+        else:
+            filtrerte.append(sak)
+    return filtrerte
+
+
 def oppdater_saker(nye, fil, er_morgen):
     eksisterende = []
     if not er_morgen and os.path.exists(fil):
@@ -140,19 +194,30 @@ def oppdater_saker(nye, fil, er_morgen):
                 eksisterende = json.load(f)
         except Exception:
             eksisterende = []
-
     eksist_titler = {s["tittel"].lower() for s in eksisterende}
     nye_unike = [s for s in nye if s["tittel"].lower() not in eksist_titler]
     kombinert = nye_unike + eksisterende
-
     if not er_morgen and len(kombinert) >= FALLER_UT:
         kombinert = kombinert[:-FALLER_UT]
-
     kombinert = kombinert[:MAKS_SAKER]
     os.makedirs("docs", exist_ok=True)
     with open(fil, "w", encoding="utf-8") as f:
         json.dump(kombinert, f, ensure_ascii=False, indent=2)
     return kombinert
+
+
+def vaer_html(vaer):
+    if not vaer:
+        return ""
+    return f"""<div class="vaer-boks">
+      <span class="vaer-symbol">{vaer['symbol']}</span>
+      <div class="vaer-info">
+        <span class="vaer-temp">{vaer['temp']}°C</span>
+        <span class="vaer-besk">{vaer['beskrivelse']}</span>
+        <span class="vaer-vind">💨 {vaer['vind']} m/s · 🌧 {vaer['nedbor']} mm</span>
+      </div>
+      <span class="vaer-sted" id="vaer-sted">{STD_STAD}</span>
+    </div>"""
 
 
 def card(sak, idx):
@@ -163,8 +228,12 @@ def card(sak, idx):
                "#FCD34D","#7DD3FC","#6EE7B7","#F0ABFC","#A78BFA","#FB923C",
                "#FACC15","#60A5FA","#34D399","#E879F9"]
     bg, border = colors[idx % len(colors)], borders[idx % len(borders)]
-
     emoji = sak.get("emoji") or velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
+    ts_html = f'<span class="tidspunkt">🕐 {sak["tidspunkt"]}</span>' if sak.get("tidspunkt") else ""
+
+    land_html = ""
+    if sak.get("land") and sak["land"].get("navn"):
+        land_html = f'<span class="land-badge">{sak["land"].get("flagg","")} {sak["land"]["navn"]}</span>'
 
     forklaringer = ""
     if sak.get("ordforklaring"):
@@ -174,11 +243,8 @@ def card(sak, idx):
         )
         forklaringer = f'<div class="ordbox"><div class="ord-title">📖 Visste du at…?</div>{items}</div>'
 
-    ts = sak.get("tidspunkt", "")
-    ts_html = f'<span class="tidspunkt">🕐 {ts}</span>' if ts else ""
-
     return f'''<div class="card" style="background:{bg};border-color:{border}">
-      <div class="card-meta">{ts_html}</div>
+      <div class="card-meta">{ts_html}{land_html}</div>
       <div class="card-emoji">{emoji}</div>
       <h3>{sak["tittel"]}</h3>
       <p>{sak["brodtekst"]}</p>
@@ -187,12 +253,14 @@ def card(sak, idx):
     </div>'''
 
 
-def build_html(nasjonal, lokal):
+def build_html(nasjonal, lokal, vaer):
     ukedager = ["Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag","Søndag"]
     ukedag = ukedager[datetime.now().weekday()]
     dato = datetime.now().strftime("%-d. %B %Y").lower()
     nat_cards = "".join(card(s, i) for i, s in enumerate(nasjonal))
     lok_cards = "".join(card(s, i) for i, s in enumerate(lokal))
+    vaer_boks = vaer_html(vaer)
+
     return f"""<!DOCTYPE html>
 <html lang="no">
 <head>
@@ -207,7 +275,15 @@ def build_html(nasjonal, lokal):
   .dato{{font-size:.85rem;opacity:.85;margin-top:4px}}
   .sub{{font-size:.75rem;opacity:.7;font-style:italic;margin-top:2px}}
   .oppdatert{{font-size:.7rem;opacity:.6;margin-top:6px}}
-  .tabs{{display:flex;max-width:720px;margin:24px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}}
+  .vaer-boks{{display:flex;align-items:center;gap:12px;max-width:720px;margin:16px auto 0;
+    background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px;backdrop-filter:blur(4px)}}
+  .vaer-symbol{{font-size:2.5rem}}
+  .vaer-info{{display:flex;flex-direction:column;gap:2px;flex:1}}
+  .vaer-temp{{font-size:1.4rem;font-weight:800}}
+  .vaer-besk{{font-size:.8rem;opacity:.9}}
+  .vaer-vind{{font-size:.72rem;opacity:.75}}
+  .vaer-sted{{font-size:.72rem;opacity:.7;text-align:right;font-style:italic}}
+  .tabs{{display:flex;max-width:720px;margin:20px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}}
   .tab{{flex:1;padding:12px;font-weight:700;font-size:.85rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}}
   .tab-nat{{background:#3b82f6;color:white}}
   .tab-nat.inactive{{background:white;color:#6b7280}}.tab-nat.inactive:hover{{background:#eff6ff}}
@@ -218,10 +294,11 @@ def build_html(nasjonal, lokal):
   .sources{{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}}
   main{{max-width:720px;margin:0 auto;padding:16px}}
   .panel{{display:none}}.panel.active{{display:block}}
-  .card{{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}}
-  .card-img{{width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:12px;display:block}}
-  .card-meta{{display:flex;justify-content:flex-end;margin-bottom:4px}}
+  .card{{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}}
+  .card-meta{{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}}
   .tidspunkt{{font-size:.7rem;color:#9ca3af}}
+  .land-badge{{font-size:.72rem;font-weight:600;background:rgba(255,255,255,.6);
+    border:1px solid #e5e7eb;border-radius:99px;padding:2px 10px}}
   .card-emoji{{font-size:2rem;margin-bottom:8px}}
   .card h3{{font-size:1.15rem;font-weight:800;color:#1f2937;margin-bottom:10px;line-height:1.3}}
   .card p{{font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:12px}}
@@ -231,17 +308,58 @@ def build_html(nasjonal, lokal):
   .ord-item strong{{color:#1f2937}}
   .kilde{{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}}
   footer{{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 0}}
-  @media(max-width:480px){{header h1{{font-size:2rem}}}}
+  @media(max-width:480px){{header h1{{font-size:2rem}}.vaer-boks{{flex-wrap:wrap}}}}
 </style>
 <script>
-  function show(tab){{
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    document.getElementById('panel-'+tab).classList.add('active');
-    document.querySelectorAll('.tab').forEach(t=>t.classList.add('inactive'));
-    document.getElementById('tab-'+tab).classList.remove('inactive');
-    document.getElementById('src-line').textContent = tab==='nasjonal'
-      ? 'Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG'
-      : 'Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten';
+  // Hent vær basert på brukerens posisjon
+  function oppdaterVaer(lat, lon, stedNavn) {{
+    fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${{lat.toFixed(4)}}&lon=${{lon.toFixed(4)}}`, {{
+      headers: {{"User-Agent": "JuniorNytt/1.0"}}
+    }})
+    .then(r => r.json())
+    .then(data => {{
+      const ts = data.properties.timeseries[0].data;
+      const temp = Math.round(ts.instant.details.air_temperature);
+      const vind = Math.round(ts.instant.details.wind_speed);
+      const symbol = (ts.next_1_hours || ts.next_6_hours || {{}}).summary?.symbol_code || "";
+      const nedbor = ((ts.next_1_hours || ts.next_6_hours || {{}}).details?.precipitation_amount || 0).toFixed(1);
+      const symbolMap = {{
+        clearsky:"☀️",fair:"🌤️",partlycloudy:"⛅",cloudy:"☁️",
+        rainshowers:"🌦️",rain:"🌧️",heavyrain:"🌧️",sleet:"🌨️",
+        snow:"❄️",snowshowers:"🌨️",fog:"🌫️",thunder:"⛈️",
+        rainandthunder:"⛈️",heavyrainandthunder:"⛈️"
+      }};
+      const beskrivelseMap = {{
+        clearsky:"Klarvær",fair:"Pent vær",partlycloudy:"Delvis skyet",cloudy:"Overskyet",
+        rainshowers:"Regnbyger",rain:"Regn",heavyrain:"Kraftig regn",sleet:"Sludd",
+        snow:"Snø",snowshowers:"Snøbyger",fog:"Tåke",thunder:"Torden",
+        rainandthunder:"Regn og torden",heavyrainandthunder:"Kraftig regn og torden"
+      }};
+      const base = symbol.replace(/_(day|night|polartwilight)$/, "");
+      document.querySelector(".vaer-symbol").textContent = symbolMap[base] || "🌡️";
+      document.querySelector(".vaer-temp").textContent = temp + "°C";
+      document.querySelector(".vaer-besk").textContent = beskrivelseMap[base] || base;
+      document.querySelector(".vaer-vind").textContent = `💨 ${{vind}} m/s · 🌧 ${{nedbor}} mm`;
+      if (stedNavn) document.getElementById("vaer-sted").textContent = stedNavn;
+    }})
+    .catch(() => {{}});
+  }}
+
+  // Spør om posisjon
+  if (navigator.geolocation) {{
+    navigator.geolocation.getCurrentPosition(pos => {{
+      oppdaterVaer(pos.coords.latitude, pos.coords.longitude, "Din posisjon");
+    }}, () => {{}}, {{timeout: 5000}});
+  }}
+
+  function show(tab) {{
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    document.getElementById("panel-" + tab).classList.add("active");
+    document.querySelectorAll(".tab").forEach(t => t.classList.add("inactive"));
+    document.getElementById("tab-" + tab).classList.remove("inactive");
+    document.getElementById("src-line").textContent = tab === "nasjonal"
+      ? "Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG"
+      : "Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten";
   }}
 </script>
 </head>
@@ -252,6 +370,7 @@ def build_html(nasjonal, lokal):
   <div class="dato">{ukedag} {dato}</div>
   <div class="sub">Nyheter for deg mellom 8 og 12 år</div>
   <div class="oppdatert">Oppdatert kl. {datetime.now().strftime("%H:%M")}</div>
+  {vaer_boks}
 </header>
 <div class="tabs">
   <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">
@@ -277,6 +396,10 @@ if __name__ == "__main__":
 
     print(f"Kjøring kl. {time_now.strftime('%H:%M')} – {'morgen (nullstiller)' if er_morgen else 'oppdatering'}")
 
+    print(f"Henter vær for {STD_STAD}...")
+    vaer = hent_vaer()
+    print(f"  → {vaer}")
+
     print("Henter RSS – nasjonalt...")
     nat_rss = hent_rss(RSS_NASJONAL)
     print(f"  → {len(nat_rss)} artikler")
@@ -290,10 +413,13 @@ if __name__ == "__main__":
     print(f"  → {len(lok_rss)} artikler")
     print("Omskriver lokale nyheter...")
     nye_lok = omskriv(lok_rss, antall=NYE_PER_RUNDE)
+
+    print("Sjekker for duplikater...")
+    nye_lok = fjern_duplikater(nye_lok, nye_nat)
     lokal = oppdater_saker(nye_lok, SAKER_FIL_LOK, er_morgen)
     print(f"  → {len(lokal)} saker totalt")
 
-    html = build_html(nasjonal, lokal)
+    html = build_html(nasjonal, lokal, vaer)
     os.makedirs("docs", exist_ok=True)
     with open("docs/index.html", "w", encoding="utf-8") as f:
         f.write(html)
