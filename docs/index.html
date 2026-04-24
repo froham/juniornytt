@@ -31,21 +31,17 @@
   .dag-maks{font-size:.9rem;font-weight:800}
   .dag-min{font-size:.78rem;opacity:.65}
   .tabs{display:flex;max-width:720px;margin:20px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-  .tab{flex:1;padding:10px 2px;font-weight:700;font-size:.75rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:4px}
+  .tab{flex:1;padding:12px 4px;font-weight:700;font-size:.8rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
   .tab-nat{background:#3b82f6;color:white}
   .tab-nat.inactive{background:white;color:#6b7280}.tab-nat.inactive:hover{background:#eff6ff}
   .tab-lok{background:#10b981;color:white}
   .tab-lok.inactive{background:white;color:#6b7280}.tab-lok.inactive:hover{background:#f0fdf4}
   .tab-spel{background:#8b5cf6;color:white}
   .tab-spel.inactive{background:white;color:#6b7280}.tab-spel.inactive:hover{background:#f5f3ff}
-  .tab-kino{background:#f59e0b;color:white}
-  .tab-kino.inactive{background:white;color:#6b7280}.tab-kino.inactive:hover{background:#fffbeb}
   .badge{background:rgba(255,255,255,.3);border-radius:99px;padding:2px 7px;font-size:.68rem}
   .inactive .badge{background:#e5e7eb;color:#6b7280}
   .sources{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}
-  .varsel-boks{max-width:720px;margin:8px auto 0;padding:10px 20px;border-radius:12px;font-size:.78rem;line-height:1.5;display:none}
-  .varsel-spel{background:#fef3c7;border:1px solid #fde047;color:#92400e}
-  .varsel-kino{background:#e0f2fe;border:1px solid #7dd3fc;color:#0c4a6e}
+  .varsel-boks{max-width:720px;margin:8px auto 0;padding:10px 20px;border-radius:12px;font-size:.78rem;line-height:1.5;display:none;background:#fef3c7;border:1px solid #fde047;color:#92400e}
   main{max-width:720px;margin:0 auto;padding:16px}
   .panel{display:none}.panel.active{display:block}
   .card{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
@@ -67,8 +63,7 @@
   const SRC = {
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
-    spel:     "Kjelder: VG Sport · Gamer.no",
-    kino:     "Kjelde: The Movie Database (TMDB)"
+    spel:     "Kjelder: VG Sport · Eurogamer · PC Gamer · Rock Paper Shotgun"
   };
   function show(tab) {
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
@@ -77,7 +72,6 @@
     document.getElementById("tab-" + tab).classList.remove("inactive");
     document.getElementById("src-line").textContent = SRC[tab] || "";
     document.getElementById("varsel-spel").style.display = tab === "spel" ? "block" : "none";
-    document.getElementById("varsel-kino").style.display = tab === "kino" ? "block" : "none";
   }
 </script>
 </head>
@@ -88,12 +82,12 @@
   <div class="dato">Fredag 24. april 2026</div>
   <div class="sub">Nyhende på nynorsk for deg mellom 8 og 12 år – nye saker vert publisert kl. 07.00, 12.00 og 19.00 kvar dag.</div>
   <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
-  <div class="oppdatert">Oppdatert kl. 11:36</div>
+  <div class="oppdatert">Oppdatert kl. 11:59</div>
   <div class="vaer-boks">
       <div class="vaer-no">
         <span class="vaer-symbol">☁️</span>
         <div class="vaer-detaljar">
-          <span class="vaer-temp">8°C </span>
+          <span class="vaer-temp">7°C </span>
           <span class="vaer-vind">💨 4 m/s · 🌧 0.0 mm</span>
           <span class="vaer-sted">Ulsteinvik</span>
         </div>
@@ -125,185 +119,211 @@
 <div class="tabs">
   <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">🇳🇴 Nasjonalt <span class="badge">10</span></button>
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">📍 Lokalt <span class="badge">10</span></button>
-  <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">🎮 Spel & Sport <span class="badge">0</span></button>
-  <button class="tab tab-kino inactive" id="tab-kino" onclick="show('kino')">🎬 Kino <span class="badge">3</span></button>
+  <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">🎮 Spel & Sport <span class="badge">8</span></button>
 </div>
 
 <div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
-<div class="varsel-boks varsel-spel" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
-<div class="varsel-boks varsel-kino" id="varsel-kino">🎬 Her finn du filmar som går på norske kinoar no og som kjem snart – berre filmar med aldersgrense A–11 år er med!</div>
+<div class="varsel-boks" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
 
 <main>
   <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🛡️</div>
-      <h3>Norge får nye stridsvogner</h3>
-      <p>Norge har bestilt nye stridsvogner for 23 millardar kroner. No har dei første vognene komme til landet vårt. Stridsvognene er svært moderne og skal vere betre enn russiske stridsvogner. Dei skal hjelpe til med å forsvare Norge viss nokon skulle angripe oss. Soldatane våre skal trene på desse nye maskinene. Det er ein viktig investering for trygginga av landet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Stridsvogn:</strong> Tungt blindert kjøretøy med kanon som soldatar brukar i krig</div><div class="ord-item"><strong>Investering:</strong> Pengar brukt for å få noko av verdi</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">⚖️</div>
+      <h3>Ung mann erkjenner ansvar for drap i Oslo</h3>
+      <p>Djordje Wilms (18) har for første gong sagt at han er skuldig i drapet på Tamima Nibras Juhar (34) som skjedde i Oslo i fjor sommar. Saka skjedde på Kampen, der ho budde. Wilms var då ein ung gut som gjorde noko veldig alvorleg. No må retten avgjera kva straff han skal få. Å erkjenna ansvar betyr at han godtar at han gjorde noko gale. Dette er eit alvorleg tilfelle som har skadd mange menneske rundt offeret.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>erkjenna:</strong> å seie at ein har gjort noko gale</div><div class="ord-item"><strong>straff:</strong> konsekvens når ein bryt lova</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">⚠️</div>
-      <h3>Arbeidsulykke kostet mannen livet</h3>
-      <p>Ein mann i 50-åra vart alvorleg skada på ein byggeplass i Stavanger. Politiet og ambulansen kom fort til staden. Mannen vart køyrd til sjukehuset, men skadene hans var så alvorlege at lækarane ikkje kunne redde livet hans. Han vart erklært død på formiddagen. Arbeidsulykker er alvorleg og kan endrast til tragediar på nokre sekund. Det er viktig at arbeidarar passar på sikkerheten på jobb.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Arbeidsulykke:</strong> Uhell som skjer når nokon jobbar</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">🚜</div>
+      <h3>Noreg får nye og sterke stridsvogner</h3>
+      <p>Noreg har kjøpt nye stridsvogner for 23 milliardar kroner, og dei første har no kome til landet. Ein stridsvogn er eit tungt militært kjøretøy med gevær og panser. Ekspertar seier at dei nye vognene er betre enn dei russiske. Dette skal gjera Noreg sterkare og tryggare dersom det blir krieg. Vognene er moderne og kan forsvara landet vårt på ein betre måte enn dei gamle. Dette er ein viktig investering for å halda oss trygge.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>stridsvogn:</strong> tungt militært kjøretøy med kanon og panser</div><div class="ord-item"><strong>panser:</strong> tjukk metallbeskytting</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">📉</div>
-      <h3>Stortinget kutta CO₂-avgifter – men det er ulovleg</h3>
-      <p>Finansminister Jens Stoltenberg (leiaren av økonomien i Noreg) seier at Stortinget har gjort noko som sannsynlegvis er ulovleg. Dei kutta avgifter på forureining frå bil og industri. Ifølgje Stoltenberg er det lovbrotet kallar statsstøtte. Statsstøtte betyr at staten hjelper nokre næringer med pengar som andre ikkje får. Dette er imot dei internasjonale reglane som Norge følgjer. Avgiftene skal eigentleg gjere det dyrare å forureina.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Avgift:</strong> Pengar man må betale til staten</div><div class="ord-item"><strong>Forureining:</strong> Når luft, vatn eller jord blir skitten og dårleg</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">❄️</div>
+      <h3>Dårleg vêr kjem til Noreg i helga</h3>
+      <p>Meteorologane varslar at det kjem kraftig vêrskifte i Noreg denne helga. I nord kan det koma 20 centimeter snø, medan det i sør blir omlag 20 grader kaldare enn før. Dette betyr at mange menneske må byte dekka på bilane sine – sommardekkene passar ikkje når det er kaldt. Det er viktig å vera forberedt på endringane i vêret. Foreldre bør sjekka at familien har varme klede og at bilen er klar for vinter. Slik vêrskifte er vanleg i Noreg når sesongen skiftar.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>dekk:</strong> gummihjul på bil</div><div class="ord-item"><strong>vêrskifte:</strong> plutseleg endring i vêret</div></div>
       <span class="kilde">📰 NRK</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🚨</div>
-      <h3>Mann sikta for åtte overfall</h3>
-      <p>Politiet i Oslo-området har sikta ein mann i 20-åra for å ha overfalle åtte kvinner. Overfalla skjedde i Bærum, Asker og Oslo. Mannen skal ha trua kvinnene med ein stein og gjort dei vondt. Politiet jobbar for å finne ut kva som skjedde i alle tilfella. Det er viktig at kvinner og alle menneske kan gå trygt på vegen utan å verta utsette for vald. Politiet arbeider for å finne ut meir om saka.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Overfall:</strong> Når nokon angrip eller gjer vondt mot ein annan person</div><div class="ord-item"><strong>Sikta:</strong> Når politiet trur at nokon har gjort noko ulovleg</div></div>
-      <span class="kilde">📰 TV2</span>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span><span class="land-badge">🇯🇵 Japan</span></div>
-      <div class="card-emoji">🩳</div>
-      <h3>Tokyo sparar strøm med shorts på jobben</h3>
-      <p>Myndigheitene i Tokyo, hovudstaden i Japan, har ein kreativ ide for å spare pengar. Dei oppmodar dei offentlege arbeidarane til å bruke shorts på jobben! Grunnen er at krigen i Midtøsten har gjort det dyrare å kjøpe energi. Då må dei bruke mindre luft og varmeanlegg for å spare pengar. Det er ei enkel løysing på eit stort problem. Shorts let kroppen andast betre og treng mindre kjøling.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Energi:</strong> Kraft som trengst for å få ting til å gå</div></div>
-      <span class="kilde">📰 TV2</span>
-    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">📱</div>
-      <h3>Influensarar delte meining om nytt lovforslag</h3>
-      <p>Noreg diskuterer eit nytt lovforslag som skal halde barn under 16 år frå sosiale medium. Influensarar – folk som lagar innhald på nettet – har ulike meiningane om detta. Nokre seier at det er for tidleg å stille slike krav, medan andre støttar forslaget. Barn kan bli påverka negativt av sosiale medium ved å samanlikne seg med andre. Men nokre meiner at ungdomane treng rett til å vera på nettet. Det er ein viktig diskusjon for å verne barnet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Influensar:</strong> Personar som lagar innhald på nettet og har mange følgjarar</div><div class="ord-item"><strong>Lovforslag:</strong> Ide om ein ny lov som Stortinget skal stemme om</div></div>
-      <span class="kilde">📰 TV2</span>
-    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">💻</div>
-      <h3>Norge trener på cyberoverfall</h3>
-      <p>Tusenvis av norske soldatar øver på å forsvare Norge mot cyberangrep – angrep via datamaskinar! Dei sit bak tastaturane og testar om Noreg er sikkert nok. NSM (Noreg sitt sikkerheitsbyrå) seier at det finst mange svake punkter som må fikast. Cyberangrep kan gjere stor skade på landet utan at nokon ser det med eigne auge. Hacking av straumnettet, sjukehusa og bankar kan vere farlegt. Derfor øver soldatane for å halde landet trygt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Cyberangrep:</strong> Angrep via datamaskinar og nettet</div><div class="ord-item"><strong>Hacking:</strong> Å bryte seg inn i datamaskinar ulovleg</div></div>
-      <span class="kilde">📰 TV2</span>
-    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🎨</div>
-      <h3>Kunstfaget treng meir pengar på skulen</h3>
-      <p>Norske skuler seier at kunstfaget ikkje får nok pengar. Ein organisasjon som arbeitar med kunstopplæring seier at budsjettane er veldig små. Det gjer at det er vanskeleg å kjøpe materialar og ha gode undervisningsplassar. Kunst og handverk lærer barn å vere kreative og uttrykke seg på nye måtar. Dersom skulene ikkje får meir pengar, kan fleire barn misse sjansen til å lære kunstferdigheiter. Det er viktig å gi kunstfaget like mykje oppmerksomheit som andre fag.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Kunstfag:</strong> Undervisning i teikn, maling og handverk</div><div class="ord-item"><strong>Budsjett:</strong> Planlagde pengar til noko bestemt</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">🚑</div>
+      <h3>Mann døydde i arbeidsulykke i Stavanger</h3>
+      <p>Ein mann i 50-åra vart alvorleg skadd på arbeidsplassen sin og døydde på sjukehus i Stavanger. Ulykka skjedde på formiddagen då han fall. Ambulansen kom raskt, men legen kunne ikkje redda han. Dette er ein tragedie for familien og kollegaene hans. Arbeidsulykker er alvorleg og det er viktig at arbeidsgjevarar tek sikkerheit på alvor. Noreg har strie reglar for å gjera arbeidsplassane så trygge som mogleg.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>arbeidsulykke:</strong> skade som skjer på arbeidsplassen</div><div class="ord-item"><strong>tragedie:</strong> noko veldig sorgleg som skjer</div></div>
       <span class="kilde">📰 NRK</span>
-    </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span><span class="land-badge">🇮🇩 Indonesia</span></div>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">⛷️</div>
+      <h3>Drama i langrennslandslaget</h3>
+      <p>Det har vorte stor strid i langrennslandslaget i Noreg og fleire løparar risikerer å missa viktige løp. Nokon seier at leiarane har brukt makta si på feil måte mot idrettarane. Langrenning er ein populær idrett der folk løper lange strekningar på ski. Dette er ei alvorleg sak som kan påverka Noreg sitt lag. Idrettsmiljøet er på vakt og vil sjå korleis det blir løyst. Rettferdig behandling av idrettarar er viktig for idretten.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>langrenning:</strong> langdistanseløp på ski</div><div class="ord-item"><strong>maktmisbruk:</strong> å bruka makt på feil måte</div></div>
+      <span class="kilde">📰 NRK</span>
+    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span><span class="land-badge">🇮🇷 Iran</span></div>
       <div class="card-emoji">🕊️</div>
-      <h3>Soldat frå Indonesia drep i Libanon</h3>
-      <p>Ein soldat frå Indonesia som jobba for FN (dei samla nasjonane) blei drap i Libanon. Han vart skada under eit oppdrag for fredsstyrken. FN arbeitar for å halde fred i område som har krig. Soldatane som arbeitar for FN er veldig modige og risikerer livet sitt. Indonesias folk og familien til soldaten er veldig lei seg for dette. Krig er farleg, og mange menneske mister livet sitt når det er konflikt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>FN:</strong> Dei samla nasjonane – organisasjon som arbeitar for fred</div><div class="ord-item"><strong>Fredsstyrke:</strong> Soldatar som er sendt inn for å stoppe krigar</div></div>
+      <h3>Iran og USA kan møtast for nye samtalar</h3>
+      <p>Irans utanriksminister Abbas Araghchi skal vera på veg til Pakistan for å møta folk frå andre land. Dette kan bety at USA og Iran skal halda nye samtalar saman. Desse to landa har vore fiender i mange år og krigen i Midtøsten har gjort det verre. Om dei kan snakka saman kan det kanskje bli mindre krieg og meir fred. Når land snakkar saman kan dei finne løysingar på problem. Dette er eit gledeleg teikn på at fredsprosessar kan starta.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>utanriksminister:</strong> politikar som handsamar forhold til andre land</div><div class="ord-item"><strong>fredssamtalar:</strong> møte for å prøva å stopa krieg</div></div>
+      <span class="kilde">📰 Aftenposten</span>
+    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span><span class="land-badge">🇦🇪 🇶🇦 🇰🇼 Emirata, Qatar, Kuwait</span></div>
+      <div class="card-emoji">✈️</div>
+      <h3>Reiseavvarsling svekka for land i Midtøsten</h3>
+      <p>Noreg har redusert reiseavvarslinga si for Emirata, Qatar og Kuwait fordi situasjonen der har blitt betre. Reiseavvarslingar fortel folk om kvar det er farleg å reisa. I februar vart dei heva på grunn av krigen i Midtøsten. No seier Noreg at det er tryggare å reisa dit igjen. Dette er bra nyheit for folk som vil vitja dette området. Dei fleste turisme og forretninger kan no halda fram. Noreg tek sikkerheita til borgarane sine veldig alvorleg.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>reiseavvarslingar:</strong> råd om kvar det er farleg å reisa</div><div class="ord-item"><strong>redusert:</strong> minska eller gjort mindre</div></div>
+      <span class="kilde">📰 Aftenposten</span>
+    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">⚖️</div>
+      <h3>Terroristen Breivik søker om å bli laus frå fengsel</h3>
+      <p>Anders Behring Breivik (som gjorde eit terroranslag i 2011 og drap 77 menneske) prøver igjen å få løyse frå fengsel. Han har alt prøvd dette mange gonger utan å få gjennomslag. Breivik gjorde ei av dei verste handlingane i norsk historie og skal sitja i fengsel for livet. Politikarane og folk i Noreg er samde om at han skal halda seg i fengsel for å verna samfunnet. Justisen seier at han ikkje skal bli laus. Dette er eit alvorleg kapittel i norsk historie som vi må hugsa på.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>terroranslag:</strong> vald angrep for å skremja folk</div><div class="ord-item"><strong>løyse:</strong> å sleppa laus eller få fridom</div></div>
+      <span class="kilde">📰 Aftenposten</span>
+    </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">🏦</div>
+      <h3>Nye folk inn i Norges Banks styre</h3>
+      <p>Tre nye styremedlemmer skal no bli med i Norges Banks hovedstyre. Norges Bank er den viktigaste banken i Noreg som passar på pengane våre. Styreutvalet set retning for korleis banken skal jobba og bestemmer ting som påverka økonomien i heile Noreg. Dei nye medlemmene bringer ny erfaring og nye idéar. Dette er viktig for at Noreg skal halda pengesamfunnet sterkt og trygt. Valet av dyktige menneske til styreleiarposisjonar er avgjerande for landet.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>styremedlemmer:</strong> personar som sit i eit leiingsråd</div><div class="ord-item"><strong>Norges Bank:</strong> den viktigaste banken i Noreg</div></div>
       <span class="kilde">📰 Aftenposten</span>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span><span class="land-badge">🇺🇦 Ukraina</span></div>
-      <div class="card-emoji">⚡</div>
-      <h3>Laservåpen kan hjelpe Ukraina</h3>
-      <p>Ekspertar seier at laservåpen kan vere ein stor fordel for Ukraina i krigen mot Russland. Desse våpena er lydlause, og menneske kan ikkje sjå dei med det blotte auge. Dei er òg billige å bruke samanlikna med andre våpen. Ukraina kjempar for friheten sin, og nye våpen kan hjelpe dei til å forsvare seg betre. Laservåpen kunne drepe droner og små mål langt borte. Det er viktig at Ukraina får hjelp til å verne landet sitt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Laservåpen:</strong> Våpen som brukar sterkt laserlys til å angripe</div><div class="ord-item"><strong>Drone:</strong> Liten fly utan pilot som kan flyge sjølv</div></div>
-      <span class="kilde">📰 VG</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:58</span></div>
+      <div class="card-emoji">👮</div>
+      <h3>Forsvarsjef pågripen – mistanke om korrupsjon</h3>
+      <p>Ein høgt rangert forsvarsoffiser vart pågripen fordi han blir mistenkt for å ha auka prisane på arbeidskontrakter på feil måte. I oktober 2021 skulle timetaksen vera 1175 kroner, men etter halvannet år var ho auka til 1700 kroner utan god grunn. Økokrim (som etterforskar økonomisk kriminalitet) opna undersøking. Dette viser at det finst menneske som prøver å tjene ulov pengar ved å lure staten. Noreg har strenge lover mot dette og folk som gjer det må svarast for. Tillit og ærlighet er veldig viktig i forsvarets arbeid.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>korrupsjon:</strong> når folk bruker makta si for å tjene seg sjølv</div><div class="ord-item"><strong>Økokrim:</strong> politiet som etterforskar økonomisk kriminalitet</div></div>
+      <span class="kilde">📰 TV2</span>
     </div></div>
   <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">⚠️</div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">⚠️🏗️</div>
       <h3>Steinar fell ned på byggeplass</h3>
-      <p>Fleire steinar har falt ned frå byggeplassen på Lerstad dei siste vekene. Ein stor stein øydela både ei terrasse og ei sandkasse. Det er farleg når steinar fell frå høgt oppe, og det kan skade både menneske og ting som står under. Byggefirmaet har varsla tidlegare om at dette kunne skje. No må dei passe endå betre på sikkerheten. Det er viktig at folk heime blir varsla når det er farleg på byggeplass. Slike ulykker kan hindres viss ein er forsiktig og planlegg godt.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>byggeplass:</strong> Stad der folk byggjer nye hus eller andre ting</div><div class="ord-item"><strong>varsla:</strong> Seie frå at noko farleg kan skje</div></div>
+      <p>På Lerstad har det vore farleg på byggeplassen dei siste vekene. Fleire steinar har falle ned frå byggjinga, og ein av dei øydela både ei terrasse og ei sandkasse. Det er veldig viktig at byggeplassane er trygge for folk som bur nærme og for arbeidarane som jobbar der. No skal dei passe betre på at ikkje fleire steinar fell ned. Kommunen har fått varsel om hendelsene, og dei skal sjekke at byggefirmaet gjer arbeidet sitt på ein sikker måte.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>byggeplass:</strong> eit område der menneske bygger hus eller andre ting</div><div class="ord-item"><strong>varsel:</strong> ein beskjed om at noko farleg eller viktig har skjedd</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🔋</div>
-      <h3>Nye superladarar kjem til Øran</h3>
-      <p>Tesla byttar ut gamle superladarar ved kjøpesenteret på Øran. Superladarar er stasjonar der elbil-eigarar kan lade opp bilane sine fort. Dei nye ladarane skal vere endå raskare og betre. Fleire og fleire menneske køper elbil i dag, og då trengs det mange ladarar rundt omkring. Det er bra for miljøet når vi bruker mindre bensin og diesel. Arbeidet skal vere ferdig på våren, så då kan elbil-eigarane lada bilane sine mykje raskare.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>superladar:</strong> Stasjon der elbil-eigarar lar opp batteriet raskt</div><div class="ord-item"><strong>elbil:</strong> Bil som går på straum i staden for bensin</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🐟💰</div>
+      <h3>Frå fisk til milliardar</h3>
+      <p>André Skarbø var berre seks år då han starta å jobbe på eit fiskeoppdrettsanlegg. I starten fekk han betalt i fisk, men det vart meir og meir arbeid og betre løn. I dag er han eiar og leiar av bedrifta Platina Seafood, som sel fisk for milliardar kroner kvart år! Sjølv om bedrifta er veldig stor, har ho berre tre fast tilsette. Det er utruleg at ein person kan skape så mykje med så få medarbeidarar. Historien til André viser at det er mogleg å starte lite og verte stor dersom du jobbar hardt og ikkje gir opp.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oppdrettsanlegg:</strong> eit sted der du dyrkar fisk eller andre dyr</div><div class="ord-item"><strong>tilsette:</strong> menneske som jobbar i ein bedrift</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🦁</div>
-      <h3>Jervar skadar dyr – fellinga held fram</h3>
-      <p>Jervar et opp mange sau og andre dyr i området, så direktoratet fortsett å felle jervar for å beskytte husdyra. Jerven er eit villdyr som treng kjøtt for å overleve, så det er naturleg at ho et sau når ho er sulten. Men bønder mister pengar når deira dyr blir eten av jerv. Fellinga av jervar er ikkje lett å bestemme, fordi jerven skal òg få lov til å leve. Det er ein vanskeleg balanse mellom å beskytte husdyr og å la villdiret eksistere. Forskarar og bønder må arbeide saman for å finne løysingar.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jerv:</strong> Eit villdyr som liknar på ein mink, men større</div><div class="ord-item"><strong>felling:</strong> Når menneske drep dyr for å kontrollere talet</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">⚡🚗</div>
+      <h3>Betre ladarar for elbil-eigarar</h3>
+      <p>Tesla-selskapet oppgraderer sine super-ladarar på Øran kjøpesenter. Superchargere er spesielle ladarar som ladar elektriske bilar veldig fort – på nokre få minutt kan du få nok straum til å køyre langt. Med dei nye og betre ladarane vil det verte endå raskare å lade opp elbilen din. Dette er bra nyheit for alle som har elektriske bilar, fordi dei kan reise lengre utan å måtte vente så lenge på lading. Det visar at bedrifter arbeiter for å gjere det lettare å bruke miljøvenleg transport.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>supercharger:</strong> ein rask ladestasjon for elektriske bilar</div><div class="ord-item"><strong>miljøvenleg:</strong> ikkje skadeleg for miljøet og naturen</div></div>
       <span class="kilde">📰 Sunnmørsposten</span>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🐟</div>
-      <h3>Frå fisk-karlss til millionbonde</h3>
-      <p>André Skarbø er ein gjev forretningsmann som eig milliardbedrifta Platina Seafood. Som seksåring fekk han betalt i fisk for å spyle fôrrester på eit oppdrettsanlegg. Han var arbeidskamerat med fiskane allereie då! No leier han eit stort selskap som seld fisk rundt omkring i heile verda. Histoire hans viser at det er mogleg å starte lite og bli stor om ein arbeiter hardt og har gode idéar. Mange barn drøymer om å verte entreprenørar – folk som skapar eigne bedrifter – og Skarbø er eit fint døme på det.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oppdrettsanlegg:</strong> Stad der folk dyrkar fisk eller andre dyr</div><div class="ord-item"><strong>entreprenør:</strong> Person som skapar og leier si eiga bedrift</div></div>
-      <span class="kilde">📰 Sunnmørsposten</span>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🏥</div>
-      <h3>Omsorgssenteret Skollebakken 1 er opna</h3>
-      <p>Det nye omsorgssenteret Skollebakken 1 blei offisielt opna denne veka. Marit Botnen, tidlegare kommunalsjef for helse og omsorg, klipte bandet som markerte opninga. Anne Hestflått, prosjektleiar i eigedomsavdelinga i Ulstein kommune, fekk prisen «Årets nyskapar 2025» for arbeidet sitt med senteret. Omsorgssenteret er ein plass der eldre menneske kan få hjelp og omsorg når dei treng det. Det er så viktig å ha gode stader der eldre menneske kan bu og få hjelp til daglegdagse oppgåver. Senteret skal gjere livet betre for fleire eldre menneske i området.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>omsorg:</strong> Hjelp og omtanke for menneske som treng det</div><div class="ord-item"><strong>kommunalsjef:</strong> Leiaren av ei viktig avdeling i kommunen</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🏥❤️</div>
+      <h3>Nytt omsorgsheim er opna</h3>
+      <p>Skollebakken 1 er eit nytt omsorgsheim i Ulstein kommune der eldre menneske kan bu og få hjelp. Marit Botnen, som tidlegare var kommunalsjef for helse og omsorg, hadde æra av å klippe bandet som markerte at heimen no er offisielt open. Anne Hestflått, prosjektleiar i eigedomsavdelinga, fekk prisen «Årets nyskapar 2025» fordi ho gjorde ein fantastisk jobb med å få heimen ferdig. Det tok lang tid å bygge heimen, men no kan eldre få betre omsorg og trygt bustader. Dette er veldig viktig for samfunnet vårt, fordi alle menneske fortener å få god hjelp når dei blir gamle.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>omsorgsheim:</strong> eit heim der gamle og sjuke menneske får hjelp</div><div class="ord-item"><strong>prosjektleiar:</strong> ein person som leiar eit stort arbeid frå start til slutt</div></div>
       <span class="kilde">📰 Vikebladet</span>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">❄️🏔️</div>
+      <h3>Rockefestival på Stikk UT!</h3>
+      <p>Stikk UT! Vinter sette ny rekord i Møre og Romsdal med mange menneske som tok turen ut i frisk luft gjennom den kalde årstida. I Herøy og Sande var det mange som deltok i aktiviteten som handlar om å få folk til å vere ute i naturen. Det er kjempeflott at so mange barn og vaksne brukar vinteren til å ha det moro utanfor! Å vere ute i kaldt vêr er faktisk veldig bra for helsen din, både for kroppen og for humøret. Når vi er ute i naturen, blir vi meir glade og får meir energi.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Stikk UT!:</strong> ein kampanje som oppmodar folk til å vere ute i naturen</div><div class="ord-item"><strong>aktivitet:</strong> ein ting du gjer for å ha moro og halda deg frisk</div></div>
+      <span class="kilde">📰 Vestlandsnytt</span>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">⚙️</div>
-      <h3>Hareid Group får ny kontrakt</h3>
-      <p>Hareid Group har fått ein stor kontrakt på elektroinstallasjonar for eit nytt skip. Skipet skal byggjast ved Larsnes Mek. Verksted og skal leverast til reiarlaget Rostein. Elektroinstallasjonar er alle dei elektriske systema i eit skip – ting som lys, motorar og elektronikk. Det er eit teknisk og viktig arbeid som krev mykje kunnskap. Denne kontrakten viser at Hareid Group er gode på sitt arbeid og at andre selskap stolar på dei. Det betyr òg nye jobbmoglegheiter for folk i området.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kontrakt:</strong> Skriftleg avtale mellom bedrifter</div><div class="ord-item"><strong>elektroinstallasjon:</strong> Elektriske system og kabling i bygg eller skip</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">⚽🏆</div>
+      <h3>Hareid prøver å slå Hødd igjen</h3>
+      <p>Hareid og Hødd skal spele fotball mot kvarandre på Hareidsmyrane på fredag kveld, og det blir spennande! Ikkje sidan 2006 – det vil seie 20 år – har Hareid vunne over Hødd sin næst beste lag. For Hareid-laget blir det ei stor chance til å bryte denne «forbaninga» som har vart så lenge. Både laga trener hardt for å vere i best mogleg form. Lokalderby er alltid spennande, fordi lag frå same område kjem seg veldig motiverte når dei skal spele mot kvarandre. Kampen kan bli avgjerande for korleis sesongen blir for begge laga.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>lokalderby:</strong> ei kamp mellom to lag frå same område</div><div class="ord-item"><strong>motivert:</strong> når du er veldig villin til å gjere noko godt</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">⚽</div>
-      <h3>Hareid vil vinnast over Hødd</h3>
-      <p>Hareid sitt fotballag skal spele mot Hødd sine nest beste lag på fredag kveld på Hareidsmyrane. Det er eit lokalderby – når lag frå same området møtest. Hareid har ikkje vunne over dette laget sidan 2006, så det har vore 20 år utan seier! Det er såkalla «forbanning» at dei ikkje vinn. No ønskjer Hareid-laget å bryte denne lange tida utan triumf. Både spelarane og supporterane har håp om at denne gongen skal bli ein stor festa. Lokalderbyar er alltid spennande fordi folk frå området bryr seg så mykje.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>lokalderby:</strong> Fotballkamp mellom lag frå same område</div><div class="ord-item"><strong>forbanning:</strong> Ein periode utan hell eller suksess</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">⛴️🌍</div>
+      <h3>Cruise-skip kjem til Hareid</h3>
+      <p>Cruiseskipet Artania skal komme til Hareid laurdag den 13. juni, og det kjem mange turistar med skipet! Det er no klart kva aktivitetar og opplevingar dei første cruise-turistane kan velje mellom når dei går på land. Det kan vere alt frå guidar som viser omkring i byen, til aktivitetar i naturen eller besøk på interessante stader. Det er fint at turistar får sjansen til å sjå kor vakker og spennande Hareid er. Når turistar kjem på besøk, får lokale bedrifter og restaurantar meir arbeid og inntekter. Dette er bra for heile samfunnet.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cruise:</strong> ei reise på eit stort skip der du besøker mange stader</div><div class="ord-item"><strong>turist:</strong> ein person som reiser rundt for å sjå nye stader</div></div>
       <span class="kilde">📰 Vikebladet</span>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🚢</div>
-      <h3>Cruiseskip kjem til Hareid</h3>
-      <p>Skipet Artania kjem til Hareid laurdag 13. juni med mange turistar ombord. Turistane kan velje mellom mange morsame aktivitetar under besøket sitt. Det er spennande at Hareid får besøk av så mange menneske frå andre land. Turistane vil sjå kor fint det er i Møre og Romsdal og vil lære om kulturen vår. Det er bra for butikkane og restaurantane i byen når det kjem turistar. Hareid blir ei internasjonal stad denne dagen, og det kan bli både artig og lærerikt for både turistane og folk heime.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cruise:</strong> Krypsing med skip der personar bur ombord og besøkjer stader</div><div class="ord-item"><strong>turist:</strong> Person som reiser for å sjå nye stader</div></div>
-      <span class="kilde">📰 Vikebladet</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🔌⛴️</div>
+      <h3>Elektriker-bedrift får stor kontrakt</h3>
+      <p>Hareid Group har få ein stor kontrakt! Dei skal setje inn komplette elektroinstallasjonar – det vil seie all elektrisk utstyr – på eit nytt skip som skal byggast. Skipet skal leverast til reiarlaget Rostein, som sel og driv skip. Det er veldig flott at ein lokal bedrift i Hareid får ein så stor og viktig oppgåve. Dette tyder at Hareid Group er veldig dyktige på det dei gjer, og at andre bedrifter stolar på dei. Når lokale bedrifter får store oppgåver, skapar det arbeid for fleire menneske i området vårt.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kontrakt:</strong> ein avtale om at ein bedrift skal gjere ein jobb</div><div class="ord-item"><strong>elektroinstallasjon:</strong> all elektrisk utstyr og ledningar i hus eller skip</div></div>
+      <span class="kilde">📰 Hareid Group</span>
     </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span></div>
-      <div class="card-emoji">🏔️</div>
-      <h3>Mange går ut i naturen – ny rekord</h3>
-      <p>Stikk UT! er eit prosjekt som oppfordrar folk til å gå ut i naturen, og denne vinteren var det rekordfleire som gjorde det. I Herøy og Sande var det mange menneske som tok turen ut i den kalde lufta. Å gå ut i naturen er veldig bra for både kroppen og sinnet. Frisk luft, rørsle og vakker natur gjer alle gladare og sunnare. Det er fint å sjå at så mange menneske – både barn og vaksne – bryr seg om å vere utandørs. Denne rekordbryting viser at folk i Møre og Romsdal elskar naturen sin.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>rekord:</strong> Det beste eller høgaste som nokon har oppnådd</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span><span class="land-badge">🇱🇹 Litauen</span></div>
+      <div class="card-emoji">🏐🌍</div>
+      <h3>Litauisk trenar til handball-laget</h3>
+      <p>Bergsøy Handball har tilsett Gintaras Savukynas som ny trenar for sitt elite-lag. Han er frå Litauen, eit land i Aust-Europa, og han jobba før i Bergsøy for ti år sidan. Nå kjem han tilbake til å trene laget sitt igjen! Det er kjempeflott når erfaringne trenarar kjem tilbake til klubben, fordi dei veit allereie korleis ting fungerer. Gintaras har mykje handball-erfaring og skal hjelpe Bergsøy-laget til å bli endå betre. Handball er ein utruleg morsom sport, og det er spennande å sjå kor godt Bergsøy-laget blir med ny trenar.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>elit-lag:</strong> dei beste og sterkaste spelarane på ein sport</div><div class="ord-item"><strong>Litauen:</strong> eit land i Aust-Europa ved Østersjøen</div></div>
       <span class="kilde">📰 Vestlandsnytt</span>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 11:36</span><span class="land-badge">🇱🇹 Litauen</span></div>
-      <div class="card-emoji">🤾</div>
-      <h3>Litauaren skal trene handballlaget</h3>
-      <p>Bergsøy Handball har tilsett Gintaras Savukynas som ny hovudtrenar. Han er frå Litauen og var trenaren i klubben ei tid for ti år sidan. No kjem han attende for å leie laget att. Savukynas har stor erfaring med handball og kjenner klubben godt. Det er spennande at ein internasjonalt erfaren trenar skal hjelpe laget til å verte betre. Handball er ein morsom lagsport der folk arbeiter saman for å seie mål. Med ei god trenar kan laget forbetre seg mykje og få meir suksess.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>handball:</strong> Lagsport der to lag kastar ball til kvarandre og prøver å seie mål</div><div class="ord-item"><strong>hovudtrenar:</strong> Personen som leier og tren ein idrettsklubb</div></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">👨‍👦💼</div>
+      <h3>Far og son feira same arbeidsjubiléum</h3>
+      <p>Det er veldig sjeldan når ein far og søn feira sitt arbeidsjubiléum – det vil seie 25 år eller 50 år i jobben – på same tid! I bedrifta Vestsink skjedde nettopp dette. Far og søn har jobba i same firma og nå fekk dei begge celebrate at dei har vore der lenge. Dette viser at heile familien likar seg i jobben sin og gjer bra arbeid. Det er flott for Vestsink fordi det betyr at bedrifta har dyktige og lojale arbeidarar. Når folk jobbar lenge same stad, lærer dei mykje og blir ekstra gode på det dei gjer.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jubiléum:</strong> ein feiring av at det er gått ein spesiell tid</div><div class="ord-item"><strong>lojal:</strong> tru og dårleg mot nokon eller noko</div></div>
       <span class="kilde">📰 Vestlandsnytt</span>
     </div></div>
-  <div class="panel" id="panel-spel"></div>
-  <div class="panel" id="panel-kino"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta">
-        <span class="tidspunkt">🔜 Kjem snart</span>
-        <span style="font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;background:#fef9c3;color:#854d0e">11 år</span>
-      </div>
-      <div class="card-emoji">🎭</div>
-      <h3>The Drama</h3>
-      <p>Ein spennande film for ungdomar som likar drama og spenning! The Drama handlar om konflikt og store kjensler på scena. Perfekt for deg som drøymer om teater og skal oppleva noko verkelig dramatisk!</p>
-      <span class="kilde">📰 TMDB / Filmweb</span>
+  <div class="panel" id="panel-spel"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🎮✨</div>
+      <h3>Sega skal gjera gamle spel liva igjen i 2026!</h3>
+      <p>Det er kjempeglad nyheiter frå spelselskapet Sega! Dei skal fira gamle og kjære spelserier som Outrun, Streets of Rage og NiGHTS med spesielle arrangement gjennom heile 2026. Mange av desse spelserien har ikkje vore aktive på mange år, så det blir veldig spennande å sjå kva Sega planlegg. Kan du tenkja deg å spela desse klassiske favoritane på nytt?</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Sega:</strong> Eit stort spelselskap som har laga mange populære spel</div><div class="ord-item"><strong>Spelserier:</strong> Fleire spel med samme namn og karakterar som kjem ut over mange år</div></div>
+      <span class="kilde">📰 Eurogamer</span>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta">
-        <span class="tidspunkt">🔜 Kjem snart</span>
-        <span style="font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;background:#dcfce7;color:#166534">Alle</span>
-      </div>
-      <div class="card-emoji">🔍</div>
-      <h3>Krølle Bølle</h3>
-      <p>Møt Krølle Bølle - ein av Noreg sine mest elskta figurar frå barnekrim! Med spenning, mysterium og humor skal du følgje denne frekke gutten på eit nytt eventyr. Ein klassiker som passar perfekt for deg som er glad i detektivhistorier!</p>
-      <span class="kilde">📰 TMDB / Filmweb</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🎯⚔️</div>
+      <h3>Overwatch gjeve Roadhog-spelarane hjelp!</h3>
+      <p>Spelarane av Overwatch er nok veldig glade no! Spelselskapet Blizzard tok bort ein styrke som Roadhog-karakteren hadde, men etter berre ein veke var det klart at det var ikkje ein god ide. No har dei endra det attende så Roadhog er like kraftig som før. Det viser at Blizzard høyrer på kva spelarane synest!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Overwatch:</strong> Eit populært lagkamp-spel der du spelar som ulike karakterar</div><div class="ord-item"><strong>Roadhog:</strong> Ein kraftig karakter i Overwatch</div><div class="ord-item"><strong>Nerf:</strong> Når ein gjer noko i eit spel svakare eller mindre kraftig</div></div>
+      <span class="kilde">📰 PC Gamer</span>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta">
-        <span class="tidspunkt">🔜 Kjem snart</span>
-        <span style="font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;background:#dcfce7;color:#166534">Alle</span>
-      </div>
-      <div class="card-emoji">💔✨</div>
-      <h3>Tilbakekomstene</h3>
-      <p>Ein sterk og røyrande film om ei familie som opplever det umulige – at nokre som er borte kjem tilbake. Filmen stiller store spørsmål om kjærleik, tap og hva som er sant. Sjølv om ho er vaksen, er ho ein filmperle som gir deg mykje å tenka på!</p>
-      <span class="kilde">📰 TMDB / Filmweb</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">💇✨</div>
+      <h3>Clair Obscur: Expedition 33 feirar éitt år med nye frisyrar!</h3>
+      <p>Det japanske rollespelet Clair Obscur: Expedition 33 blei utgitt for eitt år sidan, og no skal det feirast! Utviklaren Sandfall Interactive har laga ein oppdatering med masse nye frisyrar til alle karakterane i spelet. Alle spelarane kan få nye utsjånader på sine favorittfigurar. Det er ein kjempe måte å fira på!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Rollespel (RPG):</strong> Spel der du spelar som ein karakter og må fullføra oppdrag</div><div class="ord-item"><strong>J-RPG:</strong> Rollespel som kjem frå Japan</div></div>
+      <span class="kilde">📰 Rock Paper Shotgun</span>
+    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🎮🚀</div>
+      <h3>Xbox seier at dei skal bli endå betre!</h3>
+      <p>Ledaren av Xbox har skrive eit åpent brev til alle spelarane sine. Dei seier at Xbox skal endrast og bli enda meir spennande framover! Ein viktig nyheit er at "Microsoft Gaming" no skal berre kallast "Xbox". Konsolane skal framleis vera viktig, og dei skal fokusera på å gjera spelarupplevinga di endå betre.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Xbox:</strong> Ein spelkonsoll som er laga av Microsoft</div><div class="ord-item"><strong>Konsoll:</strong> Ein boks du koplar til TV-en for å spela spel på</div></div>
+      <span class="kilde">📰 Eurogamer</span>
+    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">⚽🏆</div>
+      <h3>Coppa Italia-finalen: Lazio møter Inter!</h3>
+      <p>Ein av dei viktigaste fotballkampane i Italia skal spelast når Lazio møter Inter i Coppa Italia-finalen! Coppa Italia er ein stor fotballturnering i Italia, og finalen er alltid veldig spennande. To lag skal kjempa om å vinna pokal og ære. Blir det Lazio eller Inter som vinn?</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Coppa Italia:</strong> Den viktigaste fotballturnering i Italia</div><div class="ord-item"><strong>Finale:</strong> Den siste og viktigaste kampen i ein turnering</div></div>
+      <span class="kilde">📰 VG Sport</span>
+    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🚀🌌</div>
+      <h3>Exodus – eit nytt sci-fi-spel frå gamle Mass Effect-skaperar!</h3>
+      <p>Folket som laga det kjente spelet Mass Effect jobbar no med eit heilt nytt rollespel som heiter Exodus! Frå dei første sniktittane vi har sett, ser det ut til at det kan bli veldig likt Mass Effect, med mykje action og interessante karakterar. Hvis du likar sci-fi og rollespel, må du halde auga med dette!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Sci-fi:</strong> Science fiction – spel eller historier som skjer i framtida eller på andre planeter</div><div class="ord-item"><strong>Mass Effect:</strong> Eit populært rollespel der du er ein romfarer på eventyr</div></div>
+      <span class="kilde">📰 Eurogamer</span>
+    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">💰🎮</div>
+      <h3>Game Pass får nye prisar og nye opplevingar!</h3>
+      <p>Xbox jobbar på noko heilt nytt for Game Pass – ein "Starter Edition" som skal vera meir billig enn før! Denne nye utgåva skal òg inkludera Discord Nitro, som er ein teneste for vener som vil snakka saman medan dei spelar. Det betyr at fleire barn kan få sjansen til å spela masse spel utan å bruka så mykje pengar!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Game Pass:</strong> Ein teneste der du betaler pengar kvar månad og får tilgang til hundrevis av spel</div><div class="ord-item"><strong>Discord:</strong> Ein app der du kan snakka med vener på nett medan du spelar</div></div>
+      <span class="kilde">📰 Eurogamer</span>
+    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
+      <div class="card-meta"><span class="tidspunkt">🕐 11:59</span></div>
+      <div class="card-emoji">🏎️🎮</div>
+      <h3>Rasebi-racinghjulet får 35% rabatt – gull for sim-raceri!</h3>
+      <p>Hvis du drøymer om å kjøra rallyar som dei profesjonelle gjer, er nå ei veldig god moglegheit! Logitech G29/G920 racing wheel får no stor rabatt og passar både til konsoll og PC. Dette hjulet gir deg ein realistisk kjensle når du spelar racingspel, og mange har lært å lika rasebi gjennom dette hjulet. Det er perfekt for deg som vil prøva noko nytt og spennande!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Sim-raceri:</strong> Dataspel som simulerer eller etterliker realistisk racekjøring</div><div class="ord-item"><strong>Racing wheel:</strong> Ein kontroller som ser ut og kjennest som eit ekte rasehjul</div></div>
+      <span class="kilde">📰 Rock Paper Shotgun</span>
     </div></div>
 </main>
 
