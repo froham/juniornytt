@@ -24,6 +24,12 @@ SAKER_FIL_LOK  = "docs/saker_lokal.json"
 SAKER_FIL_SPEL = "docs/saker_spel.json"
 SAKER_FIL_KINO = "docs/saker_kino.json"
 
+# ── Konstantar ────────────────────────────────────────────────────────────────
+SAKER_NAT  = 10
+SAKER_LOK  = 10
+SAKER_SPEL =  8
+SAKER_KINO =  6
+
 STD_LAT  = 62.3439
 STD_LON  =  5.8467
 STD_STAD = "Ulsteinvik"
