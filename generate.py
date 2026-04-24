@@ -9,9 +9,10 @@ from datetime import datetime
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-MAKS_SAKER    = 16
-NYE_PER_RUNDE =  8
-FALLER_UT     =  4
+MAKS_SAKER    = 20
+NYE_PER_RUNDE = 10
+FALLER_UT     =  5
+BUFFER        =  3   # Ekstra saker som hentes i tilfelle duplikater fjernes
 
 SAKER_FIL_NAT = "docs/saker_nasjonal.json"
 SAKER_FIL_LOK = "docs/saker_lokal.json"
@@ -50,20 +51,29 @@ EMOJI_MAP = [
 ]
 
 VÆR_SYMBOL = {
-    "clearsky":               ("☀️",  "Klarvær"),
-    "fair":                   ("🌤️", "Pent vær"),
-    "partlycloudy":           ("⛅",  "Delvis skyet"),
-    "cloudy":                 ("☁️",  "Overskyet"),
-    "rainshowers":            ("🌦️", "Regnbyger"),
-    "rain":                   ("🌧️", "Regn"),
-    "heavyrain":              ("🌧️", "Kraftig regn"),
-    "sleet":                  ("🌨️", "Sludd"),
-    "snow":                   ("❄️",  "Snø"),
-    "snowshowers":            ("🌨️", "Snøbyger"),
-    "fog":                    ("🌫️", "Tåke"),
-    "thunder":                ("⛈️",  "Torden"),
-    "rainandthunder":         ("⛈️",  "Regn og torden"),
-    "heavyrainandthunder":    ("⛈️",  "Kraftig regn og torden"),
+    "clearsky":                    "☀️",
+    "fair":                        "🌤️",
+    "partlycloudy":                "⛅",
+    "cloudy":                      "☁️",
+    "rainshowers":                 "🌦️",
+    "lightrainshowers":            "🌦️",
+    "rain":                        "🌧️",
+    "lightrain":                   "🌧️",
+    "heavyrain":                   "🌧️",
+    "sleet":                       "🌨️",
+    "lightsleet":                  "🌨️",
+    "sleetshowers":                "🌨️",
+    "snow":                        "❄️",
+    "lightsnow":                   "❄️",
+    "snowshowers":                 "🌨️",
+    "fog":                         "🌫️",
+    "thunder":                     "⛈️",
+    "rainandthunder":              "⛈️",
+    "lightrainandthunder":         "⛈️",
+    "heavyrainandthunder":         "⛈️",
+    "rainshowersandthunder":       "⛈️",
+    "snowandthunder":              "⛈️",
+    "sleetandthunder":             "⛈️",
 }
 
 def velg_emoji(tittel, brodtekst=""):
@@ -73,26 +83,84 @@ def velg_emoji(tittel, brodtekst=""):
             return emoji
     return "📰"
 
+def symbol_til_emoji(symbol_code):
+    base = re.sub(r"_(day|night|polartwilight)$", "", symbol_code or "")
+    return VÆR_SYMBOL.get(base, "🌡️")
+
+def farevarsel(vind, symbol_base, nedbor):
+    """Returnerer ekstra fareikoner ved ekstremvær."""
+    farar = []
+    if vind >= 15:
+        farar.append("💨🚨")  # Sterk vind
+    if vind >= 25:
+        farar.append("🌀")    # Storm
+    if "thunder" in symbol_base:
+        farar.append("⚡")
+    if nedbor >= 5:
+        farar.append("🌊")    # Kraftig nedbør
+    return " ".join(farar)
+
 def hent_vaer(lat=STD_LAT, lon=STD_LON):
-    """Henter værdata fra yr.no/met.no for gitte koordinater."""
     url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat:.4f}&lon={lon:.4f}"
     req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
             data = json.loads(r.read())
-        ts = data["properties"]["timeseries"]
-        # Finn nærmeste tidspunkt
-        now = ts[0]["data"]
-        temp = round(now["instant"]["details"]["air_temperature"])
-        vind = round(now["instant"]["details"]["wind_speed"])
-        symbol_raw = now.get("next_1_hours", now.get("next_6_hours", {})).get("summary", {}).get("symbol_code", "")
-        # Fjern _day/_night-suffiks
-        symbol_base = re.sub(r"_(day|night|polartwilight)$", "", symbol_raw)
-        emoji, tekst = VÆR_SYMBOL.get(symbol_base, ("🌡️", symbol_base.replace("_", " ").capitalize()))
-        nedbor = now.get("next_1_hours", now.get("next_6_hours", {})).get("details", {}).get("precipitation_amount", 0)
-        return {"temp": temp, "vind": vind, "symbol": emoji, "beskrivelse": tekst, "nedbor": round(nedbor, 1)}
+        ts_list = data["properties"]["timeseries"]
+
+        # --- Nå ---
+        now = ts_list[0]["data"]
+        temp_no = round(now["instant"]["details"]["air_temperature"])
+        vind_no = round(now["instant"]["details"]["wind_speed"])
+        symbol_no = now.get("next_1_hours", now.get("next_6_hours", {})).get("summary", {}).get("symbol_code", "")
+        nedbor_no = now.get("next_1_hours", now.get("next_6_hours", {})).get("details", {}).get("precipitation_amount", 0)
+        base_no = re.sub(r"_(day|night|polartwilight)$", "", symbol_no)
+
+        # --- Finn dagsprognose for 4 dagar ---
+        from collections import defaultdict
+        dagar = defaultdict(list)
+        for ts in ts_list:
+            dato = ts["time"][:10]
+            d = ts["data"]
+            temp = d["instant"]["details"].get("air_temperature")
+            symbol = d.get("next_6_hours", d.get("next_1_hours", {})).get("summary", {}).get("symbol_code", "")
+            nedbor = d.get("next_6_hours", d.get("next_1_hours", {})).get("details", {}).get("precipitation_amount", 0)
+            if temp is not None:
+                dagar[dato].append({"temp": temp, "symbol": symbol, "nedbor": nedbor or 0})
+
+        dag_prognose = []
+        ukedagar_no = ["Man","Tys","Ons","Tor","Fre","Lør","Sun"]
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        for dato, vals in sorted(dagar.items()):
+            if dato == today_str:
+                continue
+            if len(dag_prognose) >= 4:
+                break
+            temps = [v["temp"] for v in vals]
+            symboler = [v["symbol"] for v in vals if v["symbol"]]
+            maks_nedbor = max(v["nedbor"] for v in vals)
+            maks_vind = 0  # vind per dag ikkje tilgjengeleg direkte i compact
+            symbol_dag = symboler[len(symboler)//2] if symboler else ""
+            base_dag = re.sub(r"_(day|night|polartwilight)$", "", symbol_dag)
+            ukedag_idx = datetime.strptime(dato, "%Y-%m-%d").weekday()
+            dag_prognose.append({
+                "dag": ukedagar_no[ukedag_idx],
+                "min": round(min(temps)),
+                "maks": round(max(temps)),
+                "emoji": symbol_til_emoji(symbol_dag),
+                "fare": "⚡" if "thunder" in base_dag else ("💨🚨" if maks_nedbor > 10 else ""),
+            })
+
+        return {
+            "temp": temp_no,
+            "vind": vind_no,
+            "symbol": symbol_til_emoji(symbol_no),
+            "fare": farevarsel(vind_no, base_no, nedbor_no),
+            "nedbor": round(nedbor_no, 1),
+            "dagar": dag_prognose,
+        }
     except Exception as e:
-        print(f"  Kunne ikke hente vær: {e}")
+        print(f"  Kunne ikkje hente vêr: {e}")
         return None
 
 def hent_rss(feeds, maks_per_kilde=4):
@@ -115,24 +183,26 @@ def hent_rss(feeds, maks_per_kilde=4):
     return artikler
 
 
-OMSKRIV_PROMPT = """Du er redaktør for JuniorNytt – en nyhetsside for barn mellom 8 og 12 år.
+OMSKRIV_PROMPT = """Du er redaktør for JuniorNytt – ei nyhetsside for barn mellom 8 og 12 år.
 
-Her er nyhetsartikler fra norske medier. Velg de {antall} mest interessante og viktige sakene (ingen kjendisnyheter/underholdningssladder), og omskriv dem til barnevennlig språk.
+Her er nyhetsartiklar frå norske medium. Vel dei {antall} mest interessante og viktige sakene (ingen kjendisnyheiter/underhaldningssladder), og skriv dei om til eit barnevenleg språk.
 
-Regler:
-- Enkle ord og korte setninger tilpasset 8–12-åringer
-- 6–9 setninger per sak – engasjerende men saklig
-- Behold det viktigste innholdet
-- Legg til ordforklaring (1–4 ord) for vanskelige begreper
-- Bruk kildenavnet fra artikkelen
-- Legg til ett felt "emoji" med én passende emoji for saken
-- Hvis saken handler om noe som skjer i et annet land enn Norge, legg til feltet "land" med landets navn på norsk og landets flagg-emoji, f.eks. {{"navn": "Ukraina", "flagg": "🇺🇦"}}. Ikke legg til "land" for saker som kun handler om Norge.
+Språkregler – SVÆRT VIKTIG:
+- Skriv på nynorsk i stilen til Sunnmøre/Romsdal-aviser som Vikebladet og Vestlandsnytt – ikkje Hordaland-nynorsk
+- Bruk typiske Sunnmøre-nynorsk-former: "ikkje" (ikke), "òg" (også), "kva" (hva), "når" (når), "dei" (de), "han/ho" (han/hun), "me/vi" (vi), "med" (med), "heime" (hjemme), "skule" (skole), "hjelpe" (hjelpe)
+- Enkle ord og korte setningar tilpassa 8–12-åringar
+- 6–9 setningar per sak – engasjerande men sakleg
+- Behald det viktigaste innhaldet
+- Legg til ordforklaring (1–4 ord) for vanskelege omgrep – ordforklaringane skal også vere på nynorsk
+- Bruk kjeldenamnet frå artikkelen
+- Legg til eitt felt "emoji" med éin passande emoji for saka
+- Viss saka handlar om noko som skjer i eit anna land enn Noreg, legg til feltet "land" med landsnamnet på norsk og flagg-emoji, t.d. {{"namn": "Ukraina", "flagg": "🇺🇦"}}. Ikkje legg til "land" for saker som berre handlar om Noreg.
 
-Artikler:
-{artikler}
+Artiklar:
+{artiklar}
 
-Svar KUN med JSON-array, ingen annen tekst:
-[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}],"land":{{"navn":"...","flagg":"..."}}}}]"""
+Svar KUN med JSON-array, ingen annan tekst:
+[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}],"land":{{"namn":"...","flagg":"..."}}}}]"""
 
 
 def omskriv(artikler, antall=8, retries=4, wait=60):
@@ -209,14 +279,25 @@ def oppdater_saker(nye, fil, er_morgen):
 def vaer_html(vaer):
     if not vaer:
         return ""
+    dagar_html = ""
+    for d in vaer.get("dagar", []):
+        dagar_html += f"""<div class="dag">
+          <span class="dag-namn">{d['dag']}</span>
+          <span class="dag-emoji">{d['emoji']}</span>
+          {f'<span class="dag-fare">{d["fare"]}</span>' if d.get('fare') else ''}
+          <span class="dag-temp"><span class="dag-maks">{d['maks']}°</span><span class="dag-min">{d['min']}°</span></span>
+        </div>"""
+    fare_html = f'<span class="no-fare">{vaer["fare"]}</span>' if vaer.get("fare") else ""
     return f"""<div class="vaer-boks">
-      <span class="vaer-symbol">{vaer['symbol']}</span>
-      <div class="vaer-info">
-        <span class="vaer-temp">{vaer['temp']}°C</span>
-        <span class="vaer-besk">{vaer['beskrivelse']}</span>
-        <span class="vaer-vind">💨 {vaer['vind']} m/s · 🌧 {vaer['nedbor']} mm</span>
+      <div class="vaer-no">
+        <span class="vaer-symbol">{vaer['symbol']}</span>
+        <div class="vaer-detaljar">
+          <span class="vaer-temp">{vaer['temp']}°C {fare_html}</span>
+          <span class="vaer-vind">💨 {vaer['vind']} m/s · 🌧 {vaer['nedbor']} mm</span>
+          <span class="vaer-sted" id="vaer-sted">{STD_STAD}</span>
+        </div>
       </div>
-      <span class="vaer-sted" id="vaer-sted">{STD_STAD}</span>
+      <div class="vaer-dagar">{dagar_html}</div>
     </div>"""
 
 
@@ -275,14 +356,23 @@ def build_html(nasjonal, lokal, vaer):
   .dato{{font-size:.85rem;opacity:.85;margin-top:4px}}
   .sub{{font-size:.75rem;opacity:.7;font-style:italic;margin-top:2px}}
   .oppdatert{{font-size:.7rem;opacity:.6;margin-top:6px}}
-  .vaer-boks{{display:flex;align-items:center;gap:12px;max-width:720px;margin:16px auto 0;
+  .vaer-boks{{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:16px auto 0;
     background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px;backdrop-filter:blur(4px)}}
-  .vaer-symbol{{font-size:2.5rem}}
-  .vaer-info{{display:flex;flex-direction:column;gap:2px;flex:1}}
-  .vaer-temp{{font-size:1.4rem;font-weight:800}}
-  .vaer-besk{{font-size:.8rem;opacity:.9}}
-  .vaer-vind{{font-size:.72rem;opacity:.75}}
-  .vaer-sted{{font-size:.72rem;opacity:.7;text-align:right;font-style:italic}}
+  .vaer-no{{display:flex;align-items:center;gap:12px}}
+  .vaer-symbol{{font-size:2.8rem}}
+  .vaer-detaljar{{display:flex;flex-direction:column;gap:2px}}
+  .vaer-temp{{font-size:1.4rem;font-weight:800;display:flex;align-items:center;gap:6px}}
+  .no-fare{{font-size:1rem}}
+  .vaer-vind{{font-size:.75rem;opacity:.8}}
+  .vaer-sted{{font-size:.72rem;opacity:.7;font-style:italic}}
+  .vaer-dagar{{display:flex;gap:8px;justify-content:space-around;border-top:1px solid rgba(255,255,255,.2);padding-top:10px}}
+  .dag{{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}}
+  .dag-namn{{font-size:.72rem;font-weight:700;opacity:.85;text-transform:uppercase}}
+  .dag-emoji{{font-size:1.5rem}}
+  .dag-fare{{font-size:.7rem}}
+  .dag-temp{{display:flex;gap:4px;align-items:baseline}}
+  .dag-maks{{font-size:.9rem;font-weight:800}}
+  .dag-min{{font-size:.78rem;opacity:.65}}
   .tabs{{display:flex;max-width:720px;margin:20px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}}
   .tab{{flex:1;padding:12px;font-weight:700;font-size:.85rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}}
   .tab-nat{{background:#3b82f6;color:white}}
@@ -325,20 +415,23 @@ def build_html(nasjonal, lokal, vaer):
       const nedbor = ((ts.next_1_hours || ts.next_6_hours || {{}}).details?.precipitation_amount || 0).toFixed(1);
       const symbolMap = {{
         clearsky:"☀️",fair:"🌤️",partlycloudy:"⛅",cloudy:"☁️",
-        rainshowers:"🌦️",rain:"🌧️",heavyrain:"🌧️",sleet:"🌨️",
-        snow:"❄️",snowshowers:"🌨️",fog:"🌫️",thunder:"⛈️",
-        rainandthunder:"⛈️",heavyrainandthunder:"⛈️"
+        rainshowers:"🌦️",lightrainshowers:"🌦️",rain:"🌧️",lightrain:"🌧️",
+        heavyrain:"🌧️",sleet:"🌨️",lightsleet:"🌨️",sleetshowers:"🌨️",
+        snow:"❄️",lightsnow:"❄️",snowshowers:"🌨️",fog:"🌫️",
+        thunder:"⛈️",rainandthunder:"⛈️",lightrainandthunder:"⛈️",
+        heavyrainandthunder:"⛈️",rainshowersandthunder:"⛈️",
+        snowandthunder:"⛈️",sleetandthunder:"⛈️"
       }};
-      const beskrivelseMap = {{
-        clearsky:"Klarvær",fair:"Pent vær",partlycloudy:"Delvis skyet",cloudy:"Overskyet",
-        rainshowers:"Regnbyger",rain:"Regn",heavyrain:"Kraftig regn",sleet:"Sludd",
-        snow:"Snø",snowshowers:"Snøbyger",fog:"Tåke",thunder:"Torden",
-        rainandthunder:"Regn og torden",heavyrainandthunder:"Kraftig regn og torden"
+      const toEmoji = s => symbolMap[s.replace(/_(day|night|polartwilight)$/, "")] || "🌡️";
+      const toFare = (vind, base, nedbor) => {{
+        let f = "";
+        if (vind >= 15) f += "💨🚨";
+        if ("thunder".includes(base)) f += "⚡";
+        return f;
       }};
       const base = symbol.replace(/_(day|night|polartwilight)$/, "");
-      document.querySelector(".vaer-symbol").textContent = symbolMap[base] || "🌡️";
-      document.querySelector(".vaer-temp").textContent = temp + "°C";
-      document.querySelector(".vaer-besk").textContent = beskrivelseMap[base] || base;
+      document.querySelector(".vaer-symbol").textContent = toEmoji(symbol);
+      document.querySelector(".vaer-temp").innerHTML = `${{temp}}°C ${{toFare(vind, base, nedbor)}}`;
       document.querySelector(".vaer-vind").textContent = `💨 ${{vind}} m/s · 🌧 ${{nedbor}} mm`;
       if (stedNavn) document.getElementById("vaer-sted").textContent = stedNavn;
     }})
@@ -404,19 +497,20 @@ if __name__ == "__main__":
     nat_rss = hent_rss(RSS_NASJONAL)
     print(f"  → {len(nat_rss)} artikler")
     print("Omskriver nasjonale nyheter...")
-    nye_nat = omskriv(nat_rss, antall=NYE_PER_RUNDE)
-    nasjonal = oppdater_saker(nye_nat, SAKER_FIL_NAT, er_morgen)
+    nye_nat = omskriv(nat_rss, antall=NYE_PER_RUNDE + BUFFER)
+    nasjonal = oppdater_saker(nye_nat[:NYE_PER_RUNDE], SAKER_FIL_NAT, er_morgen)
     print(f"  → {len(nasjonal)} saker totalt")
 
     print("Henter RSS – lokalt...")
     lok_rss = hent_rss(RSS_LOKAL)
     print(f"  → {len(lok_rss)} artikler")
     print("Omskriver lokale nyheter...")
-    nye_lok = omskriv(lok_rss, antall=NYE_PER_RUNDE)
+    nye_lok = omskriv(lok_rss, antall=NYE_PER_RUNDE + BUFFER)
 
     print("Sjekker for duplikater...")
     nye_lok = fjern_duplikater(nye_lok, nye_nat)
-    lokal = oppdater_saker(nye_lok, SAKER_FIL_LOK, er_morgen)
+    # Behold maks NYE_PER_RUNDE etter filtrering
+    lokal = oppdater_saker(nye_lok[:NYE_PER_RUNDE], SAKER_FIL_LOK, er_morgen)
     print(f"  → {len(lokal)} saker totalt")
 
     html = build_html(nasjonal, lokal, vaer)
