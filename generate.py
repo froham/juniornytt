@@ -202,16 +202,11 @@ def hent_kinofilmar():
                         if cert:
                             aldersgrense = cert
                             break
-            # Berre filmar med aldersgrense maks 11 år
-            if aldersgrense not in ["A", "6", "7", "9", "10", "11", ""]:
-                print(f"  Filtrert bort ({aldersgrense} år): {film.get('title')}")
+            # Streng aldersfiltrering – berre eksplisitt barnevenleg
+            GODKJENTE = {"A", "6", "7", "9", "10", "11"}
+            if aldersgrense not in GODKJENTE:
+                print(f"  Filtrert bort (aldersgrense '{aldersgrense}'): {film.get('original_title')}")
                 continue
-            try:
-                if aldersgrense.isdigit() and int(aldersgrense) > 11:
-                    print(f"  Filtrert bort ({aldersgrense} år): {film.get('title')}")
-                    continue
-            except Exception:
-                pass
             filmar.append({
                 "tittel": film.get("original_title", "") or film.get("title", ""),
                 "norsk_tittel": film.get("title", ""),
@@ -571,7 +566,7 @@ def build_html(nasjonal, lokal, spel, kino, vaer):
 
 <div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
 <div class="varsel-boks varsel-spel" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
-<div class="varsel-boks varsel-kino" id="varsel-kino">🎬 Her finn du filmar som går på norske kinoar no – berre filmar for barn under 8 år er med!</div>
+<div class="varsel-boks varsel-kino" id="varsel-kino">🎬 Her finn du filmar som går på norske kinoar no – berre filmar med aldersgrense A–11 år er med!</div>
 
 <main>
   <div class="panel active" id="panel-nasjonal">{nat_cards}</div>
@@ -609,6 +604,9 @@ if __name__ == "__main__":
     print(f"  → {len(nat_rss)} artiklar")
     print("Skriv om nasjonale nyhende...")
     nye_nat = omskriv(nat_rss, antall=NYE_PER_RUNDE + BUFFER)
+    if not nye_nat:
+        print("  Første forsøk feila, prøver med færre saker...")
+        nye_nat = omskriv(nat_rss[:12], antall=6)
     nasjonal = oppdater_saker((nye_nat or [])[:NYE_PER_RUNDE], SAKER_FIL_NAT, er_morgen)
     print(f"  → {len(nasjonal)} saker totalt")
 
@@ -617,6 +615,9 @@ if __name__ == "__main__":
     print(f"  → {len(lok_rss)} artiklar")
     print("Skriv om lokale nyhende...")
     nye_lok = omskriv(lok_rss, antall=NYE_PER_RUNDE + BUFFER)
+    if not nye_lok:
+        print("  Første forsøk feila, prøver med færre saker...")
+        nye_lok = omskriv(lok_rss[:12], antall=6)
     nye_lok = fjern_duplikatar(nye_lok or [], nye_nat or [])
     lokal = oppdater_saker(nye_lok[:NYE_PER_RUNDE], SAKER_FIL_LOK, er_morgen)
     print(f"  → {len(lokal)} saker totalt")
