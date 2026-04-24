@@ -41,10 +41,11 @@ RSS_LOKAL = [
     ("https://www.vestlandsnytt.no/rss/",             "Vestlandsnytt"),
 ]
 RSS_SPEL = [
-    ("https://www.vg.no/rss/feed/?categories=sport",  "VG Sport"),
-    ("https://www.nrk.no/sport/rss.xml",              "NRK Sport"),
-    ("https://www.eurogamer.net/feed",                "Eurogamer"),
-    ("https://www.ign.com/rss/articles.xml",          "IGN"),
+    ("https://dotesports.com/minecraft/feed",      "Minecraft"),
+    ("https://dotesports.com/roblox/feed",         "Roblox"),
+    ("https://dotesports.com/pokemon/feed",        "Pokémon"),
+    ("https://www.vg.no/rss/feed/?categories=sport", "VG Sport"),
+    ("https://www.nrk.no/sport/rss.xml",           "NRK Sport"),
 ]
 
 # ── Emoji-kart ────────────────────────────────────────────────────────────────
@@ -223,10 +224,15 @@ Svar KUN med JSON-array:
 
 SPEL_PROMPT = """Du er redaktør for JuniorNytt si spel- og sportsseksjon for barn mellom 8 og 12 år.
 
-Skriv om desse sakene til barnevenleg nynorsk. Ver entusiastisk!
+Vel dei {antall} mest eigna sakene og skriv dei om til barnevenleg nynorsk. Ver entusiastisk!
+
+VIKTIG – filtrer bort:
+- Saker om vald, horror, blod eller vaksent innhald i spel
+- Saker med aldersgrense over 12 år (PEGI 16/18)
+- Saker som ikkje eignar seg for barn
 
 Reglar:
-- Nynorsk Sunnmøre-stil
+- Nynorsk Sunnmøre-stil: "ikkje", "òg", "kva", "dei"
 - 4–6 setningar per sak
 - Ordforklaring for spelordar og sportsuttrykk
 - Felt "emoji" – spel- eller sportselemoji
@@ -499,7 +505,7 @@ def build_html(nasjonal, lokal, spel, kino, vaer):
   const SRC = {{
     nasjonal: "Kjelder: NRK · Aftenposten · VG · Dagbladet · Nettavisen",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
-    spel:     "Kjelder: VG Sport · NRK Sport · Eurogamer · IGN",
+    spel:     "Kjelder: Minecraft · Roblox · Pokémon · VG Sport · NRK Sport",
     kino:     "Kjelde: The Movie Database (TMDB)"
   }};
   function show(tab) {{
