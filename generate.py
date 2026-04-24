@@ -406,9 +406,10 @@ def kino_card(sak, idx):
     alder = sak.get("aldersgrense", "A")
     alder_stil = "background:#dcfce7;color:#166534" if alder in ["A","6"] else "background:#fef9c3;color:#854d0e"
     alder_tekst = "Alle" if alder == "A" else f"{alder} år"
+    status = "🎬 No på kino" if sak.get("status") == "now" else "🔜 Kjem snart"
     return f'''<div class="card" style="background:{bg};border-color:{border}">
       <div class="card-meta">
-        <span class="tidspunkt">🎬 No på kino</span>
+        <span class="tidspunkt">{status}</span>
         <span style="font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:99px;{alder_stil}">{alder_tekst}</span>
       </div>
       <div class="card-emoji">{emoji}</div>
