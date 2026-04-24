@@ -23,11 +23,10 @@ STD_LON =  5.8467
 STD_STAD = "Ulsteinvik"
 
 RSS_NASJONAL = [
-    ("https://www.nrk.no/toppsaker.rss",   "NRK"),
-    ("https://www.nrk.no/mr/rss",          "NRK Møre og Romsdal"),
-    ("https://www.tv2.no/rss/",            "TV2"),
-    ("https://www.aftenposten.no/rss",     "Aftenposten"),
-    ("https://www.vg.no/rss/feed/",        "VG"),
+    ("https://www.nrk.no/toppsaker.rss",        "NRK"),
+    ("https://www.nrk.no/moreogromsdal/rss.xml", "NRK Møre og Romsdal"),
+    ("https://www.aftenposten.no/rss",           "Aftenposten"),
+    ("https://www.vg.no/rss/feed/",              "VG"),
 ]
 RSS_LOKAL = [
     ("https://www.smp.no/rss/",            "Sunnmørsposten"),
@@ -207,7 +206,7 @@ Svar KUN med JSON-array, ingen annan tekst:
 
 def omskriv(artikler, antall=8, retries=4, wait=60):
     tekst = "\n\n".join(f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artikler)
-    prompt = OMSKRIV_PROMPT.format(antall=antall, artikler=tekst)
+    prompt = OMSKRIV_PROMPT.format(antall=antall, artiklar=tekst)
     for attempt in range(retries):
         try:
             resp = client.messages.create(
