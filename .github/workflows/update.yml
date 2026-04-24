@@ -29,6 +29,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python generate.py
 
       - name: Publiser oppdatert side
