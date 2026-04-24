@@ -173,6 +173,8 @@ VIKTIG – unngå eller ton ned:
 
 Reglar:
 - Nynorsk: "ikkje", "òg", "kva", "dei", "ho", "heime", "skule"
+- Hald deg ALLTID til fakta frå artikkelen – ikkje dikt opp eller generaliser
+- Viss ingressen er for kort, hopp over artikkelen
 - 6–9 setningar per sak, engasjerande og sakleg
 - Viss ein kjend person vert nemnt, legg til ei kort forklaring i parentes første gong
 - Ordforklaring (1–4 ord) for vanskelege omgrep
@@ -187,7 +189,7 @@ Svar KUN med JSON-array:
 
 SPEL_PROMPT = """Du er redaktør for JuniorNytt si spel- og sportsseksjon for barn mellom 8 og 12 år.
 
-Vel dei {antall} mest eigna sakene – fordel jamnt mellom sport (4 saker) og spel (4 saker). Ver entusiastisk!
+Vel dei {antall} mest eigna sakene og skriv dei om til barnevenleg nynorsk. Ver entusiastisk!
 
 PRIORITER saker om:
 - Sport: fotball, ski, svømming, friidrett, handball – gjerne norske utøvarar
