@@ -28,6 +28,7 @@ jobs:
       - name: Kjør nyhetsskript
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: python generate.py
 
       - name: Publiser oppdatert side
