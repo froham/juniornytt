@@ -26,10 +26,10 @@ STD_STAD = "Ulsteinvik"
 
 RSS_NASJONAL = [
     ("https://www.nrk.no/toppsaker.rss",          "NRK"),
-    ("https://www.nrk.no/moreogromsdal/rss.xml",   "NRK Møre og Romsdal"),
+    ("https://www.nrk.no/nyheter/rss.xml",         "NRK Nyheter"),
     ("https://www.aftenposten.no/rss",             "Aftenposten"),
     ("https://www.vg.no/rss/feed/",                "VG"),
-    ("https://www.dagbladet.no/rss",               "Dagbladet"),
+    ("https://www.dagbladet.no/rss/forsiden",      "Dagbladet"),
 ]
 RSS_LOKAL = [
     ("https://www.smp.no/rss/",                    "Sunnmørsposten"),
@@ -273,6 +273,38 @@ Filmar:
 
 Svar KUN med JSON-array:
 [{{"tittel":"...","brodtekst":"...","aldersgrense":"...","emoji":"..."}}]"""
+
+
+def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
+    if prompt_mal is None:
+        prompt_mal = OMSKRIV_PROMPT
+    tekst = "\n\n".join(f"[{a['kilde']}] {a['tittel']}\n{a['ingress']}" for a in artiklar)
+    prompt = prompt_mal.format(antall=antall, artiklar=tekst)
+    for attempt in range(retries):
+        try:
+            resp = client.messages.create(
+                model="claude-haiku-4-5",
+                max_tokens=4000,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            text = resp.content[0].text
+            text = text.replace("```json", "").replace("```", "").strip()
+            s, e = text.find("["), text.rfind("]")
+            if s == -1: return []
+            saker = json.loads(text[s:e+1])
+            ts = datetime.now().strftime("%H:%M")
+            for sak in saker:
+                sak["tidspunkt"] = ts
+                if not sak.get("emoji"):
+                    sak["emoji"] = velg_emoji(sak["tittel"], sak.get("brodtekst", ""))
+            return saker
+        except anthropic.RateLimitError:
+            if attempt < retries - 1:
+                print(f"  Rate limit – ventar {wait}s ({attempt+1}/{retries})...")
+                time.sleep(wait)
+            else:
+                print("  Ga opp etter maks forsøk.")
+                return []
 
 
 def omskriv_kino(filmar):
