@@ -23,10 +23,11 @@ STD_LON =  5.8467
 STD_STAD = "Ulsteinvik"
 
 RSS_NASJONAL = [
-    ("https://www.nrk.no/toppsaker.rss",        "NRK"),
-    ("https://www.nrk.no/moreogromsdal/rss.xml", "NRK Møre og Romsdal"),
-    ("https://www.aftenposten.no/rss",           "Aftenposten"),
-    ("https://www.vg.no/rss/feed/",              "VG"),
+    ("https://www.nrk.no/toppsaker.rss",         "NRK"),
+    ("https://www.nrk.no/moreogromsdal/rss.xml",  "NRK Møre og Romsdal"),
+    ("https://www.aftenposten.no/rss",            "Aftenposten"),
+    ("https://www.vg.no/rss/feed/",               "VG"),
+    ("https://www.dagbladet.no/rss",              "Dagbladet"),
 ]
 RSS_LOKAL = [
     ("https://www.smp.no/rss/",            "Sunnmørsposten"),
@@ -450,8 +451,8 @@ def build_html(nasjonal, lokal, vaer):
     document.querySelectorAll(".tab").forEach(t => t.classList.add("inactive"));
     document.getElementById("tab-" + tab).classList.remove("inactive");
     document.getElementById("src-line").textContent = tab === "nasjonal"
-      ? "Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG"
-      : "Kilder: Vikebladet · Vestlandsnytt · Sunnmørsposten";
+      ? "Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet"
+      : "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten";
   }}
 </script>
 </head>
@@ -472,7 +473,7 @@ def build_html(nasjonal, lokal, vaer):
     📍 Lokalt <span class="badge">{len(lokal)}</span>
   </button>
 </div>
-<div class="sources" id="src-line">Kilder: NRK · NRK Møre og Romsdal · Aftenposten · TV2 · VG</div>
+<div class="sources" id="src-line">Kjelder: NRK · NRK Møre og Romsdal · Aftenposten · VG · Dagbladet</div>
 <main>
   <div class="panel active" id="panel-nasjonal">{nat_cards}</div>
   <div class="panel" id="panel-lokal">{lok_cards}</div>
