@@ -32,8 +32,7 @@ RSS_NASJONAL = [
     ("https://www.nrk.no/toppsaker.rss",              "NRK"),
     ("https://www.aftenposten.no/rss",                "Aftenposten"),
     ("https://www.vg.no/rss/feed/",                   "VG"),
-    ("https://www.dagbladet.no/rss/forsiden",         "Dagbladet"),
-    ("https://www.nettavisen.no/rss/",                "Nettavisen"),
+    ("https://www.tv2.no/rss/nyheter/",               "TV2"),
 ]
 RSS_LOKAL = [
     ("https://www.smp.no/rss/",                       "Sunnmørsposten"),
