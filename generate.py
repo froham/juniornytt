@@ -33,7 +33,6 @@ RSS_LOKAL = [
 ]
 RSS_SPEL = [
     ("https://www.vg.no/rss/feed/?categories=sport",  "VG Sport"),
-    ("https://www.nrk.no/sport/toppsaker.rss",        "NRK Sport"),
     ("https://www.eurogamer.net/feed",                "Eurogamer"),
     ("https://www.pcgamer.com/rss/",                  "PC Gamer"),
 ]
@@ -408,7 +407,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   <h1>JuniorNytt</h1>
   <div class="dato">{ukedag} {dato}</div>
   <div class="sub">Nyhende på nynorsk for deg mellom 8 og 12 år – nye saker vert publisert kl. 07.00, 12.00 og 19.00 kvar dag.</div>
-  <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
+  <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ei privat, ikkje-kommersiell barneside og er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
   <div class="oppdatert">Oppdatert kl. {datetime.now().strftime("%H:%M")}</div>
   {vaer_boks}
 </header>
@@ -430,7 +429,8 @@ def build_html(nasjonal, lokal, spel, vaer):
 
 <footer>
   JuniorNytt • Laga for nysgjerrige barn 🌟<br>
-  © 2026 JuniorNytt – Innhald er utvalt, tilpassa og omskrive frå opne nyheitskjelder av kunstig intelligens.<br>
+  © 2026 JuniorNytt – Ei ikkje-kommersiell, privat barneside.<br>
+  Innhald er omskrive frå opne nyheitskjelder av kunstig intelligens. Originalkjeldene er alltid merka på kvar sak.<br>
   JuniorNytt omtalar spel og tenester som informasjon, og dette er ikkje å rekne som ei tilråding eller eit samarbeid.<br>
   Foreldre oppfordrast til å følgje med på kva spel barna nyttar.
 </footer>
