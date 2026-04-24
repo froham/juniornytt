@@ -11,20 +11,6 @@ from datetime import datetime
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 # ── Konstantar ────────────────────────────────────────────────────────────────
-MAKS_SAKER    = 20  # Nasjonal og lokal kvar for seg
-NYE_PER_RUNDE = 10
-FALLER_UT     =  5
-BUFFER        =  3
-MAKS_SPEL     =  8
-NYE_SPEL      =  6
-MAKS_KINO     =  6
-
-SAKER_FIL_NAT  = "docs/saker_nasjonal.json"
-SAKER_FIL_LOK  = "docs/saker_lokal.json"
-SAKER_FIL_SPEL = "docs/saker_spel.json"
-SAKER_FIL_KINO = "docs/saker_kino.json"
-
-# ── Konstantar ────────────────────────────────────────────────────────────────
 SAKER_NAT  = 10
 SAKER_LOK  = 10
 SAKER_SPEL =  8
@@ -36,22 +22,19 @@ STD_STAD = "Ulsteinvik"
 
 # ── RSS-kjelder ───────────────────────────────────────────────────────────────
 RSS_NASJONAL = [
-    ("https://www.nrk.no/toppsaker.rss",              "NRK"),
-    ("https://www.aftenposten.no/rss",                "Aftenposten"),
-    ("https://www.vg.no/rss/feed/",                   "VG"),
-    ("https://www.tv2.no/rss/nyheter/",               "TV2"),
+    ("https://www.nrk.no/toppsaker.rss",   "NRK"),
+    ("https://www.aftenposten.no/rss",     "Aftenposten"),
+    ("https://www.vg.no/rss/feed/",        "VG"),
+    ("https://www.tv2.no/rss/nyheter/",    "TV2"),
 ]
 RSS_LOKAL = [
-    ("https://www.smp.no/rss/",                       "Sunnmørsposten"),
-    ("https://www.vikebladet.no/rss/",                "Vikebladet"),
-    ("https://www.vestlandsnytt.no/rss/",             "Vestlandsnytt"),
+    ("https://www.smp.no/rss/",            "Sunnmørsposten"),
+    ("https://www.vikebladet.no/rss/",     "Vikebladet"),
+    ("https://www.vestlandsnytt.no/rss/",  "Vestlandsnytt"),
 ]
 RSS_SPEL = [
-    ("https://dotesports.com/minecraft/feed",      "Minecraft"),
-    ("https://dotesports.com/roblox/feed",         "Roblox"),
-    ("https://dotesports.com/pokemon/feed",        "Pokémon"),
     ("https://www.vg.no/rss/feed/?categories=sport", "VG Sport"),
-    ("https://www.nrk.no/sport/rss.xml",           "NRK Sport"),
+    ("https://www.gamer.no/feed",                    "Gamer.no"),
 ]
 
 # ── Emoji-kart ────────────────────────────────────────────────────────────────
@@ -149,7 +132,7 @@ def hent_vaer():
 # ── RSS-henting ───────────────────────────────────────────────────────────────
 def hent_rss(feeds, maks_per_kilde=6):
     artiklar = []
-    headers = {"User-Agent": "JuniorNytt/1.0"}
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; JuniorNytt/1.0)"}
     for url, kilde in feeds:
         try:
             req = urllib.request.Request(url, headers=headers)
@@ -176,55 +159,60 @@ def hent_kinofilmar():
         print("  Ingen TMDB_API_KEY, hoppar over kino.")
         return []
     try:
-        url = f"https://api.themoviedb.org/3/movie/now_playing?api_key={api_key}&language=nb-NO&region=NO"
-        req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0"})
-        with urllib.request.urlopen(req, timeout=10) as r:
-            data = json.loads(r.read())
         filmar = []
-        for film in data.get("results", []):
-            tittel = film.get("title", "")
-            original_tittel = film.get("original_title", "")
-            original_språk = film.get("original_language", "")
-
-            # Filtrer bort filmar på kinesisk, japansk, koreansk o.l.
-            if original_språk in ["zh", "ja", "ko", "th", "ar", "hi", "tr"]:
-                print(f"  Filtrert bort (språk {original_språk}): {tittel}")
-                continue
-
-            # Filtrer bort filmar der tittelen er på eit framandt skrift
-            if any(ord(c) > 1000 for c in tittel):
-                print(f"  Filtrert bort (framandt skrift): {tittel}")
-                continue
-            fid = film["id"]
-            det_url = f"https://api.themoviedb.org/3/movie/{fid}?api_key={api_key}&language=nb-NO&append_to_response=release_dates"
-            req2 = urllib.request.Request(det_url, headers={"User-Agent": "JuniorNytt/1.0"})
-            with urllib.request.urlopen(req2, timeout=10) as r2:
-                det = json.loads(r2.read())
-            aldersgrense = ""
-            for entry in det.get("release_dates", {}).get("results", []):
-                if entry["iso_3166_1"] == "NO":
-                    for rd in entry.get("release_dates", []):
-                        cert = rd.get("certification", "")
-                        if cert:
-                            aldersgrense = cert
-                            break
-            # Streng aldersfiltrering – berre eksplisitt barnevenleg
-            GODKJENTE = {"A", "6", "7", "9", "10", "11"}
-            if aldersgrense not in GODKJENTE:
-                print(f"  Filtrert bort (aldersgrense '{aldersgrense}'): {film.get('original_title')}")
-                continue
-            filmar.append({
-                "tittel": film.get("original_title", "") or film.get("title", ""),
-                "norsk_tittel": film.get("title", ""),
-                "oversikt": film.get("overview", "")[:300],
-                "aldersgrense": aldersgrense or "A",
-            })
-            filmar.append({
-                "tittel": film.get("title", ""),
-                "oversikt": film.get("overview", "")[:300],
-                "aldersgrense": aldersgrense or "A",
-            })
-            if len(filmar) >= 6:
+        for endepunkt in ["now_playing", "upcoming"]:
+            url = f"https://api.themoviedb.org/3/movie/{endepunkt}?api_key={api_key}&language=nb-NO&region=NO"
+            req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                data = json.loads(r.read())
+            for film in data.get("results", []):
+                if any(f["tittel"] == (film.get("original_title") or film.get("title")) for f in filmar):
+                    continue
+                original_språk = film.get("original_language", "")
+                tittel = film.get("title", "")
+                original_tittel = film.get("original_title", "")
+                if original_språk in ["zh", "ja", "ko", "th", "ar", "hi", "tr"]:
+                    print(f"  Filtrert bort (språk {original_språk}): {tittel}")
+                    continue
+                if any(ord(c) > 1000 for c in tittel):
+                    print(f"  Filtrert bort (framandt skrift): {tittel}")
+                    continue
+                fid = film["id"]
+                det_url = f"https://api.themoviedb.org/3/movie/{fid}?api_key={api_key}&language=nb-NO&append_to_response=release_dates"
+                req2 = urllib.request.Request(det_url, headers={"User-Agent": "JuniorNytt/1.0"})
+                with urllib.request.urlopen(req2, timeout=10) as r2:
+                    det = json.loads(r2.read())
+                aldersgrense = "A"  # Standard: tillat viss ingen grense er sett
+                for land_kode in ["NO", "GB", "US"]:
+                    for entry in det.get("release_dates", {}).get("results", []):
+                        if entry["iso_3166_1"] == land_kode:
+                            for rd in entry.get("release_dates", []):
+                                cert = rd.get("certification", "").strip()
+                                if cert:
+                                    aldersgrense = cert
+                                    break
+                    if aldersgrense != "A":
+                        break
+                GB_TIL_NO = {"U": "A", "PG": "6", "12A": "11", "12": "11", "15": "15", "18": "18"}
+                US_TIL_NO = {"G": "A", "PG": "6", "PG-13": "13", "R": "18"}
+                if aldersgrense in GB_TIL_NO:
+                    aldersgrense = GB_TIL_NO[aldersgrense]
+                elif aldersgrense in US_TIL_NO:
+                    aldersgrense = US_TIL_NO[aldersgrense]
+                GODKJENTE = {"A", "6", "7", "9", "10", "11"}
+                if aldersgrense not in GODKJENTE:
+                    print(f"  Filtrert bort (aldersgrense '{aldersgrense}'): {original_tittel}")
+                    continue
+                filmar.append({
+                    "tittel": original_tittel or tittel,
+                    "norsk_tittel": tittel,
+                    "oversikt": film.get("overview", "")[:300],
+                    "aldersgrense": aldersgrense,
+                    "status": endepunkt,
+                })
+                if len(filmar) >= 10:
+                    break
+            if len(filmar) >= 10:
                 break
         return filmar
     except Exception as e:
@@ -239,6 +227,7 @@ Vel dei {antall} mest interessante og viktige sakene (ingen kjendisnyheiter/unde
 Reglar:
 - Nynorsk: "ikkje", "òg", "kva", "dei", "ho", "heime", "skule"
 - 6–9 setningar per sak, engasjerande og sakleg
+- Viss ein kjend person vert nemnt, legg til ei kort forklaring i parentes første gong, t.d. «Jonas Gahr Støre (statsministeren i Noreg)»
 - Ordforklaring (1–4 ord) for vanskelege omgrep
 - Felt "emoji" med passande emoji
 - Felt "land" med namn og flagg viss saka er frå eit anna land enn Noreg
@@ -253,10 +242,7 @@ SPEL_PROMPT = """Du er redaktør for JuniorNytt si spel- og sportsseksjon for ba
 
 Vel dei {antall} mest eigna sakene og skriv dei om til barnevenleg nynorsk. Ver entusiastisk!
 
-VIKTIG – filtrer bort:
-- Saker om vald, horror, blod eller vaksent innhald i spel
-- Saker med aldersgrense over 12 år (PEGI 16/18)
-- Saker som ikkje eignar seg for barn
+VIKTIG – filtrer bort saker om vald, horror eller spel med PEGI 16/18.
 
 Reglar:
 - Nynorsk Sunnmøre-stil: "ikkje", "òg", "kva", "dei"
@@ -272,13 +258,11 @@ Svar KUN med JSON-array:
 
 KINO_PROMPT = """Du er redaktør for JuniorNytt si kino-seksjon for barn mellom 8 og 12 år i Noreg.
 
-Skriv ein kort og engasjerande presentasjon av kvar film på nynorsk. Fang nysgjerrigheita til barnet!
+Skriv ein kort og engasjerande presentasjon av kvar film på nynorsk.
 
 VIKTIG:
-- Bruk ALLTID originaltittelen på filmen – ikkje omset han
-- Viss filmen har ein kjend norsk tittel, kan du nemne han i parentes
-- Hopp over filmar som er lite relevante for norske barn
-- Ikkje omset filmtitlar
+- Bruk ALLTID originaltittelen – ikkje omset han
+- Hopp over filmar lite relevante for norske barn
 
 Reglar:
 - Nynorsk Sunnmøre-stil
@@ -309,7 +293,7 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
             text = resp.content[0].text.replace("```json","").replace("```","").strip()
             s, e = text.find("["), text.rfind("]")
             if s == -1:
-                print("  Ingen JSON funnen i svaret, prøver igjen...")
+                print(f"  Ingen JSON, prøver igjen...")
                 continue
             saker = json.loads(text[s:e+1])
             ts = datetime.now().strftime("%H:%M")
@@ -319,7 +303,7 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                     sak["emoji"] = velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
             return saker
         except json.JSONDecodeError as je:
-            print(f"  JSON-feil ({attempt+1}/{retries}): {je} – prøver igjen...")
+            print(f"  JSON-feil ({attempt+1}/{retries}): {je}")
             time.sleep(5)
         except anthropic.RateLimitError:
             if attempt < retries - 1:
@@ -406,7 +390,7 @@ def kino_card(sak, idx):
     alder = sak.get("aldersgrense", "A")
     alder_stil = "background:#dcfce7;color:#166534" if alder in ["A","6"] else "background:#fef9c3;color:#854d0e"
     alder_tekst = "Alle" if alder == "A" else f"{alder} år"
-    status = "🎬 No på kino" if sak.get("status") == "now" else "🔜 Kjem snart"
+    status = "🎬 No på kino" if sak.get("status") == "now_playing" else "🔜 Kjem snart"
     return f'''<div class="card" style="background:{bg};border-color:{border}">
       <div class="card-meta">
         <span class="tidspunkt">{status}</span>
@@ -518,7 +502,7 @@ def build_html(nasjonal, lokal, spel, kino, vaer):
   const SRC = {{
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
-    spel:     "Kjelder: Minecraft · Roblox · Pokémon · VG Sport · NRK Sport",
+    spel:     "Kjelder: VG Sport · Gamer.no",
     kino:     "Kjelde: The Movie Database (TMDB)"
   }};
   function show(tab) {{
@@ -552,7 +536,7 @@ def build_html(nasjonal, lokal, spel, kino, vaer):
 
 <div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
 <div class="varsel-boks varsel-spel" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
-<div class="varsel-boks varsel-kino" id="varsel-kino">🎬 Her finn du filmar som går på norske kinoar no – berre filmar med aldersgrense A–11 år er med!</div>
+<div class="varsel-boks varsel-kino" id="varsel-kino">🎬 Her finn du filmar som går på norske kinoar no og som kjem snart – berre filmar med aldersgrense A–11 år er med!</div>
 
 <main>
   <div class="panel active" id="panel-nasjonal">{nat_cards}</div>
@@ -584,7 +568,6 @@ if __name__ == "__main__":
     print("Skriv om nasjonale nyhende...")
     nasjonal = omskriv(nat_rss, antall=SAKER_NAT) or omskriv(nat_rss[:12], antall=6)
     nasjonal = (nasjonal or [])[:SAKER_NAT]
-    os.makedirs("docs", exist_ok=True)
     print(f"  → {len(nasjonal)} saker")
 
     print("Hentar RSS – lokalt...")
