@@ -33,8 +33,8 @@ RSS_LOKAL = [
 ]
 RSS_SPEL = [
     ("https://www.vg.no/rss/feed/?categories=sport",  "VG Sport"),
-    ("https://www.eurogamer.net/feed",                "Eurogamer"),
-    ("https://www.pcgamer.com/rss/",                  "PC Gamer"),
+    ("https://www.nintendolife.com/feeds/news",        "Nintendo Life"),
+    ("https://www.pocketgamer.com/rss/",              "Pocket Gamer"),
 ]
 
 # ── Emoji-kart ────────────────────────────────────────────────────────────────
@@ -389,7 +389,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   const SRC = {{
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
-    spel:     "Kjelder: VG Sport · Eurogamer · PC Gamer · Rock Paper Shotgun"
+    spel:     "Kjelder: VG Sport · Nintendo Life · Pocket Gamer"
   }};
   function show(tab) {{
     document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
