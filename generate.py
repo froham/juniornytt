@@ -161,9 +161,18 @@ def hent_rss(feeds, maks_per_kilde=6):
                         break
                     except Exception:
                         continue
+                # Hent lenke til originalen
+                lenke = (item.findtext("link") or
+                         item.findtext("{http://www.w3.org/2005/Atom}link") or "").strip()
+                # Atom-lenker kan vere i href-attributt
+                if not lenke:
+                    link_el = item.find("{http://www.w3.org/2005/Atom}link")
+                    if link_el is not None:
+                        lenke = link_el.get("href", "")
                 if tittel:
                     artiklar.append({"kilde": kilde, "tittel": tittel,
-                                     "ingress": desc[:300], "dato": dato_str})
+                                     "ingress": desc[:300], "dato": dato_str,
+                                     "lenke": lenke})
         except Exception as e:
             print(f"  Kunne ikkje hente {kilde}: {e}")
     return artiklar
@@ -234,8 +243,8 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
         return []
     if prompt_mal is None:
         prompt_mal = OMSKRIV_PROMPT
-    # Lag dato-mapping: tittel → dato
-    dato_map = {a["tittel"]: a.get("dato", "") for a in artiklar}
+    # Lag dato- og lenke-mapping: tittel → dato/lenke
+    dato_map = {a["tittel"]: (a.get("dato", ""), a.get("lenke", "")) for a in artiklar}
     tekst = "\n\n".join(
         f"[{a['kilde']}] {a.get('dato','')} – {a['tittel']}\n{a['ingress']}"
         for a in artiklar
@@ -258,11 +267,14 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                 sak["tidspunkt"] = ts
                 if not sak.get("emoji"):
                     sak["emoji"] = velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
-                # Finn dato frå original RSS-tittel
-                for orig_tittel, dato in dato_map.items():
-                    if dato and any(w in sak.get("tittel","").lower()
-                                   for w in orig_tittel.lower().split()[:3] if len(w) > 3):
-                        sak["pub_dato"] = dato
+                # Finn dato og lenke frå original RSS-tittel
+                for orig_tittel, (dato, lenke) in dato_map.items():
+                    if any(w in sak.get("tittel","").lower()
+                           for w in orig_tittel.lower().split()[:3] if len(w) > 3):
+                        if dato:
+                            sak["pub_dato"] = dato
+                        if lenke:
+                            sak["lenke"] = lenke
                         break
             return saker
         except json.JSONDecodeError as je:
@@ -412,7 +424,9 @@ def build_html(nasjonal, lokal, spel, vaer):
   .ord-title{{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:8px}}
   .ord-item{{font-size:.85rem;color:#374151;margin-bottom:4px}}
   .ord-item strong{{color:#1f2937}}
-  .kilde{{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}}
+  .card-footer{{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:4px}}
+  .les-meir{{font-size:.72rem;color:#6b7280;text-decoration:none;opacity:.7;transition:.2s}}
+  .les-meir:hover{{opacity:1;color:#3b82f6}}
   footer{{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:1.8}}
   @media(max-width:480px){{header h1{{font-size:2rem}}}}
 </style>
