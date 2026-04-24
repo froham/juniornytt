@@ -11,12 +11,13 @@ from datetime import datetime
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 # ── Konstantar ────────────────────────────────────────────────────────────────
-MAKS_SAKER    = 20
+MAKS_SAKER    = 20  # Nasjonal og lokal kvar for seg
 NYE_PER_RUNDE = 10
 FALLER_UT     =  5
 BUFFER        =  3
-MAKS_SPEL     = 12
-NYE_SPEL      =  8
+MAKS_SPEL     =  8
+NYE_SPEL      =  6
+MAKS_KINO     =  6
 
 SAKER_FIL_NAT  = "docs/saker_nasjonal.json"
 SAKER_FIL_LOK  = "docs/saker_lokal.json"
@@ -175,6 +176,19 @@ def hent_kinofilmar():
             data = json.loads(r.read())
         filmar = []
         for film in data.get("results", []):
+            tittel = film.get("title", "")
+            original_tittel = film.get("original_title", "")
+            original_språk = film.get("original_language", "")
+
+            # Filtrer bort filmar på kinesisk, japansk, koreansk o.l.
+            if original_språk in ["zh", "ja", "ko", "th", "ar", "hi", "tr"]:
+                print(f"  Filtrert bort (språk {original_språk}): {tittel}")
+                continue
+
+            # Filtrer bort filmar der tittelen er på eit framandt skrift
+            if any(ord(c) > 1000 for c in tittel):
+                print(f"  Filtrert bort (framandt skrift): {tittel}")
+                continue
             fid = film["id"]
             det_url = f"https://api.themoviedb.org/3/movie/{fid}?api_key={api_key}&language=nb-NO&append_to_response=release_dates"
             req2 = urllib.request.Request(det_url, headers={"User-Agent": "JuniorNytt/1.0"})
@@ -188,9 +202,17 @@ def hent_kinofilmar():
                         if cert:
                             aldersgrense = cert
                             break
+            # Berre filmar for alle eller maks 6 år
             if aldersgrense not in ["A", "6", ""]:
-                print(f"  Filtrert ({aldersgrense}): {film.get('title')}")
+                print(f"  Filtrert bort ({aldersgrense} år): {film.get('title')}")
                 continue
+            # Dobbeltsjekk – aldri over 8 år
+            try:
+                if aldersgrense.isdigit() and int(aldersgrense) > 6:
+                    print(f"  Filtrert bort ({aldersgrense} år): {film.get('title')}")
+                    continue
+            except Exception:
+                pass
             filmar.append({
                 "tittel": film.get("title", ""),
                 "oversikt": film.get("overview", "")[:300],
@@ -242,9 +264,14 @@ Artiklar:
 Svar KUN med JSON-array:
 [{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
 
-KINO_PROMPT = """Du er redaktør for JuniorNytt si kino-seksjon for barn mellom 8 og 12 år.
+KINO_PROMPT = """Du er redaktør for JuniorNytt si kino-seksjon for barn mellom 8 og 12 år i Noreg.
 
 Skriv ein kort og engasjerande presentasjon av kvar film på nynorsk. Fang nysgjerrigheita til barnet!
+
+VIKTIG – hopp over filmar som:
+- Er ukjente utanfor heimlandet sitt og lite relevante for norske barn
+- Verkar uinteressante eller framande for målgruppa
+- Er på eit framandt språk utan norsk teksting
 
 Reglar:
 - Nynorsk Sunnmøre-stil
@@ -596,6 +623,7 @@ if __name__ == "__main__":
         rå_kino = hent_kinofilmar()
         print(f"  → {len(rå_kino)} filmar")
         kino = omskriv_kino(rå_kino)
+        kino = kino[:MAKS_KINO]
         os.makedirs("docs", exist_ok=True)
         with open(SAKER_FIL_KINO, "w", encoding="utf-8") as f:
             json.dump(kino, f, ensure_ascii=False, indent=2)
