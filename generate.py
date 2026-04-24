@@ -264,12 +264,14 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
     for attempt in range(retries):
         try:
             resp = client.messages.create(
-                model="claude-haiku-4-5", max_tokens=4000,
+                model="claude-haiku-4-5", max_tokens=6000,
                 messages=[{"role": "user", "content": prompt}]
             )
             text = resp.content[0].text.replace("```json","").replace("```","").strip()
             s, e = text.find("["), text.rfind("]")
-            if s == -1: return []
+            if s == -1:
+                print("  Ingen JSON funnen i svaret, prøver igjen...")
+                continue
             saker = json.loads(text[s:e+1])
             ts = datetime.now().strftime("%H:%M")
             for sak in saker:
@@ -277,12 +279,16 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                 if not sak.get("emoji"):
                     sak["emoji"] = velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
             return saker
+        except json.JSONDecodeError as je:
+            print(f"  JSON-feil ({attempt+1}/{retries}): {je} – prøver igjen...")
+            time.sleep(5)
         except anthropic.RateLimitError:
             if attempt < retries - 1:
                 print(f"  Rate limit – ventar {wait}s...")
                 time.sleep(wait)
             else:
                 return []
+    return []
 
 def omskriv_kino(filmar):
     if not filmar:
