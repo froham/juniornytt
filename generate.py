@@ -195,8 +195,10 @@ Reglar:
 Artiklar:
 {artiklar}
 
+Kvar artikkel har ein [LENKE:...] og [DATO:...] i ingressen – kopier desse NØYAKTIG inn i "lenke" og "pub_dato"-feltet i JSON-svaret.
+
 Svar KUN med JSON-array:
-[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}],"land":{{"namn":"...","flagg":"..."}}}}]"""
+[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","lenke":"...","pub_dato":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}],"land":{{"namn":"...","flagg":"..."}}}}]"""
 
 SPEL_PROMPT = """Du er redaktør for JuniorNytt si spel- og sportsseksjon for barn mellom 8 og 12 år.
 
@@ -219,8 +221,10 @@ Reglar:
 Artiklar:
 {artiklar}
 
+Kvar artikkel har ein [LENKE:...] og [DATO:...] i ingressen – kopier desse NØYAKTIG inn i "lenke" og "pub_dato"-feltet i JSON-svaret.
+
 Svar KUN med JSON-array:
-[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
+[{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","lenke":"...","pub_dato":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
 
 def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
     if not artiklar:
@@ -229,7 +233,7 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
         prompt_mal = OMSKRIV_PROMPT
     meta_map = {a["tittel"]: {"dato": a.get("dato",""), "lenke": a.get("lenke","")} for a in artiklar}
     tekst = "\n\n".join(
-        f"[{a['kilde']}] {a.get('dato','')} – {a['tittel']}\n{a['ingress']}"
+        f"[{a['kilde']}] [LENKE:{a.get('lenke','')}] [DATO:{a.get('dato','')}] – {a['tittel']}\n{a['ingress']}"
         for a in artiklar
     )
     prompt = prompt_mal.format(antall=antall, artiklar=tekst)
@@ -246,6 +250,8 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                 continue
             saker = json.loads(text[s:e+1])
             ts = datetime.now().strftime("%H:%M")
+            # Bygg eit raskt oppslag: lenke → dato frå original RSS
+            lenke_til_dato = {a.get("lenke",""): a.get("dato","") for a in artiklar if a.get("lenke")}
             UGYLDIGE_KJELDER = {"juniornytt", "juniornytt redaksjonen", "redaksjonen", "redaksjon"}
             for sak in saker:
                 sak["tidspunkt"] = ts
@@ -257,18 +263,25 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                     continue
                 if not sak.get("emoji"):
                     sak["emoji"] = velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
-                sak_ord = set(sak.get("tittel","").lower().split())
-                best_match = None
-                best_score = 0
-                for orig_tittel, meta in meta_map.items():
-                    orig_ord = set(orig_tittel.lower().split())
-                    score = len(sak_ord & orig_ord)
-                    if score > best_score:
-                        best_score = score
-                        best_match = meta
-                if best_match and best_score >= 2:
-                    sak["pub_dato"] = best_match.get("dato","")
-                    sak["lenke"]    = best_match.get("lenke","")
+                # Hent dato frå lenka (lenka kom direkte frå RSS-teksten)
+                lenke = sak.get("lenke", "")
+                if lenke and lenke in lenke_til_dato:
+                    sak["pub_dato"] = lenke_til_dato[lenke]
+                elif not sak.get("pub_dato"):
+                    # Fallback: ordmatching som før
+                    sak_ord = set(sak.get("tittel","").lower().split())
+                    best_match = None
+                    best_score = 0
+                    for orig_tittel, meta in meta_map.items():
+                        orig_ord = set(orig_tittel.lower().split())
+                        score = len(sak_ord & orig_ord)
+                        if score > best_score:
+                            best_score = score
+                            best_match = meta
+                    if best_match and best_score >= 2:
+                        sak["pub_dato"] = best_match.get("dato","")
+                        if not lenke:
+                            sak["lenke"] = best_match.get("lenke","")
             return [s for s in saker if not s.get("_avvist")]
         except json.JSONDecodeError as je:
             print(f"  JSON-feil ({attempt+1}/{retries}): {je}")
