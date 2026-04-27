@@ -13,8 +13,7 @@
   .sub{font-size:.8rem;opacity:.85;margin-top:4px;padding:0 12px}
   .ki-merknad{font-size:.7rem;opacity:.65;margin-top:4px;font-style:italic;padding:0 12px}
   .oppdatert{font-size:.7rem;opacity:.6;margin-top:6px}
-  .vaer-boks{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:16px auto 0;
-    background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px}
+  .vaer-boks{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:16px auto 0;background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px}
   .vaer-no{display:flex;align-items:center;gap:12px}
   .vaer-symbol{font-size:2.8rem}
   .vaer-detaljar{display:flex;flex-direction:column;gap:2px}
@@ -55,26 +54,22 @@
   .ord-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:8px}
   .ord-item{font-size:.85rem;color:#374151;margin-bottom:4px}
   .ord-item strong{color:#1f2937}
-  .foreldre-knapp{display:inline-flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;padding:8px 16px;background:rgba(255,255,255,.15);border-radius:99px;border:1px solid #e5e7eb}
-  .foreldre-knapp span{font-size:.75rem;color:#9ca3af}
-  .toggle{width:36px;height:20px;background:#d1d5db;border-radius:99px;position:relative;transition:.2s}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .kilde{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}
+  .les-meir{font-size:.72rem;color:#6b7280;text-decoration:none;padding:4px 10px;border-radius:99px;border:1px solid #e5e7eb;background:white;transition:.2s;visibility:hidden;pointer-events:none}
+  .les-meir:hover{color:#3b82f6;border-color:#93c5fd}
+  body.lenker-paa .les-meir{visibility:visible !important;pointer-events:auto !important}
+  footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:2}
+  .foreldre-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;cursor:pointer;padding:8px 20px;border-radius:99px;background:#f3f4f6;border:1px solid #e5e7eb;width:fit-content;margin-left:auto;margin-right:auto}
+  .foreldre-wrap:hover{background:#e5e7eb}
+  .foreldre-info{font-size:.7rem;color:#9ca3af;margin-top:6px;font-style:italic}
+  .toggle{width:40px;height:22px;background:#d1d5db;border-radius:99px;position:relative;transition:.3s;flex-shrink:0}
   .toggle.on{background:#3b82f6}
-  .toggle::after{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-  .toggle.on::after{left:18px}
-  .les-meir{font-size:.72rem;color:#6b7280;text-decoration:none;opacity:.8;transition:.2s;display:none}
-  .les-meir:hover{opacity:1;color:#3b82f6}
-  body.lenker-på .les-meir{display:inline}
-  footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:1.8}
+  .toggle::after{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:2px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .toggle.on::after{left:20px}
   @media(max-width:480px){header h1{font-size:2rem}}
 </style>
 <script>
-  function toggleLenker() {
-    const toggle = document.getElementById('toggle');
-    const tekst = document.getElementById('foreldre-tekst');
-    const on = toggle.classList.toggle('on');
-    document.body.classList.toggle('lenker-på', on);
-    tekst.textContent = on ? '🔓 Foreldremodus' : '🔒 Foreldremodus';
-  }
   const SRC = {
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
@@ -88,31 +83,38 @@
     document.getElementById("src-line").textContent = SRC[tab] || "";
     document.getElementById("varsel-spel").style.display = tab === "spel" ? "block" : "none";
   }
+  function toggleLenker() {
+    const toggle = document.getElementById("foreldre-toggle");
+    const tekst  = document.getElementById("foreldre-tekst");
+    const on = toggle.classList.toggle("on");
+    if (on) {
+      document.body.setAttribute("class", "lenker-paa");
+      tekst.textContent = "🔓 Foreldremodus – lenker er synlege";
+    } else {
+      document.body.removeAttribute("class");
+      tekst.textContent = "🔒 Foreldremodus";
+    }
+  }
 </script>
 </head>
 <body>
 <header>
   <div style="font-size:2.5rem">📰</div>
   <h1>JuniorNytt</h1>
-  <div class="dato">Sundag 26. april 2026</div>
+  <div class="dato">Måndag 27. april 2026</div>
   <div class="sub">Nyhende på nynorsk for deg mellom 8 og 12 år – nye saker vert publisert kl. 07.00, 12.00 og 19.00 kvar dag.</div>
   <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ei privat, ikkje-kommersiell barneside og er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
-  <div class="oppdatert">Oppdatert kl. 19:38</div>
+  <div class="oppdatert">Oppdatert kl. 10:48</div>
   <div class="vaer-boks">
       <div class="vaer-no">
         <span class="vaer-symbol">⛅</span>
         <div class="vaer-detaljar">
-          <span class="vaer-temp">5°C </span>
+          <span class="vaer-temp">9°C </span>
           <span class="vaer-vind">💨 2 m/s · 🌧 0.0 mm</span>
           <span class="vaer-sted">Ulsteinvik</span>
         </div>
       </div>
       <div class="vaer-dagar"><div class="dag">
-      <span class="dag-namn">Man</span>
-      <span class="dag-emoji">☀️</span>
-      
-      <span class="dag-temp"><span class="dag-maks">12°</span><span class="dag-min">3°</span></span>
-    </div><div class="dag">
       <span class="dag-namn">Tys</span>
       <span class="dag-emoji">☁️</span>
       
@@ -121,12 +123,17 @@
       <span class="dag-namn">Ons</span>
       <span class="dag-emoji">☁️</span>
       
-      <span class="dag-temp"><span class="dag-maks">13°</span><span class="dag-min">7°</span></span>
+      <span class="dag-temp"><span class="dag-maks">12°</span><span class="dag-min">6°</span></span>
     </div><div class="dag">
       <span class="dag-namn">Tor</span>
       <span class="dag-emoji">☀️</span>
       
-      <span class="dag-temp"><span class="dag-maks">15°</span><span class="dag-min">8°</span></span>
+      <span class="dag-temp"><span class="dag-maks">17°</span><span class="dag-min">7°</span></span>
+    </div><div class="dag">
+      <span class="dag-namn">Fre</span>
+      <span class="dag-emoji">⛅</span>
+      
+      <span class="dag-temp"><span class="dag-maks">19°</span><span class="dag-min">9°</span></span>
     </div></div>
     </div>
 </header>
@@ -136,212 +143,292 @@
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">📍 Lokalt <span class="badge">10</span></button>
   <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">🎮 Spel & Sport <span class="badge">8</span></button>
 </div>
-
-<div class="foreldre-knapp" onclick="toggleLenker()">
-  <span>🔒 Foreldremodus</span>
-  <div class="toggle" id="toggle"></div>
-</div>
+<div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
 <div class="varsel-boks" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
 
 <main>
   <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">🔥</div>
-      <h3>Skogbrann i Fitjar truga bustader</h3>
-      <p>Ein stor skogbrann spreier seg ved Furevatnet i Fitjar på Søre Sunnmøre. To helikopter og Sivilforsvaret er sett inn for å slokke brannen. Eitt hus har vorte evakuert, og røyken trekkjer mot bustadfeltet i området. Politiet sendte ut nødvarsel for at folk skulle vere pålagde og følgje instruksjonane frå styresmaktene. Arbeidet med å stogge brannen fortsette intensivt gjennom kvelden.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Sivilforsvaret:</strong> organisasjonen som hjelper ved katastrofar og krisesituasjonar</div><div class="ord-item"><strong>nødvarsel:</strong> viktig melding frå styresmaktene når det er fare</div></div>
-      <span class="kilde">📰 NRK, Aftenposten, VG, TV2 · 26. Apr 2026 kl. 18:48</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🏔️🚗</div>
+      <h3>Trollstigen opna for trafikk – så tidleg som aldri før!</h3>
+      <p>Måndag klokka 12 blei Trollstigen opna for bilar og motor­syklar. Det er første gong denne populære fjellovergangen opnar så tidleg på året. Trollstigen er ein av Noregs mest kjente turistattraksjonar, og folk frå heile verden reiser dit for å sjå den flotte naturen og dei ville svingane i vegen. No kan du endeleg køyre over fjellet utan å måtte vente lenger!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>fjellovergangen:</strong> ein veg som går over fjellene</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 NRK · 27. Apr 2026 kl. 09:46</span>
+        <a href="https://www.nrk.no/mr/rekordtidleg-opning-av-turistikonet-trollstigen-i-2026-1.17862275" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">🐍</div>
-      <h3>Sjøormen – frå myte til vitskap</h3>
-      <p>I over 2000 år har sjøormen fascinert mennesker både i Noreg og andre stader. No har vitenskapsfolk granska kva dyr som kan ha ligge bak denne berømt myten. Sjøormen dukkar stadig opp i norsk historie, folklore og gamle forteljingar. Forskjarar trur at sjøormen kan ha vore basert på virkelige sjødyr som menneska såg, men ikkje skjønte kva dei var. Så det er ikkje så rart at folk trudde på sjøormen før vi hadde så god vitenskap som i dag!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>myte:</strong> ei gammal forteljing som ikkje nødvendigvis er sann</div><div class="ord-item"><strong>folklore:</strong> gamle tradisjonar og forteljingar frå eit folk</div></div>
-      <span class="kilde">📰 Aftenposten</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🏛️🚫</div>
+      <h3>Stavkirkene får droneforbud – for å verne om dei gamle treskatten</h3>
+      <p>Riksantikvaren (den som passar på gamle kulturskatter i Noreg) vil no forbyde droner ved nesten alle stavkirkene våre. Dei er redde for at droner kan starte brann eller skade desse gamle, fine bygginga. Stavkirkene er noko av det mest spesielt vi har i Noreg – dei er hundreår gamle og laga heilt av tre. Derfor må vi verne om dei ekstra godt slik at framtidas barn òg kan sjå og oppleve dei.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Riksantikvaren:</strong> den som passar på gamle og viktige ting i Noreg</div><div class="ord-item"><strong>stavkirker:</strong> gamle norske kyrkjer laga av tre</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 NRK · 27. Apr 2026 kl. 10:32</span>
+        <a href="https://www.nrk.no/nordland/microcation-ny-reisetrend_-flere-korte-turer-gir-storre-glede-gjennom-aret-1.17845122" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">⚽</div>
-      <h3>Glimt stoppa LSK sin draumerekke</h3>
-      <p>Det var stor spenning då Bodø/Glimt reiste til Lillestrøm for å spele fotball på Åråsen. Glimt vann kampen og braut LSK si lange rekkje av gode resultat. Det har vorte ei klassisk rivalitet mellom desse to klubbane, og Glimt er blitt som ein stor nemesis – ein motstander som det er veldig vanskeleg å slå – for Lillestrøm. Kampen vart spennande og fullt av dramatikk for begge laga.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>nemesis:</strong> ein motstander som det er svært vanskeleg å vinne mot</div><div class="ord-item"><strong>rivalitet:</strong> konkurranse eller strid mellom lag eller personar</div></div>
-      <span class="kilde">📰 NRK, Aftenposten, VG · 26. Apr 2026 kl. 19:09</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🎾⭐</div>
+      <h3>Casper Ruud vann stor tennis­kamp i Madrid</h3>
+      <p>Norsk tennisstar Casper Ruud (26 år) slo nummer 24 i verden på ein imponerande måte måndag i Madrid. Kampen blei avbroten kort tid på grunn av bråk frå tribunen, men det stoppa ikkje Ruud frå å vinne. Dette viser at Casper er i veldig bra form og kan gjere det kjempeflott i store turneringar framover.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>imponerande:</strong> veldig bra og imponerende</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 VG · 27. Apr 2026 kl. 10:32</span>
+        <a href="https://www.vg.no/sport/i/rr8mJ3/casper-ruud-videre-i-madrid-etter-bisarr-tenniskamp-du-er-for-sterk" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span><span class="land-badge">🇬🇧 🇺🇸 Storbritannia og USA</span></div>
-      <div class="card-emoji">👑</div>
-      <h3>Kong Charles besøkjer USA som planlagt</h3>
-      <p>Kong Charles av Storbritannia og dronning Camilla skal besøkje USA på eit stort statsbesøk. Buckingham Palace – det er residensen til den britiske kongefamilien – har stadfesta at besøket går føre seg som planlagt. Statsbesøket er ein viktig hendelse der leiarar frå to land møtest for å snakke om handel, vennskap og samarbeid. Kong Charles vil møte amerikanske leiarar og få eit glimt av både gamle og nye ting i USA.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>statsbesøk:</strong> når ein leiar frå eitt land besøkjer eit anna land</div><div class="ord-item"><strong>residens:</strong> eit palss eller hus der nokon heime bur</div></div>
-      <span class="kilde">📰 VG · 26. Apr 2026 kl. 19:00</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">⚽😴</div>
+      <h3>Bodø/Glimt treng pause – har spelt utan stans i 27 månader</h3>
+      <p>Det norske fotballaget Bodø/Glimt har spelt kampar utan å ta fri i heile 27 månader! Det er veldig lenge, og både spelarane og trenaren Knutsen seier at dei er trøytte på kroppen. Dei vil at det skal verte endra slik at lag får tid til å kvile seg. Det er viktig å ta pause for å ikkje bli sjuk og sliten.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>trøytte:</strong> veldig slitne og utan kraft</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 VG · 27. Apr 2026 kl. 07:16</span>
+        <a href="https://www.nrk.no/buskerud/kvinne-drept-pa-apen-gate-i-honefoss-_-eksmannen-erkjenner-straffskyld-1.17854778" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">💬</div>
-      <h3>Småpraten forsvinn i norske byar</h3>
-      <p>I dag kan du gå heile dagen rundt i norske byar utan å snakke med eit einaste menneske, og det er noko nytt. Før var det vanleg at folk snakka med kvarandre på butikken, på bussen eller på andre stader. No har mange folk heller nettbrett og telefon, og dei køyrer rett på utan å seie noko. Dette handlar om at mange har vorte meir opptekne av teknologien sin og mindre opne for å prate med strasbourg folk. Det er viktig å hugse at småpraten er fin for vennskapen og for at folk skal kjenne seg mindre einsamme.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>småprat:</strong> lett og venlegt samtal med folk ein møter</div><div class="ord-item"><strong>strasbourg folk:</strong> mennesker du ikkje kjenner</div></div>
-      <span class="kilde">📰 NRK · 26. Apr 2026 kl. 16:06</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">✈️🔧</div>
+      <h3>To fly frå Norwegian fekk problem i lufta same dag</h3>
+      <p>To fly frå flyselskapel Norwegian (eit norsk selskap) fekk teknisk trøbbel og måtte lande i Stockholm den same dagen. Det eine flyet var på veg frå Helsingfors til London, det andre frå Stockholm til Málaga. Heldigvis landing begge flya trygt, og ingen blei skada. Flyselskapa har spesialfolk som fiksar problema når dei oppstår.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>teknisk trøbbel:</strong> når noko i maskina ikkje fungerer som det skal</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 TV2 · 27. Apr 2026 kl. 07:37</span>
+        <a href="https://www.tv2.no/a/18786287" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">👕</div>
-      <h3>Lopp­markadar har blitt meir populær</h3>
-      <p>Kleda frå loppmartkadar er blitt meir og meir populære blandt ungdomar og barn. Stilister – som er folk som hjelper andre til å sjå pene ut – seier at ein spesiell trend kjem til å bli på modi og ikkje går bort med det første. Når du kjøper plagg på loppmartkadar, får du noko unikt som ingen andre har, og det er bra for miljøet òg. Det er både artig og økonomisk fornuftig å handla brukt klede i stad for nye plagg heile tida.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>loppmartikad:</strong> stad der folk sel brukte ting</div><div class="ord-item"><strong>trend:</strong> noko som er populært og som mange liker</div></div>
-      <span class="kilde">📰 NRK</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🕵️💻</div>
+      <h3>Forsikringsselskap oppdaga svindel på 175 millionar kroner</h3>
+      <p>Forsikringsselskapet Fremtind fann ut at nokre menneske hadde prøvd å lure dei med falske bilete og løgner for å få pengar dei ikkje skulle ha fått. Dei oppdaga at folk brukar kunstig intelligens (KI) til å lage falske bieter og dokument. Dette er eit større problem som fleire selskap må passe seg for no. Det er viktig å vere ærleg og ikkje prøve å lure folk.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kunstig intelligens:</strong> datamaskiner som kan læra og tenkja som menneske</div><div class="ord-item"><strong>svindel:</strong> når nokon prøver å lure andre for å få pengar</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 TV2</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">📰</div>
-      <h3>Første arbeidsdag på Midtøsten</h3>
-      <p>Ein journalist fortel om korleis han starta sin nye jobb som Midtøsten-korrespondent – nokon som skriv nyhendter frå Midtøsten – og kom rett inn i ein krig. Han hadde ikkje venta at det skulle skje, men det viste seg at hans foreldre hadde jobba i same området før han. Det må vere skummelt å byrje ein ny jobb og straks møte noko så alvorleg som ein krig. Men journalistar reiser til vanskelege stader for å fortelje folk heime kva som verkeleg skjer.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>korrespondent:</strong> journalist som skriv nyhendter frå eit spesielt område</div><div class="ord-item"><strong>Midtøsten:</strong> område i Asia med land som Irak, Syria og Israel</div></div>
-      <span class="kilde">📰 NRK</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span><span class="land-badge">🇺🇸 🇨🇳 USA og Kina</span></div>
+      <div class="card-emoji">🌍🤝</div>
+      <h3>Kina blir sterkare medan USA brukar ressursar på krig</h3>
+      <p>Medan USA har brukt veldig mange pengar og folk på krigar langt borte (spesielt i Iran-området), har Kina blitt sterkare utan å skyte eit skot. Kina har på ein smart måte bygd seg opp som ein stor kraft i verden ved å bli vennar med andre land og handle med dei. Dette er noko som ekspertar seier er viktig å forstå – at makt ikkje alltid handlar om krig, men òg om handel og politikk.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ressursar:</strong> pengar, menneske og ting ein brukar</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 TV2</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">⚽</div>
-      <h3>Hans Henrik Raaschou – ein fotballkonge</h3>
-      <p>Hans Henrik Raaschou, som levde frå 1946 til 2026, var ein kjend norsk fotballspelar som blomstra på fotballbanen. Han var kjend for sine gode prestasjonar og sitt brennande iver for idretten. Raaschou etterlèt seg eit sterkt minne hos mange fotballentusistar i Noreg. Hans arv som spelar vil bli hugsa i mange år framover, og han inspirerte mange til å elske fotballen like mykje som han gjorde.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>blomstra:</strong> å vere veldig flink og lykkast</div><div class="ord-item"><strong>arv:</strong> det nokon etterlèt seg når dei døy</div></div>
-      <span class="kilde">📰 Aftenposten · 26. Apr 2026 kl. 17:30</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span><span class="land-badge">🇺🇸 USA</span></div>
+      <div class="card-emoji">🎬⭐</div>
+      <h3>Spelar Meryl Streep igjein etter 20 år</h3>
+      <p>Den kjende amerikanske skuespelaren Meryl Streep (75 år) skal spele igjen! Ho skal spele rolla si som den fryktfulle moteredaktøren Miranda frå filmen «The Devil Wears Prada» etter heile 20 år. Ho seier ho gjorde det fordi ho var nysgjerrig og ville prøve igjen. Dette er spennande nyheiter for alle som likar filmar!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>moteredaktør:</strong> leiar for eit motemagasin</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Aftenposten · 27. Apr 2026 kl. 08:36</span>
+        <a href="https://www.aftenposten.no/kultur/i/d4Jq7o/meryl-streep-gjoer-comeback-som-djevelsk-moteredaktoer-av-ren-nysgjerrighet" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">🤝</div>
-      <h3>Ordskifte utan strasbourg folk – er det mogleg?</h3>
-      <p>I dag er det enklare enn nokon gong å unngå å snakke med menneske når du er ute. Du kan betale med telefonen, be om varer utan å prate, og bussen krev nesten ikkje at du seier noko. Dette er bra på nokre måtar – det går raskare – men mange menneske er blitt mindre vane til å prate med nye folk. Barn og unge lærer dermed ikkje så mykje om korleis ein skal snakke med andre menneske på ein fin måte. Psykologar og lærarar seier at det er viktig at vi ikkje gløymer småpraten, fordi den gjer oss meir vennskapelege og gjer at vi trivst betre saman.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>psykolog:</strong> fagperson som studerer korleis menneske tenkjer og føler</div></div>
-      <span class="kilde">📰 NRK</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🚌👥</div>
+      <h3>Nye pendlarar får endra busstilbod i Oslo-området</h3>
+      <p>Tusenvis av menneske som pendlar (køyrer til og frå arbeidet kvar dag) skal få ny måte å reise på. Bussar frå vest skal no stoppa ved Lysaker i staden for andre stader. Problemet er at nesten ingen vil betale for den beste løysinga som staten foreslo. Det er viktig at folk kan reise på ein god måte til arbeidet sitt.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>pendlarar:</strong> menneske som køyrer til og frå arbeidet kvar dag</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Aftenposten</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span><span class="land-badge">🇸🇪 Sverige</span></div>
-      <div class="card-emoji">🚨</div>
-      <h3>Farleg gjenstand funnen ved togstasjon</h3>
-      <p>Politiet i Gøteborg (ein større by i Sverige) gjorde ein stor aksjon ved togstasjonen etter at nokon fann ein gjenstand som kunne vere farleg. Politiet sperra av eit stort område så det skulle vere tryggleik for alle som var der. Det er viktig at politiet reagerer fort når det er tale om potensielle farer, for å verne om alle sine liv og sikkerheit.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>potensielle:</strong> som kan hende eller bli verkeleg</div></div>
-      <span class="kilde">📰 VG</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span><span class="land-badge">🇫🇷 Frankrike</span></div>
+      <div class="card-emoji">🤝📋</div>
+      <h3>Økokrim samarbeider med Frankrike om komplisert etterforskingsak</h3>
+      <p>Norsk påtalemakt (Økokrim) har signa ein avtale med Frankrike slik at dei to landa kan dele bevis og informasjon medan dei etterforskjar ein stor sak saman. Dette handlar om at dei skal dele informasjon på same tid (i sanntid). Når land samarbeider sånn, kan dei få større kraft til å etterforske vanskelige saker.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Økokrim:</strong> dei som etterforskjer alvorlege pengesaker i Noreg</div><div class="ord-item"><strong>sanntid:</strong> med ein gong, same augneblikk</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 NRK · 27. Apr 2026 kl. 07:26</span>
+        <a href="https://www.nrk.no/nyheter/epstein-saken_-okokrim-inngar-samarbeid-med-frankrike-1.17862331" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div></div>
   <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span><span class="land-badge">🇬🇧 Nord-Irland</span></div>
       <div class="card-emoji">⚽</div>
-      <h3>Ungdomsidrettsøk får ikkje dra til EM</h3>
-      <p>Marie Krogsæter Sæterøy skulle gjerne ha spelt på landslaget sitt i EM for J17 (juniorar under 17 år), men laget hennar nektar å slippe ho fri. Pappaen hennar, Håkon Sæterøy, seier dei hadde håpa på noko anna. Når spelarar skal på store idrettsstevne, må klubben deira godkjenne det. I dette tilfellet ville ikkje klubben hennar la ho reise. Det er dumt for Marie, som gjerne ville vise kunnskapane sine på eit stort internasjonalt stevne.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>EM:</strong> Europameisterskapen – ein stor idrettskonkurranse</div></div>
-      <span class="kilde">📰 Sunnmørsposten · 26. Apr 2026 kl. 17:40</span>
+      <h3>Mille Viken skal spele EM-fotball i Nord-Irland</h3>
+      <p>Mille Viken frå Herøy er klar for J17-EM i fotball! Ho debuterte nyleg for J18-landslaget, og no får ho sjansen til å representere Noreg på det største meisterskapet for jentene i ho si aldersgruppe. EM blir spelt i Nord-Irland, og det er eit stort steg i fotballkarrieren hennar. Mange av dei beste jentespelarane i Europa kjem til å vere med. Det er ein stor ære å få spele for Noreg på EM.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>EM:</strong> Europameisterskapen – største turnering for land i Europa</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 06:59</span>
+        <a href="https://www.vikebladet.no/sport/n/OkyjVw/tatt-ut-til-em" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">💡</div>
-      <h3>Student byggjer teknologiselskap heime på hybelen</h3>
-      <p>Henrik Hoseth Orholm er student i Ålesund, men i staden for å lese til eksamen sit han og byggjer eit eige selskap. Han har laga eit produkt som folk faktisk vil kjøpe – utan å trenge pengar frå investorar (folk som betalar pengar for å få del av selskapet). Det er modig av Henrik å satse så hardt på sjølve produktet hans i staden for å fokusere på skulen. Mange store teknologiselskap starta på same måten – i små rom med folk som hadde ein god idé.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>investorar:</strong> Folk som gir pengar for å bli einar i eit selskap</div></div>
-      <span class="kilde">📰 Sunnmørsposten · 26. Apr 2026 kl. 05:58</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🏆</div>
+      <h3>Jonas vann bronse og fekk tredje medalje denne sesongen</h3>
+      <p>Jonas Kvalsund Hansen frå Herøy er god på billard! Han spelte seg til bronse under NM i 10-ball i Trondheim. Det spesielle er at dette er den tredje medaljen han har tatt på norgesmeierskapen denne sesongen. Det viser at han er ein av dei beste billardpelarane i Noreg i sin klasse. 10-ball er eit spel der du skal kome bollene dine i hol før motstandaren din.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>NM:</strong> Norgesmeierskapen – den høgste konkurransen i Noreg</div><div class="ord-item"><strong>10-ball:</strong> Ein type billardspel med 10 bollar</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vestlandsnytt</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">✝️</div>
-      <h3>Talen som fekk femten unge menneske til å bli konfirmerte</h3>
-      <p>På Sjøborg i Ulsteinvik blei femten elevar frå Tentro konfirmerte laurdag. Ein talesman sa noko mange menneske trengjer å høyre: «Hugs Guds telefonnummer, Jeremia 33:3, når livet er vanskeleg.» Konfirmasjon er ein viktig dag når unge menneske blir vaksne i religiøs samanstøyting. Det er fint at presten eller talesmanen brukte humor og trøyst i talen sin, slik at dagen blei både alvorleg og gledefull.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>konfirmasjon:</strong> Ein religiøs seremoniar når unge menneske blir oppskrivne som medlem av kyrkja</div></div>
-      <span class="kilde">📰 Vikebladet</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🎉</div>
+      <h3>Teknologiselskap Evotec feirar 20 år med rekordår</h3>
+      <p>Teknologiselskapet Evotec i Ulsteinvik er 20 år og det er grunn til å feste! Selskapet har hatt eit rekordår bak seg, og det er veldig bra nyheitene for dei tilsette. Sjefane inviterer både arbeidarane og familiane deira til stor fest. Evotec gjer arbeid innan teknologi og har vakse mye dei siste åra. Nå ser dei mot nye mål for året 2026.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Teknologiselskap:</strong> Bedrift som arbeider med datamaskiner og elektronikk</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 02:00</span>
+        <a href="https://www.vikebladet.no/naeringsliv/n/vrkWOj/20-aaringen-veks-med-uforminska-styrke" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">🚗</div>
-      <h3>Bilentusiasatar samlar seg til stor vårmønstring</h3>
-      <p>For 40. år på rad inviterer Amcar Ytre Sunnmøre til Vårmønstringa i Fosnavåg 1. mai. Det blir ein folkefest for alle som elskar gamle og fine bilar. Når noko vart arrangert 40 gonger på rad, betyr det at veldig mange menneske tykkjer det er gøy og vil kome attende år etter år. Dei som likar bilar, gamle møbler eller berre å vere saman med andre – har her noko å glede seg til.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>bilentusiasatar:</strong> Folk som elskar bilar veldig mykje</div></div>
-      <span class="kilde">📰 Vikebladet</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span><span class="land-badge">🇯🇵 Japan</span></div>
+      <div class="card-emoji">🤝</div>
+      <h3>Ulsteinvik-firma samarbeider med Japan</h3>
+      <p>Firmaet Restorae AS i Ulsteinvik har gjort ein god avtale! Dei har starta eit strategisk samarbeid med det japanske selskapet Nosan Corporation. Det betyr at dei to bedriftene skal arbeide saman og dele kunnskap. Japan er kjent for å vere god på teknologi, så dette kan vere spennande for Restorae. Samarbeid mellom land gjer at bedrifter lærer av kvarandre og vert betre.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Strategisk samarbeid:</strong> Når to bedrifter samarbeider for å nå felles mål</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 09:30</span>
+        <a href="https://www.vikebladet.no/nyhende/n/aJG3K4/inngaar-samarbeid" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">🥇</div>
-      <h3>Hødd-jenter vann gull i Stavanger</h3>
-      <p>Jentene frå Hødd og lag frå Molde tok gull då dei spelte i Stavanger. Dette var ein fin prestasjon for dei unge idrettsjentene. Når lag frå Sunnmøre reiser ut og vinn, er det gøy for heile bygda. Det viser at vi har bra idretts-kultur på Sunnmøre og at unge menneske kan trene og bli veldig gode.</p>
-      
-      <span class="kilde">📰 Vikebladet · 26. Apr 2026 kl. 15:47</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🏘️</div>
+      <h3>Tre kommunar søkjer løysingar saman</h3>
+      <p>Herøy, Sande og Ulstein kommunar gjer noko nytt saman! Dei har slått ut ei jobb der nokon skal arbeide med interkommunalt samarbeid. Det betyr at dei tre kommunane vil arbeide meir tett saman og dele ressursar. Det kan òg vere at dei tanker på å bli samanslåtte til éi stor kommune i framtida. Når kommunar arbeider saman, kan dei gjere meir med pengane dei har.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Interkommunalt samarbeid:</strong> Når fleire kommunar arbeider saman</div><div class="ord-item"><strong>Kommunesamanslåing:</strong> Når to eller fleire kommunar blir til éi kommune</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vikebladet</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">🏗️</div>
-      <h3>Ny bygning kan starte – Fosnot får løyve</h3>
-      <p>Fosnot sin nye bygning på Mjølstadneset i Herøy kommune kan no byrje å bli bygd. Herøy kommune har gitt løyve til å starte bygginga. Det er gledjande for bedrifta, som har venta på denne dagen. Nye bygningar skapar ofte nye arbeidsplass og gjer det lettare for bedrifter å vekse. Dette er bra nyheit for Herøy kommune.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>løyve:</strong> Tillating frå styresmaktene til å gjere noko</div></div>
-      <span class="kilde">📰 Vestlandsnytt · 26. Apr 2026 kl. 13:00</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🏭</div>
+      <h3>Områda har enorm matlagring, men det vart glemt</h3>
+      <p>Ålesundsområda har den største lagerkapasiteten for mat i heile Noreg – eller nesten! Det er enormt mykje mat som vert lagra der, nok til å matte alle nordmenn i heile fem månader. Men her er problemet: Politikkarane og beredskapsmyndigheitene har glemt dette! Dersom det skulle skje noko alvorleg i Noreg, trur dei ikkje på at denne maten finst. Det er viktig at alle veit kvar maten er, slik at ho kan nyttast når det er nødvendig.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Lagerkapasitet:</strong> Kor mykje ein kan lagre av noko</div><div class="ord-item"><strong>Beredskap:</strong> Planlegging for når noko alvorleg skjer</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Sunnmørsposten</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">🎆</div>
-      <h3>17. mai får salutt i Herøy</h3>
-      <p>Herøy brann og redning har gitt løyve til avfyring av salutt på Leinane morgonen 17. mai. Det betyr at vi kan glede oss til det klassiske «bang-bang» når Norge sitt nasjonaldag blir feira. Salutt er ein tradisjonsrik måte å feira på, og det høyrest fint ut når kanonane går av på dagen då Norge fekk sin fridom.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>salutt:</strong> Når kanon eller liknande våpen skyt i lufta som del av ein feiring</div></div>
-      <span class="kilde">📰 Vestlandsnytt</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🚁</div>
+      <h3>Luftambulansen redda turgåar frå fjellet</h3>
+      <p>Ein turgåar hadde ei stor ulukke på fjellet då ho fall ned. Luftambulansen vart kalla ut og redda ho frå området. Ein stor aksjon vart sett i verk etter at det kom rop om hjelp frå fjellsida. Heldigvis kom ho seg ned og fekk hjelp. Dette viser kor viktig det er å ha luftambulanse tilgjengeleg når folk er i fare på stad der det er vanskeleg å kome til.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Luftambulanse:</strong> Helikopter som bruker til å redda menneske i nød</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vikebladet</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">⚽</div>
-      <h3>Fotballag er ikkje nøgde med eigen prestasjon</h3>
-      <p>Både kapteinen og trenaren på Hødd ville gjerne ha vore betre då dei spelte borte mot Raufoss. Dei tok med seg berre eitt poeng heim til Ulsteinvik. «Vi er ikkje i nærleiken av toppnivået vårt,» seier dei. Det betyr at laget veit det kan spele betre. Det er eigentleg positivt når lag er kritiske til seg sjølve – då jobbar dei berre hardare neste gang.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>poeng:</strong> Det laget får når dei spelar fotball – seier eller remis gir poeng</div></div>
-      <span class="kilde">📰 Vikebladet · 26. Apr 2026 kl. 17:40</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">⛪</div>
+      <h3>Tolv ungdomar skal konfirmere seg</h3>
+      <p>Tolv konfirmantar skal gjere sitt store skritt inn i voksenleven! Dei skal konfirmere seg i Gursken kyrkje 2. mai. Konfirmasjon er ein viktig dag der unge menneske viser at dei er ferdige med religionsundervisninga. Det er ein dag dei aldri gløymer, med familie og venner som gratulerer.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Konfirmere:</strong> Formell seremoni der ungdom tek ansvar for sitt eige tru</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vestlandsnytt · 27. Apr 2026 kl. 09:00</span>
+        <a href="https://www.vestlandsnytt.no/nyhende/n/K8LrRX/konfirmantar-i-gursken-kyrkje" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">📚</div>
-      <h3>Foreldreutvalet vil ha seg høyrt i omstridt sak</h3>
-      <p>Foreldreutvalet ved Møre barne- og ungdomsskule har sendt eit innspel til Herøy kommune om brakkeriggen i Dragsund. Dei vil gjere styresmaktene medvitne om det dei tykkjer er viktig. Når foreldrar og lærarar jobbar saman, kan dei gjere betre avgjerder for ungane. Det er fint at foreldreutvalet ynskjer å ta del i sakene som påverkar skulen deira.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>foreldreutvalet:</strong> Ein gruppe foreldrar som jobbar for at skolen skal verte betre</div><div class="ord-item"><strong>innspel:</strong> Ein forslag eller meining som ein sender til styresmaktene</div></div>
-      <span class="kilde">📰 Vestlandsnytt</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">🏗️</div>
+      <h3>Herøy-byggen fekk løyve til å starte arbeid</h3>
+      <p>Det skal byggjast nytt på Mjølstadneset i Herøy! Herøy kommune har gitt igangsetjingsløyve til Fosnot sitt nye bygg. Det betyr at dei kan starte byggjinga no. Dette er bra nyheitere for området, som får eit nytt byggjing som skal verte brukt. Byggjing skaper arbeidsplessar og gjer området litt meir levande.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Igangsetjingsløyve:</strong> Tillating frå kommunen til å starte eit byggjingprosjekt</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vestlandsnytt</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:37</span></div>
-      <div class="card-emoji">⚽</div>
-      <h3>Aalesund har ikkje vore god nok i år</h3>
-      <p>Aalesund fotballklubb redda eit poeng mot Kristiansund, men laget veit at dei måtte ha tatt fleire poeng hittil i sesongen. «Vi er ikkje gode nok,» erkjenner dei. Det er bra når lag er ærlege om at dei kan vere betre. Det motiverer spelarane til å jobbe hardare, slik at neste kamp blir betre enn denne.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>poeng:</strong> Det laget får når dei spelar fotball – seier eller remis gir poeng</div></div>
-      <span class="kilde">📰 Sunnmørsposten · 26. Apr 2026 kl. 17:40</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:47</span></div>
+      <div class="card-emoji">☕</div>
+      <h3>Kommune vil ikkje konkurrere med private kafear</h3>
+      <p>Herøy kommune har fått ei klår beskjed: Ikkje start eigendom cateringverksemd! Formannskapet seier at kommunen skal ikkje konkurrere med private aktørar som driv kafear og matservering. Det betyr at det skal vere private folk og bedrifter som sel mat og drikke, ikkje kommunen sjølv. Dette er for å verne dei små bedriftene som arbeider hardt for å halda seg på beina.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Catering:</strong> Når nokon sel mat og drikke</div><div class="ord-item"><strong>Konkurrere:</strong> Når bedrifter kjempar om dei same kundane</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Vestlandsnytt</span>
+        <span class="les-meir"></span>
+      </div>
     </div></div>
   <div class="panel" id="panel-spel"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">⚽</div>
-      <h3>Bodø/Glimt slo LSK – kva ei fantastisk kamp!</h3>
-      <p>Bodø/Glimt vann ein spanande fotballkamp mot Lillestrøm (LSK) på Åråsen! Det var ei tøff kamp der begge laga kjempa hardt, men Glimt var sterkare denne gongen. LSK hadde ei fin rekkje med seirer, men no må dei prøva igjen neste kamp. Fotball er så gøy når laga møtest og viser kva dei kan!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>rekkje:</strong> når laget vinn fleire kampar på rad</div><div class="ord-item"><strong>nemesis:</strong> ein sterk motstander som ofte seirar over deg</div></div>
-      <span class="kilde">📰 VG Sport · 26. Apr 2026 kl. 19:09</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">🎾✨</div>
+      <h3>Casper Ruud vinn storslåm i Madrid!</h3>
+      <p>Norske Casper Ruud hadde ein fantastisk dag då han spelte tennis i Madrid og vann kampen sin på ein veldig imponerande måte! Han besegra spelar nummer 24 i verda, og det såg ut som ein leiking for Ruud. Kampen blei stoppa ei lita stund på grunn av bråk frå tribunen, men det stoppa ikkje Ruud frå å vinna. Det er stort håp no om at han kan gjera noko endå større på andre turneringar framover!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>tribunal:</strong> Plasseringa der publikum sit og ser på kampen</div><div class="ord-item"><strong>turneringar:</strong> Idrettsmesterkap der fleire spelarar konkurrerer</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 VG Sport · 27. Apr 2026 kl. 10:32</span>
+        <a href="https://www.vg.no/sport/i/rr8mJ3/casper-ruud-videre-i-madrid-etter-bisarr-tenniskamp-du-er-for-sterk" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">🎬🍄</div>
-      <h3>Super Mario Galaxy-filmen er storseljar – 2 milliardar dollar!</h3>
-      <p>Skuespelaren Shigeru Miyamoto takka alle fans som har sett Super Mario Galaxy-filmen! Filmen er allereie 2026 sin største kinofilm og har hjlopt Mario-filmane til over 2 milliardar dollar totalt. Det betyr at veldig mange menneske elskar Mario – både i spel og på film. Kvifor er Mario så kjekk? Fordi han hoppast, samlar myntar og reddar prinsessa!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kinofilm:</strong> ein film du ser på leirduken på kino</div><div class="ord-item"><strong>fans:</strong> menneske som likar noko veldig godt</div></div>
-      <span class="kilde">📰 Nintendo Life · 26. Apr 2026 kl. 19:15</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">🔥✨</div>
+      <h3>Pokémon-spelarar kan få sjelden Volcanion!</h3>
+      <p>Viss du har spelt Pokémon Legends: Z-A og fanga alle Pokémon-ane i dei tre ulike registera (Lumiose, Mega Evolution og Hyperspace), so venter det noko spesielt på deg! Pokémon Company gjev ut ein sjelden og glinstrande Volcanion som premie dersom du loggast inn i Pokémon HOME. Det er ein vanvittig cool belønning for alle som er flinke til å samla Pokémon!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Pokédex:</strong> Register over alle Pokémon-ane du har fanga</div><div class="ord-item"><strong>Shiny:</strong> Ein sjelden utgåve av ein Pokémon som glinstra og ser annleis ut enn vanleg</div><div class="ord-item"><strong>Pokémon HOME:</strong> Ein app der du kan lagra og halda styr på Pokémon-ane dine</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">🎮📱</div>
-      <h3>Pokémon GO – få deg gratis gåver!</h3>
-      <p>Pokémon GO har hemmelege kodar som gir deg gratis gåver! Du kan skriva inn desse kodane og få spesielle ting som hjelper deg på leitinga etter Pokémon. Spelet er framleis veldig populært fordi du må gå rundt utanfor huset for å finna dei små kraturane. Med gratis kodar blir det endå meir gøy – og du får mosjon òg!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kodar:</strong> hemmelege ord eller tal du skriv inn for å få gåver</div><div class="ord-item"><strong>Pokémon:</strong> små imaginære kratur du samlar og trenar</div></div>
-      <span class="kilde">📰 Pocket Gamer</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">⚽😴</div>
+      <h3>Bodø/Glimt er lei av å spela utan pause!</h3>
+      <p>Bodø/Glimt-laget har spelt kampar utan stopp i heile 27 månader no! Trenar Knutsen seier at dette er ikkje bra, og at kroppen til spelarane slitast på. Han ber derfor om at det må gjerast endringar slik at laget får tid til å reikra seg og bli frisk igjen. Det er viktig at spelarane får nok kvile for å halda seg sunnare og prestara betre!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>trenar:</strong> Personen som leirar laget og seier kva dei skal gjera</div><div class="ord-item"><strong>tellande kampar:</strong> Kampar som tel med i ligaen eller turneringa</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 VG Sport</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">🎮🐉</div>
-      <h3>Digimon Story Cyber Sleuth kjem til Nintendo Switch – i juli!</h3>
-      <p>Bandai Namco seier at Digimon Story Cyber Sleuth skal komma til Nintendo Switch både i juli! Spelet vil sjå endå finare ut på den nye Switch 2-konsollen fordi ho er kraftigare. Digimon-spel er like kjekk som Pokémon – du møter digitale kratur og må bli venn med dei. No kan du spela det heime på sofaen eller når du er på tur!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Digimon:</strong> digitale monster du samlar og trenar, lik Pokémon</div><div class="ord-item"><strong>konsoll:</strong> ei maskin du brukar for å spela videospel</div></div>
-      <span class="kilde">📰 Nintendo Life · 26. Apr 2026 kl. 19:15</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">🎮🏆</div>
+      <h3>Tomodachi Life må gje plassen til Pragmata!</h3>
+      <p>I Storbritannia vart det no utgitt nye tal på kva spel som seljast best! Spelet Pragmata kom inn og tok første plassen og pusta Tomodachi Life av tronen. Tomodachi Life var nummer ein forrige veke, men no må det nøya seg med tredje plass. Cyberpunk 2077 hoppa og tok andreplassen, så det er store endringar i topplista!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>topplista:</strong> Liste over kva som er mest populært eller best</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life · 27. Apr 2026 kl. 09:00</span>
+        <a href="https://www.nintendolife.com/news/2026/04/uk-charts-pragmata-shoves-tomodachi-life-off-the-top-spot" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">🎮🖼️</div>
-      <h3>Yoshi sitt boksomslag – kva er finast?</h3>
-      <p>Nintendo spurde folk kva dei tykkjer er det flottaste omslaget for spelet Yoshi's Universal Gravitation! Sist veke vann det europeiske omslaget med 41 prosent av stemmene. Japan kjem på andreplassen med 31 prosent. Det er gøy å samanlikna korleis spelaromslaga ser ut i ulike landar – dei er heilt ulike!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>omslag:</strong> biletet og designet på framside av spelet</div><div class="ord-item"><strong>Universal Gravitation:</strong> ein Game Boy-spel der du roterar verden for å løysa puslespel</div></div>
-      <span class="kilde">📰 Nintendo Life</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">🎬🎮</div>
+      <h3>Vent spenning på ny Mario-film!</h3>
+      <p>Nintendo har laga ein Super Mario-film som var veldig populær, og no jobbar dei med å laga ein film om Legend of Zelda! Det ser ut til at Metroid kan verta det neste spelet som blir laga til film. Det er to filmstudia som konkurrerer om å få lov til å laga Metroid-filmen, så det blir spanande å sjå kven som vinn!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>filmstudio:</strong> Selskap som lagar filmar</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life</span>
+        <span class="les-meir"></span>
+      </div>
     </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">🎲⚔️</div>
-      <h3>Dicero – eit nytt spel med terningar og monster!</h3>
-      <p>Dicero er eit heilt nytt spel som brukar terningar (terning = dice på engelsk) for å kjempa mot monster! Du kastar terningane, får poeng, og må slåst mot ulike fiendar. Det er såkalla roguelite-spel, som betyr at kvar gang du spelar blir det annleis. Mange seier at Dicero svelar heile fritida deira – det er så gøy!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>roguelite:</strong> spel der du startar på nytt kvar gong du spelar, men lærer deg meir</div><div class="ord-item"><strong>poeng:</strong> tal du får når du gjer noko bra i spelet</div></div>
-      <span class="kilde">📰 Pocket Gamer</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">🎮⭐</div>
+      <h3>Pokémon Legends: Z-A er den store favoritten!</h3>
+      <p>Det nye spelet Pokémon Legends: Z-A er så populært at det har blitt nummer ein på salgslista i Storbritannia! Spelet har tre ulike Pokédex-register som du kan fylla opp medan du fangar Pokémon og utforskar verda. Mange spelarar er veldig glade i dette spelet og arbeitar hardt for å fanga alle Pokémon-ane!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>salgslista:</strong> Rangering av kva spel som seljast best</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life · 27. Apr 2026 kl. 10:30</span>
+        <a href="https://www.nintendolife.com/news/2026/04/completed-legends-z-as-pokedexes-theres-a-shiny-prize-waiting-for-you-in-pokemon-home" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">🎲🏠</div>
-      <h3>Monopoly GO – få gratis terningar kvar dag!</h3>
-      <p>Spelarane av Monopoly GO kan få gratis terningar kvar einaste dag! Terningar bruakast for å flytta seg rundt på brettet og oppgradere eigedomar. Utan terningar går det tregt, så gratis terningar er kjempe viktige. Nintendo oppdaterer lista over gratis linker kvar dag, så du kan aldri løppa tom for terningar!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>terningar:</strong> ting du kastar i spelet for å sjå kor langt du flyttar deg</div><div class="ord-item"><strong>eigedomar:</strong> hus og eigedom du kjøper og eigar i spelet</div></div>
-      <span class="kilde">📰 Pocket Gamer</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">👽🚪</div>
+      <h3>Ny teaser for Alien: Isolation 2 er her!</h3>
+      <p>Developer Creative Assembly har gitt ut ein kort teaser for det nye spelet Alien: Isolation 2! Teaseren heiter «False Sense of Security» og viser ei dør som opnast til eit regntungt område utefor. Du kan sjå ein ikonisk sparestasjons-maskin i teaseren. Det er berre ein liten glimt, men det byggjer opp spenning for kva som kjem!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>teaser:</strong> Ein liten sniktitt på noko som skal koma seinare</div><div class="ord-item"><strong>developer:</strong> Selskapet som lagar spelet</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life · 26. Apr 2026 kl. 14:45</span>
+        <a href="https://www.nintendolife.com/news/2026/04/alien-isolation-2-gets-its-first-teaser-trailer" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
     </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 19:38</span></div>
-      <div class="card-emoji">🎰💰</div>
-      <h3>Coin Master – få gratis spinn og myntar!</h3>
-      <p>Coin Master er eit populært spel med millionar av spelarar rundt omkring! Kvar dag kan du henta gratis spinn og myntar frå Facebook-sida til spelet. Med spinna og mynatne kan du bygga ditt eige rike og slåst mot andre spelarar. Det er så moro å samla ressursar og bli sterkare!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>spinn:</strong> når du snurrar rundt og får tilfeldige ting i spelet</div><div class="ord-item"><strong>myntar:</strong> pengane i spelet som du brukar for å kjøpa ting</div></div>
-      <span class="kilde">📰 Pocket Gamer</span>
+      <div class="card-meta"><span class="tidspunkt">🕐 10:48</span></div>
+      <div class="card-emoji">📺🎮</div>
+      <h3>Netflix har mange kule spel å spela!</h3>
+      <p>Viste du at Netflix ikkje berre er for å sjå filmar og serier? Netflix har og ein stor samling med spel som du kan spela! Det finst mange ulike slags spel frå ulike selskap, så det er noko for alle smakane. Frå strategispel til eventyrspel, Netflix har mykje kult å tilby alle som likar å spela!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>strategispel:</strong> Spel der du må planlegja og tenkja nøye</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Pocket Gamer</span>
+        <span class="les-meir"></span>
+      </div>
     </div></div>
 </main>
 
@@ -349,8 +436,13 @@
   JuniorNytt • Laga for nysgjerrige barn 🌟<br>
   © 2026 JuniorNytt – Ei ikkje-kommersiell, privat barneside.<br>
   Innhald er omskrive frå opne nyheitskjelder av kunstig intelligens. Originalkjeldene er alltid merka på kvar sak.<br>
-  JuniorNytt omtalar spel og tenester som informasjon, og dette er ikkje å rekne som ei tilråding eller eit samarbeid.<br>
+  JuniorNytt omtalar spel og tenester som informasjon – ikkje tilråding eller samarbeid.<br>
   Foreldre oppfordrast til å følgje med på kva spel barna nyttar.
+  <div class="foreldre-wrap" onclick="toggleLenker()">
+    <span id="foreldre-tekst">🔒 Foreldremodus</span>
+    <div class="toggle" id="foreldre-toggle"></div>
+  </div>
+  <div class="foreldre-info">Foreldremodus gir lenke til kjelda bak nyheita</div>
 </footer>
 </body>
 </html>
