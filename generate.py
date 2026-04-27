@@ -34,7 +34,12 @@ RSS_SPEL = [
     ("https://www.aftenposten.no/sport/rss",           "Aftenposten Sport"),
     ("https://www.nintendolife.com/feeds/news",         "Nintendo Life"),
     ("https://www.pocketgamer.com/rss/",               "Pocket Gamer"),
+    ("https://www.nrk.no/sport/toppsaker.rss",         "NRK Sport"),
 ]
+
+# Kjelder kjent for betalingsmur – saker med kort ingress vert merka/filtrert
+BETALINGSMUR_KJELDER = {"Aftenposten", "VG", "VG Sport", "Aftenposten Sport", "Sunnmørsposten"}
+BETALINGSMUR_GRENSE  = 150  # teikn
 
 EMOJI_MAP = [
     (["krig","ukraina","russland","angrep","soldat","forsvar","nato"],        "⚔️"),
@@ -125,7 +130,7 @@ def hent_vaer():
         print(f"  Vêrfeil: {e}")
         return None
 
-def hent_rss(feeds, maks_per_kilde=6):
+def hent_rss(feeds, maks_per_kilde=8):
     artiklar = []
     headers = {"User-Agent": "Mozilla/5.0 (compatible; JuniorNytt/1.0)"}
     for url, kilde in feeds:
@@ -159,8 +164,10 @@ def hent_rss(feeds, maks_per_kilde=6):
                     except Exception:
                         continue
                 if tittel:
-                    artiklar.append({"kilde": kilde, "tittel": tittel,
-                                     "ingress": desc[:300], "dato": dato_str, "lenke": lenke})
+                    ingress = desc[:300]
+                    bak_mur = (kilde in BETALINGSMUR_KJELDER and len(ingress) < BETALINGSMUR_GRENSE)
+                    artiklar.append({"kilde": kilde, "tittel": tittel, "ingress": ingress,
+                                     "dato": dato_str, "lenke": lenke, "bak_mur": bak_mur})
         except Exception as e:
             print(f"  Kunne ikkje hente {kilde}: {e}")
     return artiklar
@@ -231,7 +238,7 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
         return []
     if prompt_mal is None:
         prompt_mal = OMSKRIV_PROMPT
-    meta_map = {a["tittel"]: {"dato": a.get("dato",""), "lenke": a.get("lenke","")} for a in artiklar}
+    meta_map = {a["tittel"]: {"dato": a.get("dato",""), "lenke": a.get("lenke",""), "bak_mur": a.get("bak_mur", False)} for a in artiklar}
     tekst = "\n\n".join(
         f"[{a['kilde']}] [LENKE:{a.get('lenke','')}] [DATO:{a.get('dato','')}] – {a['tittel']}\n{a['ingress']}"
         for a in artiklar
@@ -267,6 +274,7 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                 lenke = sak.get("lenke", "")
                 if lenke and lenke in lenke_til_dato:
                     sak["pub_dato"] = lenke_til_dato[lenke]
+                    sak["bak_mur"] = next((a.get("bak_mur", False) for a in artiklar if a.get("lenke") == lenke), False)
                 elif not sak.get("pub_dato"):
                     # Fallback: ordmatching som før
                     sak_ord = set(sak.get("tittel","").lower().split())
@@ -332,9 +340,11 @@ def card(sak, idx):
     kilde_info = sak.get("kilde","")
     if sak.get("pub_dato"):
         kilde_info += f" · {sak['pub_dato']}"
+    bak_mur = sak.get("bak_mur", False)
+    lås = " 🔒" if bak_mur else ""
     lenke = sak.get("lenke", "")
     if lenke:
-        lenke_html = f'<a href="{lenke}" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>'
+        lenke_html = f'<a href="{lenke}" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen{lås} →</a>'
     else:
         lenke_html = '<span class="les-meir"></span>'
     return f'''<div class="card" style="background:{bg};border-color:{border}">
