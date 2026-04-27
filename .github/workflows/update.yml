@@ -3,8 +3,8 @@ name: Oppdater JuniorNytt
 on:
   schedule:
     - cron: '0 5 * * *'    # kl. 07:00 norsk tid (UTC+2) – morgen, nullstiller
-    - cron: '0 10 * * *'   # kl. 12:00 norsk tid – legger til 8, fjerner 4 eldste
-    - cron: '0 17 * * *'   # kl. 19:00 norsk tid – legger til 8, fjerner 4 eldste
+    - cron: '0 9 * * *'   # kl. 12:00 norsk tid – legger til 8, fjerner 4 eldste
+    - cron: '0 16 * * *'   # kl. 19:00 norsk tid – legger til 8, fjerner 4 eldste
   workflow_dispatch:         # Kan også kjøres manuelt med ett klikk
 
 jobs:
