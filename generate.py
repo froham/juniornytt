@@ -10,7 +10,6 @@ from datetime import datetime
 
 client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-# ── Konstantar ────────────────────────────────────────────────────────────────
 SAKER_NAT  = 10
 SAKER_LOK  = 10
 SAKER_SPEL =  8
@@ -19,7 +18,6 @@ STD_LAT  = 62.3439
 STD_LON  =  5.8467
 STD_STAD = "Ulsteinvik"
 
-# ── RSS-kjelder ───────────────────────────────────────────────────────────────
 RSS_NASJONAL = [
     ("https://www.nrk.no/toppsaker.rss",   "NRK"),
     ("https://www.aftenposten.no/rss",     "Aftenposten"),
@@ -38,7 +36,6 @@ RSS_SPEL = [
     ("https://www.pocketgamer.com/rss/",               "Pocket Gamer"),
 ]
 
-# ── Emoji-kart ────────────────────────────────────────────────────────────────
 EMOJI_MAP = [
     (["krig","ukraina","russland","angrep","soldat","forsvar","nato"],        "⚔️"),
     (["fotball","sport","idrett","vm","em","lag","kamp","turnering"],         "⚽"),
@@ -65,7 +62,6 @@ VÆR_SYMBOL = {
     "snowandthunder":"⛈️","sleetandthunder":"⛈️",
 }
 
-# ── Hjelpe-funksjonar ─────────────────────────────────────────────────────────
 def velg_emoji(tittel, brodtekst=""):
     tekst = (tittel + " " + brodtekst).lower()
     for nokkelord, emoji in EMOJI_MAP:
@@ -85,7 +81,6 @@ def farevarsel(vind, base, nedbor):
     if nedbor >= 5: f.append("🌊")
     return " ".join(f)
 
-# ── Vêr ───────────────────────────────────────────────────────────────────────
 def hent_vaer():
     url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={STD_LAT:.4f}&lon={STD_LON:.4f}"
     req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
@@ -130,7 +125,6 @@ def hent_vaer():
         print(f"  Vêrfeil: {e}")
         return None
 
-# ── RSS-henting ───────────────────────────────────────────────────────────────
 def hent_rss(feeds, maks_per_kilde=6):
     artiklar = []
     headers = {"User-Agent": "Mozilla/5.0 (compatible; JuniorNytt/1.0)"}
@@ -147,11 +141,14 @@ def hent_rss(feeds, maks_per_kilde=6):
                           item.findtext("{http://www.w3.org/2005/Atom}summary") or
                           item.findtext("{http://www.w3.org/2005/Atom}content") or "").strip()
                 desc = re.sub(r"<[^>]+>", "", desc).strip()
-                # Hent publiseringsdato
+                lenke = (item.findtext("link") or "").strip()
+                if not lenke:
+                    link_el = item.find("{http://www.w3.org/2005/Atom}link")
+                    if link_el is not None:
+                        lenke = link_el.get("href", "")
                 pub_date = (item.findtext("pubDate") or
                             item.findtext("{http://www.w3.org/2005/Atom}updated") or
                             item.findtext("{http://www.w3.org/2005/Atom}published") or "").strip()
-                # Formater dato til lesleg norsk format
                 dato_str = ""
                 for fmt in ["%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S %Z",
                             "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%SZ"]:
@@ -161,23 +158,13 @@ def hent_rss(feeds, maks_per_kilde=6):
                         break
                     except Exception:
                         continue
-                # Hent lenke til originalen
-                lenke = (item.findtext("link") or
-                         item.findtext("{http://www.w3.org/2005/Atom}link") or "").strip()
-                # Atom-lenker kan vere i href-attributt
-                if not lenke:
-                    link_el = item.find("{http://www.w3.org/2005/Atom}link")
-                    if link_el is not None:
-                        lenke = link_el.get("href", "")
                 if tittel:
                     artiklar.append({"kilde": kilde, "tittel": tittel,
-                                     "ingress": desc[:300], "dato": dato_str,
-                                     "lenke": lenke})
+                                     "ingress": desc[:300], "dato": dato_str, "lenke": lenke})
         except Exception as e:
             print(f"  Kunne ikkje hente {kilde}: {e}")
     return artiklar
 
-# ── Promptar ──────────────────────────────────────────────────────────────────
 OMSKRIV_PROMPT = """Du er redaktør for JuniorNytt – ei nyhetsside for barn mellom 8 og 12 år.
 
 Vel dei {antall} mest interessante og viktige sakene og skriv dei om til barnevenleg nynorsk i stilen til Sunnmøre-aviser (Vikebladet, Vestlandsnytt).
@@ -187,23 +174,23 @@ VIKTIG – prioriter saker om:
 - Vitskap og teknologi
 - Sport og idrett
 - Politikk og samfunn (forklart enkelt)
-- Lokale og nasjonale hendingar
 
 VIKTIG – unngå eller ton ned:
-- Drap, drapssaker og kriminalitet med mange detaljar
-- Skremmande ulukker med grafiske detaljar
-- Saker som er for tunge eller angstfremkallande for barn
-- Viss ei sak om noko alvorleg MÅ vere med, skriv ho nøkternt utan skremmande detaljar
+- Drap og grafisk kriminalitet
+- Skremmande ulukker med mange detaljar
+
+ABSOLUTT PÅBOD:
+- Hald deg ALLTID til fakta frå artikkelen – ikkje dikt opp noko som helst
+- Feltet "kilde" skal ALLTID vere namnet på avisa/nettstadet frå RSS-feeden (t.d. "NRK", "VG", "Aftenposten") – aldri "JuniorNytt" eller liknande
+- Viss ingressen er for kort til å skrive om, hopp over artikkelen
 
 Reglar:
 - Nynorsk: "ikkje", "òg", "kva", "dei", "ho", "heime", "skule"
-- Hald deg ALLTID til fakta frå artikkelen – ikkje dikt opp eller generaliser
-- Viss ingressen er for kort, hopp over artikkelen
 - 6–9 setningar per sak, engasjerande og sakleg
-- Viss ein kjend person vert nemnt, legg til ei kort forklaring i parentes første gong
+- Viss ein kjend person vert nemnt, legg til forklaring i parentes
 - Ordforklaring (1–4 ord) for vanskelege omgrep
 - Felt "emoji" med passande emoji
-- Felt "land" med namn og flagg KUN viss saka handlar om noko som skjer i eit ANNA land enn Noreg. For norske saker skal "land"-feltet vere tomt eller utelatt.
+- Felt "land" med namn og flagg KUN viss saka handlar om noko i eit ANNA land enn Noreg
 
 Artiklar:
 {artiklar}
@@ -215,21 +202,19 @@ SPEL_PROMPT = """Du er redaktør for JuniorNytt si spel- og sportsseksjon for ba
 
 Vel dei {antall} mest eigna sakene og skriv dei om til barnevenleg nynorsk. Ver entusiastisk!
 
-PRIORITER saker om:
-- Sport: fotball, ski, svømming, friidrett, handball – gjerne norske utøvarar
-- Spel som passar for barn under 12 år: Minecraft (PEGI 7), Roblox, Mario, Pokémon, Fortnite (berre barnevenleg innhald)
-- Nye spel og oppdateringar med PEGI 3 eller PEGI 7
+ABSOLUTT PÅBOD:
+- Hald deg ALLTID til fakta frå artikkelen – ikkje dikt opp eller generaliser noko som helst
+- Feltet "kilde" skal ALLTID vere det eksakte namnet på avisa/nettstadet frå RSS-feeden (t.d. "VG Sport", "Nintendo Life") – aldri "JuniorNytt", "JuniorNytt redaksjonen" eller anna du finn på sjølv
+- Viss ingressen er for kort til å skrive om, hopp over artikkelen heilt
 
-FILTRER BORT:
-- Spel med PEGI 12, 16 eller 18
-- Saker som primært handlar om gambling eller pengebruk i spel
-- Vaksent innhald, vald og horror
+PRIORITER: Sport (fotball, ski, handball), Minecraft (PEGI 7), Roblox, Mario, Pokémon, PEGI 3/7-spel
+FILTRER BORT: PEGI 12/16/18, gambling, vald, horror
 
 Reglar:
-- Nynorsk Sunnmøre-stil: "ikkje", "òg", "kva", "dei"
-- 4–6 setningar per sak
+- Nynorsk Sunnmøre-stil
+- 4–6 setningar per sak – berre fakta frå artikkelen
 - Ordforklaring for spelordar og sportsuttrykk
-- Felt "emoji" – spel- eller sportselemoji
+- Felt "emoji"
 
 Artiklar:
 {artiklar}
@@ -237,14 +222,12 @@ Artiklar:
 Svar KUN med JSON-array:
 [{{"tittel":"...","brodtekst":"...","kilde":"...","emoji":"...","ordforklaring":[{{"ord":"...","forklaring":"..."}}]}}]"""
 
-# ── Omskriving ────────────────────────────────────────────────────────────────
 def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
     if not artiklar:
         return []
     if prompt_mal is None:
         prompt_mal = OMSKRIV_PROMPT
-    # Lag dato- og lenke-mapping: tittel → dato/lenke
-    dato_map = {a["tittel"]: (a.get("dato", ""), a.get("lenke", "")) for a in artiklar}
+    meta_map = {a["tittel"]: {"dato": a.get("dato",""), "lenke": a.get("lenke","")} for a in artiklar}
     tekst = "\n\n".join(
         f"[{a['kilde']}] {a.get('dato','')} – {a['tittel']}\n{a['ingress']}"
         for a in artiklar
@@ -263,20 +246,30 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                 continue
             saker = json.loads(text[s:e+1])
             ts = datetime.now().strftime("%H:%M")
+            UGYLDIGE_KJELDER = {"juniornytt", "juniornytt redaksjonen", "redaksjonen", "redaksjon"}
             for sak in saker:
                 sak["tidspunkt"] = ts
+                # Avvis saker med oppfunne kjelder
+                kilde_sjekk = sak.get("kilde", "").strip().lower()
+                if kilde_sjekk in UGYLDIGE_KJELDER or not kilde_sjekk:
+                    print(f"  Avvist (ugyldig kjelde «{sak.get('kilde','')}»): {sak.get('tittel','')}")
+                    sak["_avvist"] = True
+                    continue
                 if not sak.get("emoji"):
                     sak["emoji"] = velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
-                # Finn dato og lenke frå original RSS-tittel
-                for orig_tittel, (dato, lenke) in dato_map.items():
-                    if any(w in sak.get("tittel","").lower()
-                           for w in orig_tittel.lower().split()[:3] if len(w) > 3):
-                        if dato:
-                            sak["pub_dato"] = dato
-                        if lenke:
-                            sak["lenke"] = lenke
-                        break
-            return saker
+                sak_ord = set(sak.get("tittel","").lower().split())
+                best_match = None
+                best_score = 0
+                for orig_tittel, meta in meta_map.items():
+                    orig_ord = set(orig_tittel.lower().split())
+                    score = len(sak_ord & orig_ord)
+                    if score > best_score:
+                        best_score = score
+                        best_match = meta
+                if best_match and best_score >= 2:
+                    sak["pub_dato"] = best_match.get("dato","")
+                    sak["lenke"]    = best_match.get("lenke","")
+            return [s for s in saker if not s.get("_avvist")]
         except json.JSONDecodeError as je:
             print(f"  JSON-feil ({attempt+1}/{retries}): {je}")
             time.sleep(5)
@@ -288,7 +281,6 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
                 return []
     return []
 
-# ── Duplikatfilter ────────────────────────────────────────────────────────────
 def fjern_duplikatar(lokale, nasjonale, terskel=0.4):
     def nok(t):
         stop = {"og","i","er","på","en","et","de","det","som","til","av","for","med","at","har","om"}
@@ -305,7 +297,6 @@ def fjern_duplikatar(lokale, nasjonale, terskel=0.4):
             ut.append(sak)
     return ut
 
-# ── HTML-bygging ──────────────────────────────────────────────────────────────
 COLORS  = ["#FEF9C3","#DBEAFE","#DCFCE7","#FCE7F3","#F3E8FF","#FFEDD5",
            "#FEF3C7","#E0F2FE","#F0FDF4","#FDF2F8","#F5F3FF","#FFF7ED",
            "#FEFCE8","#EFF6FF","#F0FDF4","#FDF4FF"]
@@ -316,25 +307,33 @@ BORDERS = ["#FDE047","#93C5FD","#86EFAC","#F9A8D4","#C4B5FD","#FCA5A1",
 def card(sak, idx):
     bg, border = COLORS[idx % len(COLORS)], BORDERS[idx % len(BORDERS)]
     emoji = sak.get("emoji") or velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
-    ts  = f'<span class="tidspunkt">🕐 {sak["tidspunkt"]}</span>' if sak.get("tidspunkt") else ""
-    kjelde_info = sak.get("kilde","")
-    if sak.get("pub_dato"):
-        kjelde_info += f" · {sak['pub_dato']}"
+    ts = f'<span class="tidspunkt">🕐 {sak["tidspunkt"]}</span>' if sak.get("tidspunkt") else ""
     land = ""
-    if sak.get("land") and sak["land"].get("namn"):
+    if sak.get("land") and sak["land"].get("namn") and sak["land"]["namn"].upper() not in ("NO","NOREG","NORGE"):
         land = f'<span class="land-badge">{sak["land"].get("flagg","")} {sak["land"]["namn"]}</span>'
     ordf = ""
     if sak.get("ordforklaring"):
         items = "".join(f'<div class="ord-item"><strong>{o["ord"]}:</strong> {o["forklaring"]}</div>'
                         for o in sak["ordforklaring"])
         ordf = f'<div class="ordbox"><div class="ord-title">📖 Visste du at…?</div>{items}</div>'
+    kilde_info = sak.get("kilde","")
+    if sak.get("pub_dato"):
+        kilde_info += f" · {sak['pub_dato']}"
+    lenke = sak.get("lenke", "")
+    if lenke:
+        lenke_html = f'<a href="{lenke}" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>'
+    else:
+        lenke_html = '<span class="les-meir"></span>'
     return f'''<div class="card" style="background:{bg};border-color:{border}">
       <div class="card-meta">{ts}{land}</div>
       <div class="card-emoji">{emoji}</div>
       <h3>{sak["tittel"]}</h3>
       <p>{sak["brodtekst"]}</p>
       {ordf}
-      <span class="kilde">📰 {kjelde_info}</span>
+      <div class="card-footer">
+        <span class="kilde">📰 {kilde_info}</span>
+        {lenke_html}
+      </div>
     </div>'''
 
 def vaer_html(vaer):
@@ -382,8 +381,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   .sub{{font-size:.8rem;opacity:.85;margin-top:4px;padding:0 12px}}
   .ki-merknad{{font-size:.7rem;opacity:.65;margin-top:4px;font-style:italic;padding:0 12px}}
   .oppdatert{{font-size:.7rem;opacity:.6;margin-top:6px}}
-  .vaer-boks{{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:16px auto 0;
-    background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px}}
+  .vaer-boks{{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:16px auto 0;background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px}}
   .vaer-no{{display:flex;align-items:center;gap:12px}}
   .vaer-symbol{{font-size:2.8rem}}
   .vaer-detaljar{{display:flex;flex-direction:column;gap:2px}}
@@ -424,26 +422,22 @@ def build_html(nasjonal, lokal, spel, vaer):
   .ord-title{{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:8px}}
   .ord-item{{font-size:.85rem;color:#374151;margin-bottom:4px}}
   .ord-item strong{{color:#1f2937}}
-  .foreldre-knapp{{display:inline-flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;padding:8px 16px;background:rgba(255,255,255,.15);border-radius:99px;border:1px solid #e5e7eb}}
-  .foreldre-knapp span{{font-size:.75rem;color:#9ca3af}}
-  .toggle{{width:36px;height:20px;background:#d1d5db;border-radius:99px;position:relative;transition:.2s}}
+  .card-footer{{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:4px}}
+  .kilde{{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}}
+  .les-meir{{font-size:.72rem;color:#6b7280;text-decoration:none;padding:4px 10px;border-radius:99px;border:1px solid #e5e7eb;background:white;transition:.2s;visibility:hidden;pointer-events:none}}
+  .les-meir:hover{{color:#3b82f6;border-color:#93c5fd}}
+  body.lenker-paa .les-meir{{visibility:visible !important;pointer-events:auto !important}}
+  footer{{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:2}}
+  .foreldre-wrap{{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;cursor:pointer;padding:8px 20px;border-radius:99px;background:#f3f4f6;border:1px solid #e5e7eb;width:fit-content;margin-left:auto;margin-right:auto}}
+  .foreldre-wrap:hover{{background:#e5e7eb}}
+  .foreldre-info{{font-size:.7rem;color:#9ca3af;margin-top:6px;font-style:italic}}
+  .toggle{{width:40px;height:22px;background:#d1d5db;border-radius:99px;position:relative;transition:.3s;flex-shrink:0}}
   .toggle.on{{background:#3b82f6}}
-  .toggle::after{{content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}}
-  .toggle.on::after{{left:18px}}
-  .les-meir{{font-size:.72rem;color:#6b7280;text-decoration:none;opacity:.8;transition:.2s;display:none}}
-  .les-meir:hover{{opacity:1;color:#3b82f6}}
-  body.lenker-på .les-meir{{display:inline}}
-  footer{{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:1.8}}
+  .toggle::after{{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:2px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}}
+  .toggle.on::after{{left:20px}}
   @media(max-width:480px){{header h1{{font-size:2rem}}}}
 </style>
 <script>
-  function toggleLenker() {{
-    const toggle = document.getElementById('toggle');
-    const tekst = document.getElementById('foreldre-tekst');
-    const on = toggle.classList.toggle('on');
-    document.body.classList.toggle('lenker-på', on);
-    tekst.textContent = on ? '🔓 Foreldremodus' : '🔒 Foreldremodus';
-  }}
   const SRC = {{
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
@@ -456,6 +450,18 @@ def build_html(nasjonal, lokal, spel, vaer):
     document.getElementById("tab-" + tab).classList.remove("inactive");
     document.getElementById("src-line").textContent = SRC[tab] || "";
     document.getElementById("varsel-spel").style.display = tab === "spel" ? "block" : "none";
+  }}
+  function toggleLenker() {{
+    const toggle = document.getElementById("foreldre-toggle");
+    const tekst  = document.getElementById("foreldre-tekst");
+    const on = toggle.classList.toggle("on");
+    if (on) {{
+      document.body.setAttribute("class", "lenker-paa");
+      tekst.textContent = "🔓 Foreldremodus – lenker er synlege";
+    }} else {{
+      document.body.removeAttribute("class");
+      tekst.textContent = "🔒 Foreldremodus";
+    }}
   }}
 </script>
 </head>
@@ -475,11 +481,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">📍 Lokalt <span class="badge">{len(lokal)}</span></button>
   <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">🎮 Spel & Sport <span class="badge">{len(spel)}</span></button>
 </div>
-
-<div class="foreldre-knapp" onclick="toggleLenker()">
-  <span>🔒 Foreldremodus</span>
-  <div class="toggle" id="toggle"></div>
-</div>
+<div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
 <div class="varsel-boks" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
 
 <main>
@@ -492,13 +494,17 @@ def build_html(nasjonal, lokal, spel, vaer):
   JuniorNytt • Laga for nysgjerrige barn 🌟<br>
   © 2026 JuniorNytt – Ei ikkje-kommersiell, privat barneside.<br>
   Innhald er omskrive frå opne nyheitskjelder av kunstig intelligens. Originalkjeldene er alltid merka på kvar sak.<br>
-  JuniorNytt omtalar spel og tenester som informasjon, og dette er ikkje å rekne som ei tilråding eller eit samarbeid.<br>
+  JuniorNytt omtalar spel og tenester som informasjon – ikkje tilråding eller samarbeid.<br>
   Foreldre oppfordrast til å følgje med på kva spel barna nyttar.
+  <div class="foreldre-wrap" onclick="toggleLenker()">
+    <span id="foreldre-tekst">🔒 Foreldremodus</span>
+    <div class="toggle" id="foreldre-toggle"></div>
+  </div>
+  <div class="foreldre-info">Foreldremodus gir lenke til kjelda bak nyheita</div>
 </footer>
 </body>
 </html>"""
 
-# ── Hovudprogram ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     now = datetime.now()
     print(f"Køyring kl. {now.strftime('%H:%M')}")
