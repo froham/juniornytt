@@ -68,6 +68,28 @@
   .toggle::after{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:2px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
   .toggle.on::after{left:20px}
   @media(max-width:480px){header h1{font-size:2rem}}
+  /* Admin */
+  .admin-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:#1f2937;color:white;padding:10px 16px;z-index:999;align-items:center;gap:10px;font-size:.8rem;flex-wrap:wrap}
+  .admin-bar.open{display:flex}
+  .admin-bar span{flex:1;opacity:.7;min-width:120px}
+  .admin-btn{background:#3b82f6;color:white;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.75rem;font-weight:700}
+  .admin-btn.red{background:#ef4444}
+  .admin-btn.green{background:#10b981}
+  .card.skjult{opacity:.2;position:relative}
+  .card.skjult::after{content:'SKJULT';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;font-weight:900;color:#ef4444;letter-spacing:.1em;pointer-events:none}
+  .skjul-knapp,.rediger-knapp{display:none;position:absolute;z-index:10;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.72rem;font-weight:700}
+  .skjul-knapp{top:10px;right:10px;background:#ef4444;color:white}
+  .rediger-knapp{top:10px;right:80px;background:#f59e0b;color:white}
+  body.admin-paa .skjul-knapp,body.admin-paa .rediger-knapp{display:block}
+  body.admin-paa .card{position:relative}
+  .admin-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+  .admin-modal.open{display:flex}
+  .admin-modal-inner{background:white;border-radius:16px;padding:24px;width:90%;max-width:540px;display:flex;flex-direction:column;gap:12px}
+  .admin-modal-inner h3{font-size:1rem;font-weight:800;color:#1f2937}
+  .admin-modal-inner input,.admin-modal-inner textarea{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:.9rem;font-family:inherit}
+  .admin-modal-inner textarea{min-height:120px;resize:vertical}
+  .admin-modal-btns{display:flex;gap:8px;justify-content:flex-end}
+  .publiser-status{font-size:.75rem;color:#10b981;margin-top:4px;display:none}
 </style>
 <script>
   const SRC = {
@@ -95,45 +117,165 @@
       tekst.textContent = "🔒 Foreldremodus";
     }
   }
+
+  // ── Admin ──────────────────────────────────────────────
+  const ADMIN_PASSORD = "juniornytt2026"; // ← byt ut med eige passord
+  const GH_REPO      = "froham/juniornytt";
+  const GH_FILE      = "redaksjon.json";
+  const GH_WORKFLOW  = "update.yml";
+  let adminPaa = false;
+  let ghToken  = "";
+  let redaksjon = { skjulte: [], redigerte: {} };
+  let aktivKortId = null;
+
+  async function adminLogin() {
+    const pw = prompt("Adminpassord:");
+    if (pw !== ADMIN_PASSORD) { if (pw !== null) alert("Feil passord."); return; }
+    const token = prompt("GitHub Personal Access Token
+(repo-tilgang påkravd):");
+    if (!token) return;
+    ghToken = token;
+    adminPaa = true;
+    document.body.classList.add("admin-paa");
+    document.getElementById("admin-bar").classList.add("open");
+    await lastRedaksjon();
+  }
+
+  function adminLoggUt() {
+    adminPaa = false; ghToken = "";
+    document.body.classList.remove("admin-paa");
+    document.getElementById("admin-bar").classList.remove("open");
+  }
+
+  async function lastRedaksjon() {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
+        { headers: { Authorization: `token ${ghToken}`, Accept: "application/vnd.github.v3+json" } });
+      if (r.ok) {
+        const data = await r.json();
+        redaksjon = JSON.parse(atob(data.content));
+      }
+    } catch(e) { console.log("Ingen redaksjon.json endå – startar frå scratch."); }
+    // Vis skjulte i admin-modus
+    redaksjon.skjulte.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("skjult");
+    });
+  }
+
+  async function lagreRedaksjon() {
+    const status = document.getElementById("publiser-status");
+    status.style.display = "block";
+    status.textContent = "⏳ Lagrar…";
+    try {
+      // Hent noverande SHA
+      let sha = "";
+      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
+        { headers: { Authorization: `token ${ghToken}` } });
+      if (r.ok) { const d = await r.json(); sha = d.sha; }
+
+      // Skriv redaksjon.json
+      const innhald = btoa(unescape(encodeURIComponent(JSON.stringify(redaksjon, null, 2))));
+      const body = { message: "redaksjon: oppdater", content: innhald };
+      if (sha) body.sha = sha;
+      await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
+        { method: "PUT", headers: { Authorization: `token ${ghToken}`, "Content-Type": "application/json" },
+           body: JSON.stringify(body) });
+
+      // Trigger ny bygg
+      await fetch(`https://api.github.com/repos/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/dispatches`,
+        { method: "POST", headers: { Authorization: `token ${ghToken}`, "Content-Type": "application/json" },
+           body: JSON.stringify({ ref: "main" }) });
+
+      status.textContent = "✅ Publisert! Sida vert oppdatert om ~1 min.";
+    } catch(e) {
+      status.textContent = "❌ Feil: " + e.message;
+    }
+  }
+
+  function skjulKort(id) {
+    const el = document.getElementById(id);
+    if (el.classList.contains("skjult")) {
+      el.classList.remove("skjult");
+      redaksjon.skjulte = redaksjon.skjulte.filter(s => s !== id);
+    } else {
+      el.classList.add("skjult");
+      if (!redaksjon.skjulte.includes(id)) redaksjon.skjulte.push(id);
+    }
+    const knapp = el.querySelector(".skjul-knapp");
+    knapp.textContent = el.classList.contains("skjult") ? "👁 Vis" : "🙈 Skjul";
+  }
+
+  function opneRediger(id) {
+    aktivKortId = id;
+    const el = document.getElementById(id);
+    document.getElementById("modal-tittel").value  = el.querySelector("h3").textContent;
+    document.getElementById("modal-brodtekst").value = el.querySelector("p").textContent;
+    document.getElementById("admin-modal").classList.add("open");
+  }
+
+  function lukkModal() {
+    document.getElementById("admin-modal").classList.remove("open");
+    aktivKortId = null;
+  }
+
+  function lagreRedigering() {
+    if (!aktivKortId) return;
+    const tittel    = document.getElementById("modal-tittel").value.trim();
+    const brodtekst = document.getElementById("modal-brodtekst").value.trim();
+    const el = document.getElementById(aktivKortId);
+    el.querySelector("h3").textContent = tittel;
+    el.querySelector("p").textContent  = brodtekst;
+    if (!redaksjon.redigerte) redaksjon.redigerte = {};
+    redaksjon.redigerte[aktivKortId] = { tittel, brodtekst };
+    lukkModal();
+  }
+
+  function nullstillRedaksjon() {
+    if (!confirm("Nullstill ALL skjuling og redigering?")) return;
+    redaksjon = { skjulte: [], redigerte: {} };
+    document.querySelectorAll(".card.skjult").forEach(c => c.classList.remove("skjult"));
+    document.querySelectorAll(".skjul-knapp").forEach(k => k.textContent = "🙈 Skjul");
+  }
 </script>
 </head>
 <body>
 <header>
   <div style="font-size:2.5rem">📰</div>
   <h1>JuniorNytt</h1>
-  <div class="dato">Måndag 27. april 2026</div>
+  <div class="dato">Tysdag 28. april 2026</div>
   <div class="sub">Nyhende på nynorsk for deg mellom 8 og 12 år – nye saker vert publisert kl. 07.00, 12.00 og 19.00 kvar dag.</div>
   <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ei privat, ikkje-kommersiell barneside og er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
-  <div class="oppdatert">Oppdatert kl. 20:19</div>
+  <div class="oppdatert">Oppdatert kl. 07:38</div>
   <div class="vaer-boks">
       <div class="vaer-no">
-        <span class="vaer-symbol">⛅</span>
+        <span class="vaer-symbol">☁️</span>
         <div class="vaer-detaljar">
-          <span class="vaer-temp">8°C </span>
-          <span class="vaer-vind">💨 3 m/s · 🌧 0.0 mm</span>
+          <span class="vaer-temp">7°C </span>
+          <span class="vaer-vind">💨 1 m/s · 🌧 0.0 mm</span>
           <span class="vaer-sted">Ulsteinvik</span>
         </div>
       </div>
       <div class="vaer-dagar"><div class="dag">
-      <span class="dag-namn">Tys</span>
-      <span class="dag-emoji">☁️</span>
-      
-      <span class="dag-temp"><span class="dag-maks">11°</span><span class="dag-min">4°</span></span>
-    </div><div class="dag">
       <span class="dag-namn">Ons</span>
       <span class="dag-emoji">⛅</span>
       
-      <span class="dag-temp"><span class="dag-maks">12°</span><span class="dag-min">6°</span></span>
+      <span class="dag-temp"><span class="dag-maks">11°</span><span class="dag-min">5°</span></span>
     </div><div class="dag">
       <span class="dag-namn">Tor</span>
       <span class="dag-emoji">☀️</span>
       
-      <span class="dag-temp"><span class="dag-maks">17°</span><span class="dag-min">5°</span></span>
+      <span class="dag-temp"><span class="dag-maks">15°</span><span class="dag-min">4°</span></span>
     </div><div class="dag">
       <span class="dag-namn">Fre</span>
       <span class="dag-emoji">⛅</span>
       
       <span class="dag-temp"><span class="dag-maks">19°</span><span class="dag-min">9°</span></span>
+    </div><div class="dag">
+      <span class="dag-namn">Lau</span>
+      <span class="dag-emoji">☁️</span>
+      
+      <span class="dag-temp"><span class="dag-maks">11°</span><span class="dag-min">7°</span></span>
     </div></div>
     </div>
 </header>
@@ -147,287 +289,343 @@
 <div class="varsel-boks" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
 
 <main>
-  <div class="panel active" id="panel-nasjonal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span><span class="land-badge">🇺🇸 USA</span></div>
-      <div class="card-emoji">🦞</div>
-      <h3>Sjelden tofarget hummer fanga i USA</h3>
-      <p>Ein fiskebåt utenfor den amerikanske østkysten gjorde ein uvanleg funn då dei hauva opp ein tofarget hummer. Det er ein ekstremt sjelden genetisk mutasjon som gjorde at hummeren fekk to ulike fargar. Ekspertar seier at slike humrar er så sjeldne at dei knapt finst i naturen. Dei aller fleste humrar har ein farge, men denne hummeren hadde fått to fargar – noko som skjer berre ein gong på mange millionar. Fiskebåten dokumenterte funnet sitt, og det vart ei stor nyheit. Sånn sjeldne dyr viser oss kor spennande og variert naturen kan vere!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>genetisk mutasjon:</strong> Ein uvanleg endring i arvematerialet som gjer at noko blir annleis enn vanleg</div></div>
+  <div class="panel active" id="panel-nasjonal"><div class="card" id="kort-nat-0" style="background:#FEF9C3;border-color:#FDE047">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-0')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-0')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span><span class="land-badge">🇸🇪 Sverige</span></div>
+      <div class="card-emoji">🎯</div>
+      <h3>Norsk supertalent skal springe for Sverige i skiskyting</h3>
+      <p>Philip Lindkvist-Fløtten er berre 19 år gamal og er fødd og oppvoksen i Noreg. Men neste sesong skal han konkurrere for Sveriges elitelandslag i skiskyting. – Det føles stort, seier det norske supertalentet. Skiskyting er ein kombinasjon av langrenn og skyting, og krev både styrke og presisjon. Philip har træna hardt og blitt så god at Sverige ville ha han på sitt lag. Det er ein stor ære for den unge idretts­mannen, sjølv om det betyr at han no skal representere Sverige i staden for Noreg.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>elitelandslag:</strong> beste idrettsfolk i landet</div><div class="ord-item"><strong>skiskyting:</strong> idretten der du både løper på ski og skyt på målet</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 VG · 27. Apr 2026 kl. 19:43</span>
-        <a href="https://www.vg.no/nyheter/i/JOnpxJ/ekstremt-sjelden-hummer-fanget-i-usa" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 VG · 28. Apr 2026 kl. 07:08</span>
+        <a href="https://www.vg.no/sport/i/OkyamO/det-norske-supertalentet-philip-lindkvist-floetten-tatt-ut-paa-sveriges-landslag-i-skiskyting-foeles-stort" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
       </div>
-    </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span><span class="land-badge">🇺🇸 USA</span></div>
+    </div><div class="card" id="kort-nat-1" style="background:#DBEAFE;border-color:#93C5FD">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-1')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-1')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span></div>
+      <div class="card-emoji">🛡️</div>
+      <h3>Noreg brukte meir på forsvar enn USA i fjor</h3>
+      <p>Tal frå Nato viser at Noreg brukte meir på forsvar enn USA i fjor målt mot kor stort landet er og kor mange menneske som bur der. Det kan verke rart at eit liten land bruker meir enn det store USA, men det er fordi Noreg prioriterer forsvaret veldig høgt. NATO er eit samarbeid mellom mange land som skal verne om kvarandre. Noreg og mange andre europeiske land har auka forsvarsbidrag sitt dei siste åra fordi dei ynskjer å vere forbereitt på ufred.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Nato:</strong> samarbeid mellom mange land for å verne om kvarandre</div><div class="ord-item"><strong>forsvar:</strong> militær og utstyr for å verne landet</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Aftenposten · 28. Apr 2026 kl. 06:33</span>
+        <a href="https://www.aftenposten.no/okonomi/i/5p3ob1/norge-brukte-mer-paa-forsvar-enn-usa-per-innbygger-i-2025" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
+      </div>
+    </div><div class="card" id="kort-nat-2" style="background:#DCFCE7;border-color:#86EFAC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-2')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-2')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span><span class="land-badge">🇸🇪 Sverige</span></div>
       <div class="card-emoji">👑</div>
-      <h3>Kong Charles på statsbesøk i USA</h3>
-      <p>Den britiske kong Charles og dronning Camilla har landet i USA for eit fire dagar langt statsbesøk. Dette er kong Charles sitt første offisielle besøk i USA etter at han vart konge. Besøket skal markere at USA har vore ein uavhengig nasjon i 250 år. Kong og dronning skal møte presidenten og andre viktige folk i landet. Besøket går av stabelen som planlagt, og det er ein stor ære for både Storbritannia og USA når ein konge besøker. Slike besøk viser at land er vener og vil arbeide saman.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>statsbesøk:</strong> Når ein leiar frå eit land besøker eit anna land på ein offisiell og viktig måte</div><div class="ord-item"><strong>monark:</strong> Ein konge eller dronning</div></div>
+      <h3>Kong Carl XVI Gustaf i Sverige fyller 80 år</h3>
+      <p>Torsdag fyller Kong Carl XVI Gustaf av Sverige 80 år, og det blir stor folkefest i Sverige. Den svenske kongefamilien har mykje til felles med den norske kongefamilien vår, men dei er òg veldig ulike på nokre måtar. Både Sverige og Noreg har kongar som leiar landet saman med folkevalde politikarar. Kong Carl XVI Gustaf har vore kong i Sverige i veldig lenge og er kjend over heile Skandinavia. No blir han feira med konsertar, arrangement og mykje glede.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kongefamilie:</strong> familien til kongen eller dronningen</div><div class="ord-item"><strong>Skandinavia:</strong> området som omfattar Norge, Sverige og Danmark</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 NRK · 27. Apr 2026 kl. 18:30</span>
-        <a href="https://www.nrk.no/nyheter/kong-charles-pa-statsbesok-i-usa-1.17863332" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 TV2 · 28. Apr 2026 kl. 05:15</span>
+        <a href="https://www.tv2.no/a/18789407" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span></div>
-      <div class="card-emoji">🌍</div>
-      <h3>Jordskjelv på Østlandet overraska mange</h3>
-      <p>Søndag ramla eit jordskjelv Østlandet, og mange folk fekk seg ein skikkeleg støkk. Fagfolk seier at mange hadde god grunn til å bli overraska av dette jordskjelvet. Jordskjelv er når jorda beveger seg og skakar, og dei kan kjennast veldig sterkt. Mange menneske på Østlandet følte at huset deira røra på seg. Det er ikkje så vanleg med jordskjelv i Noreg, så folk er ikkje vane med det slik som folk i andre land. Forskjarar forklarte etterpå kvifor jordskjelvet skjedde og at det ikkje var farleg.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>jordskjelv:</strong> Når jorda rister og skakar på grunn av rørsler djupt nede i steinen</div></div>
+    </div><div class="card" id="kort-nat-3" style="background:#FCE7F3;border-color:#F9A8D4">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-3')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-3')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span></div>
+      <div class="card-emoji">🐱</div>
+      <h3>ID-merking av kattar blir påbode i EU – òg i Noreg</h3>
+      <p>I dag vedtek EU-parlamentet ei ny regel som vil gjelde òg for Noreg. Frå no av må alle katteigarar og hundeeigarar ID-merke kjæledyra sine. Det vil seie at du må setje ein liten chip eller ein merke på katten eller hunden din, slik at dei kan bli funne viss dei forsvinn. Dette er viktig fordi det hjelpor til å finne kjæledyr som blir borte, og det stoppar òg handel med stulne dyr. Mange land har allereie denne regelen, og no skal ho kome til heile Europa.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>ID-merking:</strong> å setje ein chip eller merke på dyr så dei kan bli kjende igjen</div><div class="ord-item"><strong>EU-parlamentet:</strong> dei folkevalde frå Europa som lagar reglar for EU</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 TV2 · 27. Apr 2026 kl. 16:39</span>
-        <a href="https://www.tv2.no/a/18786494" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 TV2 · 28. Apr 2026 kl. 04:33</span>
+        <a href="https://www.tv2.no/a/18789334" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span></div>
-      <div class="card-emoji">⚡</div>
-      <h3>Strømalarm i Nord-Noreg</h3>
-      <p>Fleire næringar i Nord-Noreg er bekymra for strømen og korleis det skal gå framover. Statnett (som deler ut straum) har gjort grep som kan påverke korleis næringar kan vekse og utviklast i Nord-Noreg. Mange bedrifter seier at dette er dårleg nytt både for Nord-Noreg og resten av landet. Dei fryktar at det kan bli mangel på kraft til viktige industriar som forarbeider og produserer ting. Når det ikkje er nok straum, kan ikkje bedriftene jobbe som dei skal, og mange arbeidstakarar kan få problem. Det er viktig at heile landet har nok kraft til alt folk og bedriftene treng.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Statnett:</strong> Selskapet som deler ut elektrisk straum over heile Noreg</div><div class="ord-item"><strong>næringar:</strong> Bedrifter og industri som produserer og sel ting</div></div>
+    </div><div class="card" id="kort-nat-4" style="background:#F3E8FF;border-color:#C4B5FD">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-4')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-4')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span></div>
+      <div class="card-emoji">🌼</div>
+      <h3>Pollenallergi kostar samfunnet nesten 5 milliardar kroner</h3>
+      <p>Ein ny rapport viser at pollenallergi er ein stor folkehelseutfordring i Noreg. Mange som har pollenallergi får så store plager at dei blir mindre arbeidsdyktige og mister produktivitet på jobben. Dette kostar samfunnet nesten 5 milliardar kroner kvart år. Pollenallergi skjer når kroppen di reagerer på pollen frå tre og planter, og det gjer det vanskeleg å konsentrere seg. Fleire og fleire menneske får pollenallergi, og det er viktig å finne løysingar slik at folk kan ha det betre.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>pollenallergi:</strong> når kroppen reagerer negativt på pollen frå planter</div><div class="ord-item"><strong>produktivitet:</strong> kor mykje arbeid eller oppgåver du får gjort</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 NRK · 27. Apr 2026 kl. 18:19</span>
-        <a href="https://www.nrk.no/nordland/nho-slar-stromalarm-i-nord_-sender-krisebrev-til-regjeringen-1.17862801" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 TV2 · 28. Apr 2026 kl. 06:04</span>
+        <a href="https://www.tv2.no/a/18789737" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span></div>
-      <div class="card-emoji">🤝</div>
-      <h3>Statsminister Støre møter partiledarer</h3>
-      <p>Statsminister Jonas Gahr Støre (leiar av landet) har møtt fleire partilederar for samtaler. I dag møtte han SV-leiaren Kirsti Bergstø. I helgen var Støre òg på besøk på MDGs landsmøte, og han har hatt personlege møter med MDG-leder Arild Hermstad og Sp-leder Trygve Slagsvold Vedum. Desse møta er viktige fordi statsministeren må snakke med andre partiar for å få fleirtal og kunne styre landet. Når leiarar frå ulike partiar møtest, kan dei snakke om kva dei vil gjere for Noreg og korleis dei kan arbeide saman.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>statsminister:</strong> Leiar av regjeringa og av eit land</div><div class="ord-item"><strong>fleirtal:</strong> Når fleire enn halvparten er samd og stemmer på same måten</div></div>
+    </div><div class="card" id="kort-nat-5" style="background:#FFEDD5;border-color:#FCA5A1">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-5')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-5')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span></div>
+      <div class="card-emoji">☀️</div>
+      <h3>Varmare vêr på veg til Noreg – opp til 25 gradar på Austlandet</h3>
+      <p>God nyheit for dei som likar varme: meteorologane seier det kan bli like varmt som i Spania fleire stader på Austlandet mot slutten av veka! Temperaturen kan stige til rundt 25 gradar, som er kjempevarmt for Noreg. Men meteorologane gjev òg ein åtvaring – andre stader i landet bør folk ikkje køyre med sommardekk enno fordi det kan bli kaldt og regn. Vêret skiftar raskt, så det er viktig å følgje med på vêrmeldingane for din stad.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>meteorolog:</strong> person som studerer vêret og seier korleis det blir</div><div class="ord-item"><strong>sommardekk:</strong> dekkje på bilen som er best for varmt og tørt vêr</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 NRK · 27. Apr 2026 kl. 17:21</span>
-        <a href="https://www.nrk.no/nyheter/store-i-samtaler-med-sv-lederen-1.17863185" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 TV2 · 28. Apr 2026 kl. 03:52</span>
+        <a href="https://www.tv2.no/a/18789231" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span></div>
+    </div><div class="card" id="kort-nat-6" style="background:#FEF3C7;border-color:#FCD34D">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-6')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-6')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span><span class="land-badge">🇮🇷 Iran</span></div>
+      <div class="card-emoji">🕊️</div>
+      <h3>Noreg og Sverige jobbar saman om fredsforslag med Iran</h3>
+      <p>Irans utenriksminister seier at samarbeidet med Russland er sterkare enn nokon gong før. Det er bekymring i USA fordi Iran har gjort nye fredsforslag som USA er skeptisk til. Desse landene har lange stridsspørsmål, og det er vanskeleg å finne løysingar som alle er glade for. Iran er eit stort land i Midtausten, og det er viktig at det blir fred der så folk ikkje må lide av krig.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>utenriksminister:</strong> politikar som handsamar forhold mellom land</div><div class="ord-item"><strong>Midtausten:</strong> området i Asia der Iran, Saudi-Arabia og andre land ligg</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 NRK · 28. Apr 2026 kl. 02:15</span>
+        <a href="https://www.nrk.no/nyheter/iran-hyller-samarbeidet-med-russland-1.17863460" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
+    </div><div class="card" id="kort-nat-7" style="background:#E0F2FE;border-color:#7DD3FC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-7')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-7')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span><span class="land-badge">🇺🇸 USA</span></div>
       <div class="card-emoji">⚽</div>
-      <h3>Egersund knuste Ranheim i fotball</h3>
-      <p>Fotballlaget Egersund var i form då dei møtte Ranheim på heimebane i 1. divisjon. Egersund vann med tre mål mot null og hadde dermed tre strake seirar på rad. Slike resultat viser at laget er i veldig god form og spelar bra fotball. Heimekamp betyr at Egersund spelar på sin eigen stadion der dei har god støtte frå publikum. Det er alltid litt lettare å vinne heime enn borte, så tre seirar på rad er veldig imponerande. Sånn resultat gir spelerane sjølvtillit og inspirasjon til å halde fram med å spele bra.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>1. divisjon:</strong> Andrelaget i norsk fotball, under Eliteserien</div><div class="ord-item"><strong>heimebane:</strong> Det stadionet lag sitt eige lag spelar på</div></div>
+      <h3>Norske VM-packarar har med 8 tonn utstyr til USA</h3>
+      <p>Sigurd er den som pakkar for det norske fotballlaget når dei skal til Verdsmeisterskapen (VM) i USA. Han må pakke 504 par sokkjer, nok drakter til å spille VM-finale, treningsplagg og mykje meir – i alt blir det over 1000 kilo tungt! Det er ein kjempejobb å få med alt det som laget treng, men Sigurd er ekspert på det. Fotballlaget må ha perfekt utstyr, og utan Sigurd sitt arbeid ville dei ikkje vore klare til å spele på det største fotballarrangementet i verden.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Verdsmeisterskapen:</strong> VM, den største fotballturnaugen i verden</div><div class="ord-item"><strong>landslag:</strong> de beste idrettsfolka som representerer sitt land</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 VG · 27. Apr 2026 kl. 18:56</span>
-        <a href="https://www.vg.no/sport/i/Rj1K3A/perfekt-start-for-egersund-knuste-ranheim-paa-hjemmebane" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
+        <span class="kilde">📰 NRK · 28. Apr 2026 kl. 06:12</span>
+        <a href="https://www.nrk.no/fotballvm2026/sigurd-ertsas-er-norges-vm-pakker_-har-med-atte-tonn-til-usa-1.17863507" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span><span class="land-badge">🇨🇦 Canada</span></div>
-      <div class="card-emoji">💰</div>
-      <h3>Kanadaiske myndigheiter oppretter eige oljefond</h3>
-      <p>Canada oppretter sitt eige «oljefond» som skal kallast «Canada Strong Fund». Statsministeren i Canada vil gjere landet til det sterkaste landet økonomisk blant dei sju rikaste landa i verda (G7). Noreg har allereie Oljefondet, som er ein veldig stor og viktig sparekonto som brukar pengar frå olje. Canada vil gjere noko liknande med si eiga verdiar og ressursar. Når land skapar fond, sparer dei pengar til framtida så at folk kan ha det bra òg seinare. Oljefondet i Noreg er verda sitt største, og det er ein stor ressurs for Noreg.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oljefond:</strong> Ein stor sparekonto der land sparer pengar frå olje til framtida</div><div class="ord-item"><strong>G7:</strong> Dei sju rikaste og mest mektige landa i verda</div></div>
+    </div><div class="card" id="kort-nat-8" style="background:#F0FDF4;border-color:#6EE7B7">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-8')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-8')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span></div>
+      <div class="card-emoji">🤖</div>
+      <h3>KI-juks på eksamen blir verre og verre å oppdage</h3>
+      <p>Fleire og fleire studentar bruker kunstig intelligens (KI) for å jukse på eksamen, og det blir stadig verre å oppdage det. Ekspertar seier at KI-modellane er blitt så smarte at svært få av dei som jukser blir tatt. Dette er eit stort problem fordi det ikkje er rettferdig overfor dei som lærer seg fagstoffet sjølv. Lærarar og sensor­ar må finne nye måtar å kontrollere eksamenen på. Det er viktig å vite at jukse på eksamen er forbudt, og at det er betre å lære seg det du treng enn å prøve å fuske.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>kunstig intelligens (KI):</strong> datamaskin som kan tenke og hjelpe deg med oppgåver</div><div class="ord-item"><strong>sensor:</strong> person som rettar og vurderer eksamener</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 VG · 27. Apr 2026 kl. 19:46</span>
-        <a href="https://www.vg.no/i/JOnpxJ/canada-oppretter-sitt-eget-oljefond" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
+        <span class="kilde">📰 NRK · 28. Apr 2026 kl. 03:23</span>
+        <a href="https://www.nrk.no/sorlandet/varens-eksamener_-_-sensorene-er-sjanselose-mot-ki-juks-1.17858424" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span><span class="land-badge">🇩🇰 Danmark</span></div>
-      <div class="card-emoji">🦠</div>
-      <h3>M-kopper-variant påvist i Danmark</h3>
-      <p>I Danmark har det blitt oppdaga fleire tilfelle av m-kopper, som er ein sjukdom. Folkehelseinstitutet (FHI) seier at viruset kan komme til Noreg, men at nordmenn ikkje skal vere redde. M-kopper er ein sjukdom som gjør at du blir sjuk, men dei fleste blir friske igjen. Det er viktig at helsevesenet vår veit kva det er så dei kan hjelde folk som blir sjuke. Når det dukkar opp nye sjukdommar, må all folk vere litt merksame, men vi treng ikkje å bli panikka.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>m-kopper:</strong> Ein sjukdom som gjer at menneske får feber og utslett på huda</div><div class="ord-item"><strong>FHI:</strong> Folkehelseinstitutet – ein statleg institusjon som vaktar over helsen vår</div></div>
+    </div><div class="card" id="kort-nat-9" style="background:#FDF2F8;border-color:#F0ABFC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-nat-9')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-nat-9')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:36</span></div>
+      <div class="card-emoji">🇪🇺</div>
+      <h3>Fleire nordmenn ynskjer EU og EØS-medlemskap</h3>
+      <p>Ein ny måling viser at 49 prosent av nordmenn ville stemt ja dersom det var folkavstemning om EØS-avtalen no. EØS er ein avtale som gjer at Noreg kan handle med EU-landa utan grenser, og det gjev Noreg mange føremonar. Fleire nordmenn ser no at dette er bra for landet, sjølv om det enno er diskusjon om det. EØS-avtalen gjev Noreg tilgang til det store europeiske marknaden, som er veldig viktig for jobb og næring.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>EØS:</strong> Europisk Økonomisk Område – avtale mellom Noreg og EU</div><div class="ord-item"><strong>folkavstemning:</strong> når alle borgarar får røyte om noko viktig</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 TV2 · 27. Apr 2026 kl. 16:12</span>
-        <a href="https://www.tv2.no/a/18788390" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
-      </div>
-    </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span><span class="land-badge">🇺🇸 USA</span></div>
-      <div class="card-emoji">🎤</div>
-      <h3>Taylor Swift vil verne stemma si</h3>
-      <p>Popstjerna Taylor Swift (kjend sangjentest frå USA) har søkt om å få varemerkebeskytte stemma si. Det betyr at berre ho skal kunne bruke sin eiga stemme på låtane sine og i musikken sin. Å verne stemma si er viktig for artistar fordi det er noko som gjer dei unike og spesielle. Viss nokon annan kunne bruke stemma hennar utan å spørje, kunne det vere urettfæring. Patentvesenet i USA må vurdere søknaden hennar, og det viser kor viktig stemma er for ein artist.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>varemerkebeskytte:</strong> Å få lovleg rett til å vere den einaste som brukar noko som er ditt</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 Aftenposten · 27. Apr 2026 kl. 18:44</span>
-        <a href="https://www.aftenposten.no/kultur/i/zO0xW4/taylor-swift-vil-varemerkebeskytte-stemmen-sin" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
-      </div>
-    </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:17</span><span class="land-badge">🇱🇰 Sri Lanka</span></div>
-      <div class="card-emoji">✈️</div>
-      <h3>Munkane sitt utafor kontrollen – ført 100 kilo cannabis</h3>
-      <p>Tjueto munkar (religiøse menneske) vart stoppa på ein flyplass i Sri Lanka då dei var på veg heim frå ferie. Dei hadde over 100 kilo cannabis (ei forbodt drikk) med seg. Cannabis er noko som er forbudt i dei fleste land, og det er mot lova å ha det med seg. Munkar er menneske som lever etter spesielle religøse reglar, og det var overraskande at dei hadde med seg noko sånt. Lufthavsautoriteten fann dette og stogga dei. Det er ein alvorleg sak som viser at sjølv religiøse menneske kan gjere feil ting.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>cannabis:</strong> Ein forbodt stoff som folk ikkje skal ha eller bruke</div><div class="ord-item"><strong>munkar:</strong> Religiøse menneske som lever etter strenge reglar i klostrar</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 TV2 · 27. Apr 2026 kl. 17:29</span>
-        <a href="https://www.tv2.no/a/18788335" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 Aftenposten · 28. Apr 2026 kl. 05:54</span>
+        <a href="https://www.aftenposten.no/norge/politikk/i/bOkjMg/maaling-viser-oekt-oppslutning-om-eu-og-eoes" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
       </div>
     </div></div>
-  <div class="panel" id="panel-lokal"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
+  <div class="panel" id="panel-lokal"><div class="card" id="kort-lok-0" style="background:#FEF9C3;border-color:#FDE047">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-0')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-0')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
       <div class="card-emoji">🐟</div>
-      <h3>Elevar jobbar for å redde villaksen</h3>
-      <p>Elevar frå Herøy og Ålesund vidaregåande skule var i Vartdalselva for å hjelpe villaksstamma. Dei gjorde ein viktig innsats for å bevare laksen som lever vilt i norske elvar. Arbeidet går ut på å betre forhold for fiskane slik at dei kan leve og formere seg betre. Dette er viktig fordi villaksen blir færre og færre på grunn av forureining og andre problem i elva. Når elevar som dykk tek del i slik arbeid, lærer dei om natur og miljø samtidig som dei gjer ein reell forskjell.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Villaks:</strong> Laks som lever fritt i elvar i staden for i oppdrettsanlegg</div><div class="ord-item"><strong>Formere seg:</strong> Få ungar eller små</div></div>
+      <h3>Villaks treng hjelp frå ungdomane</h3>
+      <p>Elevar frå Herøy vidaregåande skule tok turen til Vartdalselva for å hjelpe villaksen. Dei planta egg og gjorde arbeid for å bevare laksen som lever vilt i norske elvar. Det er viktig at villaksen blir sterkar, fordi ho treng rein vatn og god plass for å overleve. Ungdomane lærte om kva som trengst for å halde naturen frisk. Arbeidet var ein del av undervisninga deira innan naturbruk. Med slik innsats frå unge menneske kan vi beskytte fisken framover.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>villaks:</strong> Laks som lever og groër naturleg i elvar, ikkje oppdrett</div><div class="ord-item"><strong>naturbruk:</strong> Arbeid med natur og miljø</div></div>
       <div class="card-footer">
         <span class="kilde">📰 Vestlandsnytt · 27. Apr 2026 kl. 13:45</span>
         <a href="https://www.vestlandsnytt.no/nyhende/n/QJr9yW/heroey-elevar-med-innsats-for-framtidas-villaks" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
-      <div class="card-emoji">🦡</div>
-      <h3>Student vil stoppa minken som truar dyra våre</h3>
-      <p>Studenten Jakob Muren Ulvund frå Gjerdsvika tek grep mot mink i Herøy. Mink er eit dyr som kom til Noreg frå Amerika, og det har blitt eit stort problem fordi det et fisk, fugl og andre små dyr. Dette fører til at andre dyr får mindre mat og blir redusert i tal. Jakob sine planar skal hjelpe til med å ta kontroll på minkpopulasjonen slik at norske dyr får betre vilkår. Dette viser at ungdom engasjerer seg i viktige miljøproblemer.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Mink:</strong> Eit dyr som liknar på ilder og kjem frå Amerika</div><div class="ord-item"><strong>Populasjon:</strong> Tal på dyr av same sort</div></div>
+    </div><div class="card" id="kort-lok-1" style="background:#DBEAFE;border-color:#93C5FD">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-1')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-1')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">💪</div>
+      <h3>Herøy-prosjekt får nasjonal merksemd</h3>
+      <p>Satsinga «Sterk og stødig» ved Herøy vidaregåande skule får no nasjonal merksemd gjennom ein film. Prosjektet handlar om god helse og styrke. Fysioterapeut Øystein Nerland seier at det er stor interesse frå mange menneske som vil delta. Dessverre manglar det frivillige instruktørar som kan hjelpe til. Viss du er interessert i å hjelpe ungdomane med trening og aktivitetar, kan du ta kontakt med skulen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>fysioterapeut:</strong> Fagperson som hjelper menneske med trening og helse</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 Vestlandsnytt · 27. Apr 2026 kl. 11:45</span>
-        <a href="https://www.vestlandsnytt.no/nyhende/n/j03mxL/student-vil-stoppe-mink-trusselen" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 Vestlandsnytt · 28. Apr 2026 kl. 04:00</span>
+        <a href="https://www.vestlandsnytt.no/nyhende/n/8pPRvG/heroeyprosjekt-har-faatt-nasjonal-merksemd" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
+    </div><div class="card" id="kort-lok-2" style="background:#DCFCE7;border-color:#86EFAC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-2')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-2')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
       <div class="card-emoji">⛴️</div>
-      <h3>Nye ferjer skal kome til Sunnmøre</h3>
-      <p>Om fem år skal det gå to nye ferjer på sambandet mellom Larsnes, Åram, Voksa og Kvamsøya på ytre Sunnmøre. Fylkestinget har bestemt at dei nye ferjeanboda skal lysast ut snart. Dette betyr at folk som bur der skal få betre tilbod for å komme seg over fjorden. Ferjer er viktig transportmiddel for folk som bur på små øyar og må til fastlandet for å arbeide, gå på skule eller handle. Med to ferjer i staden for ein blir det mindre ventetid og meir praktisk for alle som bruker sambandet.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Samband:</strong> Forbindelse mellom stader, til dømes med ferje</div><div class="ord-item"><strong>Lyst ut:</strong> Gitt beskjed om at noko skal byggjast eller kjøpast</div></div>
+      <h3>To ferjer skal gå til ytre Sunnmøre</h3>
+      <p>Om fem år skal det gå to ferjer frå Larsnes til Åram, Voksa og Kvamsøya. Fylkestinget har bestemt at sambandet skal få to båtar i neste periode. Dette er bra nytt for folk som bur og arbeider på dei små øyane. Med to ferjer blir det lettare å kome seg til og frå. Beslutninga viser at kommunane ønskjer å styrke samstundes med øyafolket.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>samband:</strong> Samarbeid og forbinding mellom stader</div><div class="ord-item"><strong>Fylkestinget:</strong> Dei som styr fylket og tek viktige avgjersler</div></div>
       <div class="card-footer">
         <span class="kilde">📰 Vestlandsnytt · 27. Apr 2026 kl. 18:45</span>
         <a href="https://www.vestlandsnytt.no/nyhende/n/Pdvn86/her-skal-det-gaa-to-ferjer-om-fem-aar" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
+    </div><div class="card" id="kort-lok-3" style="background:#FCE7F3;border-color:#F9A8D4">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-3')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-3')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
       <div class="card-emoji">🎓</div>
-      <h3>Skular få pengar til nytt utstyr</h3>
-      <p>Herøy og Sande kommunar har fått tilskot frå Utdanningsdirektoratet til nytt utstyr og læringsstader for elevar på 1. til 10. trinn. Det er gledeleg fordi betre utstyr gjer det enklare å lære. Med nye læringsstader og tool kan lærarane undervise på fleire måtar, og elevane får meir konkret undervisning som hjælpar dei til å skjøne stoffet betre. Slike tilskot viser at staten satsar på utdanning, og det er viktig for at alle barn skal få eit godt skuletilbod.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Tilskot:</strong> Pengar som staten gjev for å hjelpe</div><div class="ord-item"><strong>Læringsstader:</strong> Område eller plass der ein kan lære</div></div>
+      <h3>Skular får pengar til nytt utstyr</h3>
+      <p>Herøy og Sande kommunar har fått tilskot frå Utdanningsdirektoratet til nytt utstyr og læringsarenaar. Pengan skal brukast til å gjere undervisninga betre for elevar frå 1. til 10. klasse. Med nytt utstyr og fine læringsplassar blir det lettare for lærarane å lære bort og for ungdomane å lære. Det er bra at staten hjelper kommunane med pengar til skuleaken.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>tilskot:</strong> Pengar som staten gjev til kommunar og organisasjonar</div><div class="ord-item"><strong>læringsarenaar:</strong> Plassar der folk lærer – som klasserom eller utstillingsstader</div></div>
       <div class="card-footer">
         <span class="kilde">📰 Vestlandsnytt · 27. Apr 2026 kl. 17:00</span>
         <a href="https://www.vestlandsnytt.no/nyhende/n/5p3ReO/saa-mykje-faar-kommunen-i-tilskot" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
-      <div class="card-emoji">🗑️</div>
-      <h3>Avfall hoppar opp rundt glasigloane</h3>
-      <p>Ved Geileneset i Ulsteinvik sentrum oppsamlast det mykje avfall rundt ein glasigloa. Mange meiner at det ser rart og skitent ut på ein offentleg plass. Problemet veks og det blir stadig meir søppel som forureinar området. Dette er ein viktig sak fordi det viser kor viktig det er at vi alle passar på ikkje å kaste søppel, og at kommunen må jobbe med å reinse slike område. Når avfall ligg rundt omkring forureinast både luft, jord og vatn, og det ser også stygt ut for turistane som besøkjer byen.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Glasigloa:</strong> Stor glasscontainer til glassgjenvinning</div><div class="ord-item"><strong>Forureinar:</strong> Gjer rotete og urent</div></div>
+    </div><div class="card" id="kort-lok-4" style="background:#F3E8FF;border-color:#C4B5FD">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-4')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-4')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">☀️</div>
+      <h3>Sommarkjensla kjem tidleg i år</h3>
+      <p>Snart får vi ein liten smak av sommar! Vêret skal bli finare dei neste dagane, og mange menneske gleder seg til varmare dagar. Etter at det har vore kaldt og snøig tidlegare denne våren, er det kjempeglad å sjå at sommaren kjem på veg.</p>
+      
       <div class="card-footer">
-        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 16:00</span>
-        <a href="https://www.vikebladet.no/nyhende/n/5p3WWX/for-meg-ser-dette-mest-ut-som-god-gammaldags-giddeloeyse" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 Vikebladet · 28. Apr 2026 kl. 07:00</span>
+        <a href="https://www.vikebladet.no/nyhende/n/k0MBQQ/smak-av-sommar" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span><span class="land-badge">🇯🇵 Japan</span></div>
-      <div class="card-emoji">🤝</div>
-      <h3>Norsk firma samarbeider med Japan</h3>
-      <p>Firmaet Restorae AS frå Ulsteinvik har inngjort eit strategisk samarbeid med det japanske selskapet Nosan Corporation. Dette betyr at dei to bedriftene skal arbeide saman for å lage betre løysingar. Slikt samarbeid mellom land er viktig for at bedrifter skal få nye idéar og bli betre. Japan er kjent for høg teknologi og innovasjon, så dette samarbeidet kan hjelpe det norske firmaet til å vokse og få tilgang til nye marknader rundt omkring i verda.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Strategisk samarbeid:</strong> Planlagt samarbeid for å nå felles mål</div><div class="ord-item"><strong>Innovasjon:</strong> Nye idéar og oppfinnelsar</div></div>
+    </div><div class="card" id="kort-lok-5" style="background:#FFEDD5;border-color:#FCA5A1">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-5')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-5')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">👋</div>
+      <h3>Ulstein kommune søkjer engasjerte unge</h3>
+      <p>Ulstein kommune har ein viktig oppfordring: Er du 19 år eller yngre? Då treng dei deg! Kommunen søkjer unge menneske som vil engasjere seg og vere med på å forma framtida si. Dette kan vere med på ungdomsråd, idrettslag, frivillig arbeid eller andre aktivitetar. Viss du har idear og vil gjere ein skilnad i ditt lokalsamfunn, er no tida å ta kontakt med kommunen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>engasjere:</strong> Å vere med på noko aktivt og bidra</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 09:30</span>
-        <a href="https://www.vikebladet.no/nyhende/n/aJG3K4/inngaar-samarbeid" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 Vikebladet · 28. Apr 2026 kl. 02:00</span>
+        <a href="https://www.vikebladet.no/nyhende/n/k0MdGa/etterlyser-engasjerte-unge" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
-      <div class="card-emoji">🚗</div>
-      <h3>Bilverkstadar frå heile landet møttest i Ulsteinvik</h3>
-      <p>Tilsette frå bilverkstadar over heile Noreg var samla i Ulsteinvik og Dragsund under Bilskade-konferansen 2026, som gjekk av stabelen 23.–25. april. Der møttest biloppretarar og lakkerappar for å dele erfaringar og lære om nyaste teknikkar. Slike konferansar er viktige fordi det er arbeidarar som fiks bilane våre når dei får skade. Ved å møtast og snakke saman lærer dei frå kvarandre og blir endå betre på jobben sin, noko som er bra for alle oss som har bilar.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Biloppretarar:</strong> Folk som fiks og reparerer bilar</div><div class="ord-item"><strong>Lakkerappar:</strong> Folk som malar bilar med lakk</div></div>
+    </div><div class="card" id="kort-lok-6" style="background:#FEF3C7;border-color:#FCD34D">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-6')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-6')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">⚽</div>
+      <h3>Ny leiar i Hareid IL</h3>
+      <p>Odd Arve Riise er no ny leiar i hovudstyre i Hareid IL, ein stor idrettsklubb i området. Som leiar skal han hjelpe til med å styre klubben og gjere idretten betre for ungdomane. Hareid IL har mange lag innan fotball, handball og andre idretter. Med ny leiarskap håpar klubben å berre endå betre aktivitetar til medlemmane sine.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>hovudstyre:</strong> Dei som styr og leier ei organisasjon</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 19:00</span>
-        <a href="https://www.vikebladet.no/naeringsliv/n/7pPpPV/bilopprettarar-og-lakkerarar-samla-seg-i-ulsteinvik" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 18:39</span>
+        <a href="https://www.vikebladet.no/sport/n/xrJ5KV/gaar-inn-som-styreleiar" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
-      <div class="card-emoji">🏪</div>
-      <h3>Martin Brænne selde livsverket sitt</h3>
-      <p>Etter fleire tiår med arbeid og oppbygging av Furene som handelsområde har Martin Brænne seld eigedomsselskapet sitt til Coop. Dette er ein stor milepæl fordi Furene er blitt eit viktig handelssentrum i området. Martin har arbeidd lenge for å byggje det opp, og nå er det Coop som skal ta over og vidareutvikle det. Slike overgångar viser korleis bedrifter og eigedom skiftar eigenar gjennom generasjonar, og at folk kan vere stolte av det dei har skapt i sitt arbeidsliv.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Livsverket:</strong> Det viktigaste verket nokon har gjort i sitt liv</div><div class="ord-item"><strong>Eigedomsselskapet:</strong> Firma som eig bygningar og område</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 Vikebladet · 27. Apr 2026 kl. 18:44</span>
-        <a href="https://www.vikebladet.no/naeringsliv/n/wrdxMn/sel-livsverket-ei-avslutning-paa-ei-god-og-innhaldsrik-tid" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
-      </div>
-    </div><div class="card" style="background:#F0FDF4;border-color:#6EE7B7">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span></div>
-      <div class="card-emoji">🛒</div>
-      <h3>Coop kjøper stor handelspark i Volda</h3>
-      <p>Coop Nordvest har kjøpt selskapet Furutunet AS, som står bak Furene handelspark i Volda. Dette er den største investeringa til Coop Nordvest så langt. Det betyr at dei no eig meir område og kan tilby fleire varer og tenester til folk i området. Når store butikkselskap kjøper slike områder blir det ofte meir aktivitet og fleire jobbar for folk som bur der. Det viser òg at det er viktig å investere i handelssentra, fordi det er der mange folk handlar og møtest.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Investering:</strong> Pengar som blir brukte for å kjøpe noko som kan gi overskot</div><div class="ord-item"><strong>Handelspark:</strong> Område med mange butikkar samla saman</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 Sunnmørsposten · 27. Apr 2026 kl. 16:58</span>
-        <a href="https://www.smp.no/nyheter/n/43EWW9/storkjoep-i-volda-coop-nordvest-tek-over-furene" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
-      </div>
-    </div><div class="card" style="background:#FDF2F8;border-color:#F0ABFC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:18</span><span class="land-badge">🇸🇪 Sverige</span></div>
-      <div class="card-emoji">🏔️</div>
-      <h3>Svensk firma kjøper resten av Devold</h3>
-      <p>Det svenske selskapet Fenix Outdoor kjøper resten av Devold of Norway. Devold er eit kjent norsk merke som lagar klede for utendørsliv og sport. Ved at ein svensk bedrift kjøper det viser det at norske merke er etterspurde òg i andre land. Fenix Outdoor skal nå drive Devold vidare og kanskje gjere det endå større. Dette er viktig for norsk næringsliv fordi det viser at norske produkt og firma er verdifulle, og at andre land vil gjerne investere i norsk industri.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Merke:</strong> Namn på produkt som ein kjend bedrift lagar</div><div class="ord-item"><strong>Utendørsliv:</strong> Aktivitetar utanfor som turgåing, klatring og camping</div></div>
+    </div><div class="card" id="kort-lok-7" style="background:#E0F2FE;border-color:#7DD3FC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-7')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-7')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span><span class="land-badge">🇸🇪 Sverige</span></div>
+      <div class="card-emoji">👕</div>
+      <h3>Devold av Norway får ny eiger</h3>
+      <p>Det svenske selskapet Fenix Outdoor kjøper resten av Devold of Norway. Devold er eit kjent norsk klesmerk som lagar plagg for friluftsliv og sport. Fenix Outdoor har alt mange sportsklesmerke under seg. Med denne kjøpet skal dei gjere Devold-plaggen enno betre kjent rundt om i verden.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>klesmerk:</strong> Namn på eit firma som lagar og sel klesplagg</div></div>
       <div class="card-footer">
         <span class="kilde">📰 Sunnmørsposten · 27. Apr 2026 kl. 13:51</span>
-        <a href="https://www.smp.no/nyheter/n/Rj1Ko5/flakk-selger-resten-av-devold" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen 🔒 →</a>
+        <a href="https://www.sunnmørsposten.no/nyheter/n/Rj1Ko5/flakk-selger-resten-av-devold" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
+    </div><div class="card" id="kort-lok-8" style="background:#F0FDF4;border-color:#6EE7B7">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-8')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-8')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">🏔️</div>
+      <h3>Redningsaksjon i bratt terreng</h3>
+      <p>To personar kom vekk frå sti då dei var på tur i bratt terreng ved Lotsberg i Stad. Nødetatane gjorde ein redningsaksjon for å finne og hjelpe dei. Terreng som er bratt og viltvart kan vere fare når folk ikkje heng på stien. Det er alltid viktig å vere forsiktig på tur og å ha med seg kart og kompass.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>nødetatane:</strong> Politi, brannvesen og ambulanse som hjelper til i fare</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Sunnmørsposten · 27. Apr 2026 kl. 20:35</span>
+        <a href="https://www.sunnmørsposten.no/nyheter/n/3pBVpL/siste-foerebur-leiteaksjon" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
+    </div><div class="card" id="kort-lok-9" style="background:#FDF2F8;border-color:#F0ABFC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-lok-9')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-lok-9')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">⚽</div>
+      <h3>Fotballtrenaren har ordet</h3>
+      <p>Må foreldrene godta at fotballtrenaren har bestemt korleis treningane skal vere? Ja, seier psykologen. Når ungdomane er på trening, må dei lytte til trenaren og følgje regelane hans. Dette er bra for læring og samarbeid. Viss moren eller faren stadig klagар eller mellar seg inn, blir det vanskeleg for trenaren å gjere sitt arbeid. Å respektere dei vaksne som leiar aktivitetane våre, er viktig for å læra disiplin og arbeid.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>autoritet:</strong> Rett til å bestemme og bli respektert</div><div class="ord-item"><strong>disiplin:</strong> Evne til å følgje reglar og arbeid ved å konsentrere seg</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Sunnmørsposten · 28. Apr 2026 kl. 04:30</span>
+        <a href="https://www.sunnmørsposten.no/magasin/foreldreliv/i/d4JGAq/fotballtreneren-har-mistet-all-autoritet-maa-moren-godta-det" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
     </div></div>
-  <div class="panel" id="panel-spel"><div class="card" style="background:#FEF9C3;border-color:#FDE047">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">👶🎮</div>
-      <h3>Rugrats-spelar kjem til Switch i mai!</h3>
-      <p>Det er kjempeglads nyheitr for alle som elskar Rugrats! Limited Run Games har annonsert ei ny samling med gamle Rugrats-spel som kjem til Nintendo Switch. Samlinga heiter «Rugrats: Retro Rewind Collection» og inneheld favorittar frå PS1, N64 og Game Boy. Du får spel som «Search for Reptar» og «Studio Tour». Spelet kjem digitalt på Switch eShop den 15. mai, og det blir òg fysiske versjonar du kan kjøpe!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>samling:</strong> fleire spel samla saman på éi utgåve</div><div class="ord-item"><strong>digitalt:</strong> du lastar det ned på internett, ikkje ein fysisk plate</div></div>
+  <div class="panel" id="panel-spel"><div class="card" id="kort-spel-0" style="background:#FEF9C3;border-color:#FDE047">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-0')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-0')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">🎯</div>
+      <h3>Norsk supertalent skal konkurrere for Sverige i skiskyting</h3>
+      <p>Philip Lindkvist-Fløtten er berre 19 år gamal, men han har allereie nådd ein stor drøm! Han er født og oppvoksen i Noreg, men skal no konkurrere for Sveriges elitelandslag i skiskyting neste sesong. Philip er teken ut på laget for vinteren 2026/27. «Dette er eit mål eg har hatt, og det føles stort å vera ein del av det,» seier han sjølv. Han ser fram til å fylgja draumane sine i Sverige!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Skiskyting:</strong> Ein idrott der du både går på ski og skal skyta på målskiver – det krevst både fart og nøysemd!</div><div class="ord-item"><strong>Elitelandslag:</strong> Det beste landslaget med dei mest dyktige idrettsfolk</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 NRK Sport · 28. Apr 2026 kl. 07:26</span>
+        <a href="https://www.nrk.no/sport/norsk-supertalent-tatt-ut-pa-sveriges-landslag-1.17863562" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
+    </div><div class="card" id="kort-spel-1" style="background:#DBEAFE;border-color:#93C5FD">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-1')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-1')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">🧩</div>
+      <h3>Tetris 99 får nytt, kjempemorsomt innhald frå Tomodachi Life</h3>
+      <p>Nintendo arrangerer ein spesielt spøkefullt arrangement! Den 53. pokalen i Tetris 99 startar 1. mai og går til 4. mai 2026. Dette er ein krysskamp som skal feira det nye spelet Tomodachi Life: Living the Dream på Switch-konsollen. Dersom du deltaker, kan du låsa opp eit eige tema som er inspirert av øya-livet i Tomodachi Life. Det blir veldig artig å byggja blokker medan du drøymr om øya-eventyra!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Krysskamp:</strong> Når to ulike spel samarbeider for å laga noko spesialt saman</div><div class="ord-item"><strong>Tema:</strong> Utsjånaden og designen av spelet ditt – som fargar og figurar</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life · 28. Apr 2026 kl. 00:55</span>
+        <a href="https://www.nintendolife.com/news/2026/04/tetris-99s-new-crossover-event-celebrates-tomodachi-life-living-the-dream-unlock-a-special-theme" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
+    </div><div class="card" id="kort-spel-2" style="background:#DCFCE7;border-color:#86EFAC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-2')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-2')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">🎾</div>
+      <h3>Mario Tennis får eige musikkalbum på Nintendo Music</h3>
+      <p>Nintendo Music har fått ein ny og spenstig oppdatering! Denne gongen handlar det om Mario Tennis Aces – det er musikken frå spelet som er blitt lagt til. Nintendo oppdaterer applikasjonen sin kvar veke med nytt innhald, og denne veka valde dei å fokusera på tennisbanen! Om du elskar musikken frå Mario-spela, kan du no få høyra alle tonane frå Mario Tennis på musikkappen din.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Mario Tennis Aces:</strong> Eit tennisspel der du spelar med Mario og andre kjende Nintendo-karakterar</div><div class="ord-item"><strong>Applikasjon:</strong> Ein app – eit program du kan installera på telefonen eller nettbrettet ditt</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life · 28. Apr 2026 kl. 01:55</span>
+        <a href="https://www.nintendolife.com/news/2026/04/nintendo-music-takes-to-the-court-with-a-mario-tennis-album-update" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
+    </div><div class="card" id="kort-spel-3" style="background:#FCE7F3;border-color:#F9A8D4">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-3')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-3')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">🏁</div>
+      <h3>Sonic Racing får ny gratis karakterar denne veka</h3>
+      <p>Det er bra nyheit for alle Sonic-fanarar! Sonic Racing: CrossWorlds held på å leggja til nye karakterar medan hjulet snurrar. Denne veka er det Captain Majima som kjem til som ein gratis «content drop» – det tyder at du kan få honom utan å betala! Sonic Racing-spelet er framleis full av spenning og nye måtar å racen på.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Content drop:</strong> Nytt innhald som blir lagt til spelet – ofte utan ekstra kostnad</div><div class="ord-item"><strong>Karakterar:</strong> Figurane du kan velja å spela med i spelet</div></div>
+      <div class="card-footer">
+        <span class="kilde">📰 Nintendo Life · 27. Apr 2026 kl. 23:45</span>
+        <a href="https://www.nintendolife.com/news/2026/04/sonic-racing-crossworlds-adds-another-free-character-to-the-roster-this-week" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+      </div>
+    </div><div class="card" id="kort-spel-4" style="background:#F3E8FF;border-color:#C4B5FD">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-4')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-4')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">👶</div>
+      <h3>Rugrats-spela frå gamle tider kjem til Switch i mai</h3>
+      <p>Nostalgien kallar! Rugrats: Retro Rewind Collection skal koma til Nintendo Switch 15. mai. Denne samlinga inneheld dei gamle Rugrats-spela frå PS1, N64 og Game Boy. Du får gjennomkøyra eventyr som «Search for Reptar» og «Studio Tour» på nytt! Dersom du likar å spela nostalgiske spel, eller berre vil oppdaga desse klassikkarane for første gong, kjem denne samlinga til å bli utruleg gøy.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Retro:</strong> Gamle og klassiske spelarar som folk elska for lenge sidan</div><div class="ord-item"><strong>PS1, N64, Game Boy:</strong> Gamle spelkonsollar frå dei 90-talet</div></div>
       <div class="card-footer">
         <span class="kilde">📰 Nintendo Life · 27. Apr 2026 kl. 20:15</span>
         <a href="https://www.nintendolife.com/news/2026/04/rugrats-retro-rewind-collection-will-bring-ps1-n64-and-gb-favourites-to-switch-this-may" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#DBEAFE;border-color:#93C5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">✨🧼</div>
-      <h3>PowerWash Simulator 2 får Star Wars-utvidelse!</h3>
-      <p>Voila! Star Wars kjem til PowerWash Simulator 2! FuturLab har annonsert at neste utvidelsespakke (kalles DLC) til spelet vil vere basert på Star Wars-universet. Det betyr at du får moglegheita til å pussa av ein galakse langt, langt borte! Pakken kjem til Switch 2 og vil la deg rengjere kjente stader frå Star Wars. Dette kjem etter at Adventure Time-pakken endeleg landar på Switch 2 den 29. april.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>utvidelse (DLC):</strong> nytt innhald du kan legge til i spelet ditt</div><div class="ord-item"><strong>univers:</strong> alle historiene og figurane i Star Wars</div></div>
+    </div><div class="card" id="kort-spel-5" style="background:#FFEDD5;border-color:#FCA5A1">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-5')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-5')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">🧳</div>
+      <h3>Noreg-laget pakkar over 1.000 drakter til fotball-VM</h3>
+      <p>Det er imponerande logistikk bak eit fotball-VM! Sigurd Ertsaas er ansvarleg for å pakka starten for Noreg sitt landslag som skal til USA. Han pakkar ikkje berre vanlige klede – han har med 504 par sokker, nok drakter til å spela ein heile VM-finale, og til og med eit vaffeljern! Heile lasten veier fleire tonn. Når landskampar skal reisa verda omkring, må alt vera perfekt organisert!</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>VM (Verdsmeisterskap):</strong> Den største fotball-turneringa i verda der alle land konkurrerer</div><div class="ord-item"><strong>Landslag:</strong> Det beste fotballaget som representerer landet ditt</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 Nintendo Life · 27. Apr 2026 kl. 14:00</span>
-        <a href="https://www.nintendolife.com/news/2026/04/powerwash-simulator-2s-next-dlc-will-let-you-clean-up-a-galaxy-far-far-away" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 NRK Sport · 28. Apr 2026 kl. 06:12</span>
+        <a href="https://www.nrk.no/fotballvm2026/sigurd-ertsas-er-norges-vm-pakker-_-har-med-atte-tonn-til-usa-1.17863507" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#DCFCE7;border-color:#86EFAC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">🎮⚡</div>
-      <h3>Adventure of Samsara får stor oppdatering!</h3>
-      <p>Atari og Ilex Games har sleppe ein stor ny oppdatering for spelet «Adventure of Samsara» på Nintendo Switch! Oppdateringa heiter versjon 2.0 og er basert på det spelarane har ønskt. Det er gjort store endringar på kampsystemet, og sjefarar er blitt balanserte på nytt slik at spelet er meir rettferdig. Oppdateringa inneheld òg mange små forbetringer som gjer spelet endå meir morsomt!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>oppdatering:</strong> nye endringar og forbetringer til eit spel</div><div class="ord-item"><strong>sjefar:</strong> tøffe motstandarar du må besegre for å kome vidare</div><div class="ord-item"><strong>balansere:</strong> gjere meir rettferdig og jamnt</div></div>
+    </div><div class="card" id="kort-spel-6" style="background:#FEF3C7;border-color:#FCD34D">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-6')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-6')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">⚽</div>
+      <h3>Manchester United er nær å sikra seg plass i Mesterligaen</h3>
+      <p>Manchester United spelar seg inn i Mesterligaen neste sesong! Dei slo Brentford 2–1 på hemmelandet sitt måndag. Med berre fire kampar att å spela, har dei elleve poeng som dei må klara seg på – og det ser ut til å vera enkelt! Kaptein Bruno Fernandes er også nær ein historisk rekord: han manglar berre éin målgivande pasning for å nå ein spesiell merkestein i karrieren sin.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>Mesterligaen:</strong> Den beste europiske fotball-turneringa for klubblag</div><div class="ord-item"><strong>Målgivande pasning:</strong> Når du passer ballen til ein lagkamerat som scorar mål</div></div>
       <div class="card-footer">
-        <span class="kilde">📰 Nintendo Life · 27. Apr 2026 kl. 14:30</span>
-        <a href="https://www.nintendolife.com/news/2026/04/adventure-of-samsara-2-0-update-adds-a-slew-of-new-content-and-adjustments" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
+        <span class="kilde">📰 NRK Sport · 27. Apr 2026 kl. 20:54</span>
+        <a href="https://www.nrk.no/sport/manchester-united-med-langt-steg-mot-mesterligaen-_-fernandes-naer-rekord-1.17863380" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
-    </div><div class="card" style="background:#FCE7F3;border-color:#F9A8D4">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">🎬🌟</div>
-      <h3>Mario Galaxy-filmen kjem på streaming snøggare enn venta!</h3>
-      <p>Flott nyheit for alle Mario-fanar! The Super Mario Galaxy Movie skal kome på videostreaming raskare enn mange trudde. Filmen har gjort det enormt bra på kinoane, men no verkar det som at den skal bli tilgjengeleg på videostreaming-tenester endå før. Det er ikkje bestemt eksakt når ennå, men det går mot at det blir før enn førre Mario-film.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>streaming:</strong> når du ser film eller TV på internett utan å laste det ned</div><div class="ord-item"><strong>tilgjengeleg:</strong> mogleg å få tilgang til</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 Nintendo Life · 27. Apr 2026 kl. 12:00</span>
-        <a href="https://www.nintendolife.com/news/2026/04/the-mario-galaxy-movies-digital-release-date-might-be-sooner-than-we-expected" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
-      </div>
-    </div><div class="card" style="background:#F3E8FF;border-color:#C4B5FD">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">🏒💪</div>
-      <h3>Zuccarello er attende på trening!</h3>
-      <p>Glada nyheitr frå Minnesota Wild! Norske Mats Zuccarello var tilbake på treining mandag saman med resten av laget sitt for første gong sidan han skada albuen si i første NHL-sluttspillkampen. Ifølgje eksperten Michael Russo og Joe Smith frå The Athletic, fekk Zuccarello òg trene på overtalsspel. Det ser ut til at han kan klare å spele i femte kampen mot Dallas!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>sluttspill:</strong> viktige kampar på slutten av sesongen for å finne meistra</div><div class="ord-item"><strong>overtalsspel:</strong> når laget ditt har fleire spelerar på isen enn motstandaren</div></div>
+    </div><div class="card" id="kort-spel-7" style="background:#E0F2FE;border-color:#7DD3FC">
+      <button class="skjul-knapp" onclick="skjulKort('kort-spel-7')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('kort-spel-7')">✏️ Rediger</button>
+      <div class="card-meta"><span class="tidspunkt">🕐 07:38</span></div>
+      <div class="card-emoji">🏒</div>
+      <h3>Mats Zuccarello er tilbake på trening og kan stilla til kamp snart</h3>
+      <p>Minnesota Wild-stjerna Mats Zuccarello har gode nyheiter! Han var tilbake på trening måndag med resten av laget sitt for første gong sidan han skada seg i openingskampen av NHL-sluttspillet. Han fekk ein albue i hodet, men no ser det ut til at han kan vera klar til femte kampen deira mot Dallas! Mats Zuccarello er ein norsk isørnfavoritt, og det gleder mange at han snart kan vera tilbake på isen.</p>
+      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>NHL:</strong> National Hockey League – den beste ishockey-ligaen i Nord-Amerika</div><div class="ord-item"><strong>Sluttspillet:</strong> Dei viktigaste kampane på slutten av sesongen der dei beste laga konkurrerer</div></div>
       <div class="card-footer">
         <span class="kilde">📰 NRK Sport · 27. Apr 2026 kl. 19:59</span>
         <a href="https://www.nrk.no/sport/zuccarello-tilbake-pa-trening-_-kan-rekke-femte-kamp-mot-dallas-1.17863407" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
-      </div>
-    </div><div class="card" style="background:#FFEDD5;border-color:#FCA5A1">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">🏀🎉</div>
-      <h3>Fyllingen sikra seg final i basketball-NM!</h3>
-      <p>Spennande basketball-aksjon i Noreg! Fyllingen måtte vinne mot Gimle for å ha ein sjanse på NM-tittelen, og dei gjorde nettopp det med 89-87 i ein tett og jamn kamp. No står det 2-2 i kampar mellom laga, og ein avgjørande finale skal spelast. Sidan det blir best av fem kampar, må laget som vinn neste kamp verte meistar!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>NM:</strong> Norgesmesterskapet – den viktigaste kampen i Noreg</div><div class="ord-item"><strong>best av fem:</strong> det laget som først vinn tre kampar, blir meistar</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 NRK Sport · 27. Apr 2026 kl. 19:20</span>
-        <a href="https://www.nrk.no/sport/fyllingen-utlignet-i-nm-_-sikret-avgjorende-finale-1.17863376" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
-      </div>
-    </div><div class="card" style="background:#FEF3C7;border-color:#FCD34D">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">⚽🇸🇪</div>
-      <h3>Botheim scorar for Malmö i svensk storkamp!</h3>
-      <p>Erik Botheim var matchvinner då Malmö slo AIK 1-0 borte i Allsvenskan måndag kveld! Norske Botheim scorar det einaste målet i kampen i det 25. minuttet med eit fint hodestøyt. Det var enkelt for han fordi AIK-keeper Kristoffer Nordfeldt var ute av posisjonen. Seieren løftar Malmö til delt 2.-plass på tabellen etter fem serierunder.</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>matchvinner:</strong> spelaren som scorar det vindande målet</div><div class="ord-item"><strong>hodestøyt:</strong> når du bruker hovudet til å sparke ballen</div><div class="ord-item"><strong>posisjon:</strong> plasseringa som keeparen bør stå på for å verne målet</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 NRK Sport · 27. Apr 2026 kl. 19:12</span>
-        <a href="https://www.nrk.no/sport/botheim-matchvinner-i-svensk-storkamp-1.17863367" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
-      </div>
-    </div><div class="card" style="background:#E0F2FE;border-color:#7DD3FC">
-      <div class="card-meta"><span class="tidspunkt">🕐 20:19</span></div>
-      <div class="card-emoji">⚽🔥</div>
-      <h3>Egersund knuste Ranheim 3-0 på heimebanen!</h3>
-      <p>Egersund har gjort ein perfekt start i 1. divisjon med tre strake sigrar! Deira siste seier var 3-0 over Ranheim på heimebanen måndag. Oscar Kapskarmo sette inn 1-0 berre etter eit halvminutt på eit godt innlegg frå Kristian Eggen. Gultrøyene til Egersund viste at dei er tøffe motstandarar på heimebanen sin!</p>
-      <div class="ordbox"><div class="ord-title">📖 Visste du at…?</div><div class="ord-item"><strong>1. divisjon:</strong> andrelivoren i norsk fotball</div><div class="ord-item"><strong>strake sigrar:</strong> fleire vinnartaktar på rad utan å tapa</div><div class="ord-item"><strong>innlegg:</strong> når du sparkar ballen over til ein lagkamerat</div></div>
-      <div class="card-footer">
-        <span class="kilde">📰 NRK Sport · 27. Apr 2026 kl. 18:57</span>
-        <a href="https://www.nrk.no/sport/perfekt-start-for-egersund-_-knuste-ranheim-pa-hjemmebane-1.17863247" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen →</a>
       </div>
     </div></div>
 </main>
@@ -443,6 +641,29 @@
     <div class="toggle" id="foreldre-toggle"></div>
   </div>
   <div class="foreldre-info">Foreldremodus gir lenke til kjelda bak nyheita</div>
+  <div style="margin-top:12px">
+    <a href="#" onclick="adminLogin();return false;" style="font-size:.68rem;color:#d1d5db;text-decoration:none;opacity:.4">⚙</a>
+  </div>
 </footer>
+
+<div class="admin-bar" id="admin-bar">
+  <span>🛡️ Admin-modus</span>
+  <button class="admin-btn green" onclick="lagreRedaksjon()">🚀 Publiser endringar</button>
+  <button class="admin-btn" onclick="nullstillRedaksjon()">↩️ Nullstill</button>
+  <button class="admin-btn red" onclick="adminLoggUt()">Logg ut</button>
+</div>
+<div class="publiser-status" id="publiser-status"></div>
+
+<div class="admin-modal" id="admin-modal">
+  <div class="admin-modal-inner">
+    <h3>✏️ Rediger sak</h3>
+    <input id="modal-tittel" type="text" placeholder="Tittel">
+    <textarea id="modal-brodtekst" placeholder="Brødtekst"></textarea>
+    <div class="admin-modal-btns">
+      <button class="admin-btn red" onclick="lukkModal()">Avbryt</button>
+      <button class="admin-btn green" onclick="lagreRedigering()">💾 Lagre</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
