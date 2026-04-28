@@ -102,7 +102,7 @@ def hent_redaksjon():
 
 def bruk_redaksjon(saker, redaksjon, prefix=""):
     """Filtrer skjulte og erstatt redigerte saker."""
-    skjulte  = set(redaksjon.get("skjulte", []))
+    skjulte   = set(redaksjon.get("skjulte", []))
     redigerte = redaksjon.get("redigerte", {})
     ut = []
     for i, sak in enumerate(saker):
@@ -112,13 +112,55 @@ def bruk_redaksjon(saker, redaksjon, prefix=""):
             continue
         if kort_id in redigerte:
             r = redigerte[kort_id]
-            if r.get("tittel"):   sak["tittel"]    = r["tittel"]
+            if r.get("tittel"):    sak["tittel"]    = r["tittel"]
             if r.get("brodtekst"): sak["brodtekst"] = r["brodtekst"]
             print(f"  Redigert: «{sak.get('tittel','')}»")
         ut.append(sak)
     return ut
 
-
+def hent_vaer():
+    url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={STD_LAT:.4f}&lon={STD_LON:.4f}"
+    req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read())
+        ts_list = data["properties"]["timeseries"]
+        now = ts_list[0]["data"]
+        temp  = round(now["instant"]["details"]["air_temperature"])
+        vind  = round(now["instant"]["details"]["wind_speed"])
+        sym   = now.get("next_1_hours", now.get("next_6_hours", {})).get("summary", {}).get("symbol_code", "")
+        ndb   = now.get("next_1_hours", now.get("next_6_hours", {})).get("details", {}).get("precipitation_amount", 0)
+        base  = re.sub(r"_(day|night|polartwilight)$", "", sym)
+        dagar_map = defaultdict(list)
+        for ts in ts_list:
+            dato = ts["time"][:10]
+            d = ts["data"]
+            t = d["instant"]["details"].get("air_temperature")
+            s = d.get("next_6_hours", d.get("next_1_hours", {})).get("summary", {}).get("symbol_code", "")
+            n = d.get("next_6_hours", d.get("next_1_hours", {})).get("details", {}).get("precipitation_amount", 0)
+            if t is not None:
+                dagar_map[dato].append({"temp": t, "symbol": s, "nedbor": n or 0})
+        ukedagar = ["Man","Tys","Ons","Tor","Fre","Lau","Sun"]
+        today = datetime.now().strftime("%Y-%m-%d")
+        dagar = []
+        for dato, vals in sorted(dagar_map.items()):
+            if dato == today or len(dagar) >= 4: continue
+            symboler = [v["symbol"] for v in vals if v["symbol"]]
+            sym_dag = symboler[len(symboler)//2] if symboler else ""
+            base_dag = re.sub(r"_(day|night|polartwilight)$", "", sym_dag)
+            mx = max(v["nedbor"] for v in vals)
+            dagar.append({
+                "dag":   ukedagar[datetime.strptime(dato, "%Y-%m-%d").weekday()],
+                "min":   round(min(v["temp"] for v in vals)),
+                "maks":  round(max(v["temp"] for v in vals)),
+                "emoji": symbol_til_emoji(sym_dag),
+                "fare":  "⚡" if "thunder" in base_dag else ("💨🚨" if mx > 10 else ""),
+            })
+        return {"temp": temp, "vind": vind, "symbol": symbol_til_emoji(sym),
+                "fare": farevarsel(vind, base, ndb), "nedbor": round(ndb, 1), "dagar": dagar}
+    except Exception as e:
+        print(f"  Vêrfeil: {e}")
+        return None
     url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={STD_LAT:.4f}&lon={STD_LON:.4f}"
     req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
     try:
@@ -545,7 +587,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   }}
 
   // ── Admin ──────────────────────────────────────────────
-  const ADMIN_PASSORD = "79&4q6%fd1gd3#"; // ← byt ut med eige passord
+  const ADMIN_PASSORD = "juniornytt2026"; // ← byt ut med eige passord
   const GH_REPO      = "froham/juniornytt";
   const GH_FILE      = "redaksjon.json";
   const GH_WORKFLOW  = "update.yml";
