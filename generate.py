@@ -90,13 +90,23 @@ def farevarsel(vind, base, nedbor):
     if nedbor >= 5: f.append("🌊")
     return " ".join(f)
 
+def stabil_id(prefix, tittel):
+    """Lag ein stabil ID basert på prefix og dei første orda i tittelen."""
+    import hashlib
+    # Normaliser tittelen: små bokstavar, berre bokstavar og tal
+    normalisert = re.sub(r"[^a-z0-9æøå]", "", tittel.lower())
+    # Bruk dei første 32 teikna som nøkkel, med ein kort hash for å unngå kollisjonar
+    kort = normalisert[:24]
+    heks = hashlib.md5(tittel.encode("utf-8")).hexdigest()[:6]
+    return f"kort-{prefix}{kort}-{heks}"
+
 def hent_redaksjon():
     """Les redaksjon.json frå GitHub – returnerer dict med skjulte og redigerte saker."""
     url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{REDAKSJON_PATH}"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0"})
         with urllib.request.urlopen(req, timeout=10) as r:
-            return json.loads(r.read())
+            return json.loads(r.read().decode("utf-8"))
     except Exception:
         return {"skjulte": [], "redigerte": {}}
 
@@ -105,8 +115,9 @@ def bruk_redaksjon(saker, redaksjon, prefix=""):
     skjulte   = set(redaksjon.get("skjulte", []))
     redigerte = redaksjon.get("redigerte", {})
     ut = []
-    for i, sak in enumerate(saker):
-        kort_id = f"kort-{prefix}{i}"
+    for sak in saker:
+        kort_id = sak.get("id") or stabil_id(prefix, sak.get("tittel", ""))
+        sak["id"] = kort_id  # sikre at ID alltid er sett
         if kort_id in skjulte:
             print(f"  Skjult: «{sak.get('tittel','')}»")
             continue
@@ -119,48 +130,6 @@ def bruk_redaksjon(saker, redaksjon, prefix=""):
     return ut
 
 def hent_vaer():
-    url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={STD_LAT:.4f}&lon={STD_LON:.4f}"
-    req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            data = json.loads(r.read())
-        ts_list = data["properties"]["timeseries"]
-        now = ts_list[0]["data"]
-        temp  = round(now["instant"]["details"]["air_temperature"])
-        vind  = round(now["instant"]["details"]["wind_speed"])
-        sym   = now.get("next_1_hours", now.get("next_6_hours", {})).get("summary", {}).get("symbol_code", "")
-        ndb   = now.get("next_1_hours", now.get("next_6_hours", {})).get("details", {}).get("precipitation_amount", 0)
-        base  = re.sub(r"_(day|night|polartwilight)$", "", sym)
-        dagar_map = defaultdict(list)
-        for ts in ts_list:
-            dato = ts["time"][:10]
-            d = ts["data"]
-            t = d["instant"]["details"].get("air_temperature")
-            s = d.get("next_6_hours", d.get("next_1_hours", {})).get("summary", {}).get("symbol_code", "")
-            n = d.get("next_6_hours", d.get("next_1_hours", {})).get("details", {}).get("precipitation_amount", 0)
-            if t is not None:
-                dagar_map[dato].append({"temp": t, "symbol": s, "nedbor": n or 0})
-        ukedagar = ["Man","Tys","Ons","Tor","Fre","Lau","Sun"]
-        today = datetime.now().strftime("%Y-%m-%d")
-        dagar = []
-        for dato, vals in sorted(dagar_map.items()):
-            if dato == today or len(dagar) >= 4: continue
-            symboler = [v["symbol"] for v in vals if v["symbol"]]
-            sym_dag = symboler[len(symboler)//2] if symboler else ""
-            base_dag = re.sub(r"_(day|night|polartwilight)$", "", sym_dag)
-            mx = max(v["nedbor"] for v in vals)
-            dagar.append({
-                "dag":   ukedagar[datetime.strptime(dato, "%Y-%m-%d").weekday()],
-                "min":   round(min(v["temp"] for v in vals)),
-                "maks":  round(max(v["temp"] for v in vals)),
-                "emoji": symbol_til_emoji(sym_dag),
-                "fare":  "⚡" if "thunder" in base_dag else ("💨🚨" if mx > 10 else ""),
-            })
-        return {"temp": temp, "vind": vind, "symbol": symbol_til_emoji(sym),
-                "fare": farevarsel(vind, base, ndb), "nedbor": round(ndb, 1), "dagar": dagar}
-    except Exception as e:
-        print(f"  Vêrfeil: {e}")
-        return None
     url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={STD_LAT:.4f}&lon={STD_LON:.4f}"
     req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
     try:
@@ -421,7 +390,9 @@ def card(sak, idx, prefix=""):
         lenke_html = f'<a href="{lenke}" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen{lås} →</a>'
     else:
         lenke_html = '<span class="les-meir"></span>'
-    card_id = f"kort-{prefix}{idx}"
+    # Bruk stabil ID basert på tittelen, ikkje indeks
+    card_id = sak.get("id") or stabil_id(prefix, sak.get("tittel", str(idx)))
+    sak["id"] = card_id  # lagre tilbake for konsekvens
     return f'''<div class="card" id="{card_id}" style="background:{bg};border-color:{border}">
       <button class="skjul-knapp" onclick="skjulKort('{card_id}')">🙈 Skjul</button>
       <button class="rediger-knapp" onclick="opneRediger('{card_id}')">✏️ Rediger</button>
@@ -466,98 +437,6 @@ def build_html(nasjonal, lokal, spel, vaer):
     spel_cards = "".join(card(s,i,prefix="spel-") for i,s in enumerate(spel))
     vaer_boks  = vaer_html(vaer)
 
-    # CSS er eigen streng – unngår f-streng krøllparentes-problem
-    css = """
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',sans-serif;background:linear-gradient(to bottom,#e0f2fe,#fff);min-height:100vh}
-  header{background:linear-gradient(to right,#3b82f6,#06b6d4);color:white;padding:24px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-  header h1{font-size:2.5rem;font-weight:900;letter-spacing:-1px}
-  .dato{font-size:.85rem;opacity:.85;margin-top:4px}
-  .sub{font-size:.8rem;opacity:.85;margin-top:4px;padding:0 12px}
-  .ki-merknad{font-size:.7rem;opacity:.65;margin-top:4px;font-style:italic;padding:0 12px}
-  .oppdatert{font-size:.7rem;opacity:.6;margin-top:6px}
-  .vaer-boks{display:flex;flex-direction:column;gap:10px;max-width:720px;margin:16px auto 0;background:rgba(255,255,255,.15);border-radius:16px;padding:12px 20px}
-  .vaer-no{display:flex;align-items:center;gap:12px}
-  .vaer-symbol{font-size:2.8rem}
-  .vaer-detaljar{display:flex;flex-direction:column;gap:2px}
-  .vaer-temp{font-size:1.4rem;font-weight:800;display:flex;align-items:center;gap:6px}
-  .no-fare{font-size:1rem}
-  .vaer-vind{font-size:.75rem;opacity:.8}
-  .vaer-sted{font-size:.72rem;opacity:.7;font-style:italic}
-  .vaer-dagar{display:flex;gap:8px;justify-content:space-around;border-top:1px solid rgba(255,255,255,.2);padding-top:10px}
-  .dag{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
-  .dag-namn{font-size:.72rem;font-weight:700;opacity:.85;text-transform:uppercase}
-  .dag-emoji{font-size:1.5rem}
-  .dag-fare{font-size:.7rem}
-  .dag-temp{display:flex;gap:4px;align-items:baseline}
-  .dag-maks{font-size:.9rem;font-weight:800}
-  .dag-min{font-size:.78rem;opacity:.65}
-  .tabs{display:flex;max-width:720px;margin:20px auto 0;padding:0 16px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-  .tab{flex:1;padding:12px 4px;font-weight:700;font-size:.8rem;border:none;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
-  .tab-nat{background:#3b82f6;color:white}
-  .tab-nat.inactive{background:white;color:#6b7280}.tab-nat.inactive:hover{background:#eff6ff}
-  .tab-lok{background:#10b981;color:white}
-  .tab-lok.inactive{background:white;color:#6b7280}.tab-lok.inactive:hover{background:#f0fdf4}
-  .tab-spel{background:#8b5cf6;color:white}
-  .tab-spel.inactive{background:white;color:#6b7280}.tab-spel.inactive:hover{background:#f5f3ff}
-  .badge{background:rgba(255,255,255,.3);border-radius:99px;padding:2px 7px;font-size:.68rem}
-  .inactive .badge{background:#e5e7eb;color:#6b7280}
-  .sources{max-width:720px;margin:6px auto 0;padding:0 20px;font-size:.72rem;color:#9ca3af}
-  .varsel-boks{max-width:720px;margin:8px auto 0;padding:10px 20px;border-radius:12px;font-size:.78rem;line-height:1.5;display:none;background:#fef3c7;border:1px solid #fde047;color:#92400e}
-  main{max-width:720px;margin:0 auto;padding:16px}
-  .panel{display:none}.panel.active{display:block}
-  .card{border-radius:16px;border:2px solid;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-  .card-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-  .tidspunkt{font-size:.7rem;color:#9ca3af}
-  .land-badge{font-size:.72rem;font-weight:600;background:rgba(255,255,255,.6);border:1px solid #e5e7eb;border-radius:99px;padding:2px 10px}
-  .card-emoji{font-size:2rem;margin-bottom:8px}
-  .card h3{font-size:1.15rem;font-weight:800;color:#1f2937;margin-bottom:10px;line-height:1.3}
-  .card p{font-size:.9rem;color:#374151;line-height:1.7;margin-bottom:12px}
-  .ordbox{background:rgba(255,255,255,.7);border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin-bottom:12px}
-  .ord-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:8px}
-  .ord-item{font-size:.85rem;color:#374151;margin-bottom:4px}
-  .ord-item strong{color:#1f2937}
-  .card-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:4px}
-  .kilde{font-size:.72rem;font-weight:600;color:#6b7280;background:white;padding:4px 12px;border-radius:99px;border:1px solid #e5e7eb}
-  .les-meir{font-size:.72rem;color:#6b7280;text-decoration:none;padding:4px 10px;border-radius:99px;border:1px solid #e5e7eb;background:white;transition:.2s;visibility:hidden;pointer-events:none}
-  .les-meir:hover{color:#3b82f6;border-color:#93c5fd}
-  body.lenker-paa .les-meir{visibility:visible !important;pointer-events:auto !important}
-  footer{text-align:center;font-size:.72rem;color:#9ca3af;padding:24px 16px;line-height:2}
-  .foreldre-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:16px;cursor:pointer;padding:8px 20px;border-radius:99px;background:#f3f4f6;border:1px solid #e5e7eb;width:fit-content;margin-left:auto;margin-right:auto}
-  .foreldre-wrap:hover{background:#e5e7eb}
-  .foreldre-info{font-size:.7rem;color:#9ca3af;margin-top:6px;font-style:italic}
-  .toggle{width:40px;height:22px;background:#d1d5db;border-radius:99px;position:relative;transition:.3s;flex-shrink:0}
-  .toggle.on{background:#3b82f6}
-  .toggle::after{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:2px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-  .toggle.on::after{left:20px}
-  /* Admin */
-  .admin-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:#1f2937;color:white;padding:10px 16px;z-index:999;align-items:center;gap:10px;font-size:.8rem;flex-wrap:wrap}
-  .admin-bar.open{display:flex}
-  .admin-bar span{flex:1;opacity:.7;min-width:120px}
-  .admin-btn{background:#3b82f6;color:white;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.75rem;font-weight:700;transition:.15s}
-  .admin-btn:active{transform:scale(.93);filter:brightness(.85)}
-  .admin-btn:disabled{opacity:.5;cursor:not-allowed}
-  .admin-btn.red{background:#ef4444}
-  .admin-btn.green{background:#10b981}
-  .admin-btn.orange{background:#f59e0b}
-  .card.skjult{opacity:.2;position:relative}
-  .card.skjult::after{content:'SKJULT';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;font-weight:900;color:#ef4444;letter-spacing:.1em;pointer-events:none}
-  .skjul-knapp,.rediger-knapp{display:none;position:absolute;z-index:10;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.72rem;font-weight:700}
-  .skjul-knapp{top:10px;right:10px;background:#ef4444;color:white}
-  .rediger-knapp{top:10px;right:80px;background:#f59e0b;color:white}
-  body.admin-paa .skjul-knapp,body.admin-paa .rediger-knapp{display:block}
-  body.admin-paa .card{position:relative}
-  .admin-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
-  .admin-modal.open{display:flex}
-  .admin-modal-inner{background:white;border-radius:16px;padding:24px;width:90%;max-width:540px;display:flex;flex-direction:column;gap:12px}
-  .admin-modal-inner h3{font-size:1rem;font-weight:800;color:#1f2937}
-  .admin-modal-inner input,.admin-modal-inner textarea{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:.9rem;font-family:inherit}
-  .admin-modal-inner textarea{min-height:120px;resize:vertical}
-  .admin-modal-btns{display:flex;gap:8px;justify-content:flex-end}
-  .publiser-status{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1f2937;color:white;padding:20px 32px;border-radius:16px;font-size:1rem;font-weight:700;z-index:2000;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4);text-align:center;min-width:260px;white-space:pre-line}
-  @media(max-width:480px){header h1{font-size:2rem}}
-"""
-    # Les JS frå ekstern fil – unngår alle hermeteikn/krøllparentes-problem
     import pathlib
     javascript = pathlib.Path(__file__).parent.joinpath("admin.js").read_text(encoding="utf-8")
 
@@ -640,7 +519,8 @@ def build_html(nasjonal, lokal, spel, vaer):
   .admin-btn:disabled{{opacity:.5;cursor:not-allowed;transform:none}}
   .admin-btn.red{{background:#ef4444}}
   .admin-btn.green{{background:#10b981}}
-  .admin-btn.orange{{background:#f59e0b}}  .card.skjult{{opacity:.2;position:relative}}
+  .admin-btn.orange{{background:#f59e0b}}
+  .card.skjult{{opacity:.2;position:relative}}
   .card.skjult::after{{content:'SKJULT';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;font-weight:900;color:#ef4444;letter-spacing:.1em;pointer-events:none}}
   .skjul-knapp,.rediger-knapp{{display:none;position:absolute;z-index:10;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.72rem;font-weight:700}}
   .skjul-knapp{{top:10px;right:10px;background:#ef4444;color:white}}
@@ -740,7 +620,6 @@ if __name__ == "__main__":
     nasjonal = (nasjonal or [])[:SAKER_NAT]
     nasjonal = bruk_redaksjon(nasjonal, redaksjon, prefix="nat-")
     print(f"  → {len(nasjonal)} saker etter redaksjon")
-    print(f"  → {len(nasjonal)} saker")
 
     print("Hentar RSS – lokalt...")
     lok_rss = hent_rss(RSS_LOKAL)
@@ -750,7 +629,6 @@ if __name__ == "__main__":
     lokal = fjern_duplikatar(lokal or [], nasjonal or [])[:SAKER_LOK]
     lokal = bruk_redaksjon(lokal, redaksjon, prefix="lok-")
     print(f"  → {len(lokal)} saker etter redaksjon")
-    print(f"  → {len(lokal)} saker")
 
     print("Hentar RSS – spel & sport...")
     spel_rss = hent_rss(RSS_SPEL, maks_per_kilde=5)
@@ -760,7 +638,6 @@ if __name__ == "__main__":
     spel = spel[:SAKER_SPEL]
     spel = bruk_redaksjon(spel, redaksjon, prefix="spel-")
     print(f"  → {len(spel)} saker etter redaksjon")
-    print(f"  → {len(spel)} saker")
 
     html = build_html(nasjonal, lokal, spel, vaer)
     os.makedirs("docs", exist_ok=True)
