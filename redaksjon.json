@@ -1,4 +1,11 @@
 {
-  "skjulte": [],
-  "redigerte": {}
+  "skjulte": [
+    "kort-spel-0"
+  ],
+  "redigerte": {
+    "kort-spel-7": {
+      "tittel": "Manchester United på god veg til Mesterligaen! TESTER",
+      "brodtekst": "Manchester United vann 2–1 mot Brentford på hemmelandet sitt og er no nærare og nærare å sikre seg ein plass i Mesterligaen neste sesong! Med berre fire kampar att må dei klare seg på elleve poeng, og no er det berre matematikken som kan ta frå dei sjansen. Kaptein Bruno Fernandes er også nærare og nærare ein historisk prestasjon – han manglar berre éin målgivande pasning! - TESTINGS"
+    }
+  }
 }
