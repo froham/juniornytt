@@ -1,11 +1,13 @@
 {
-  "skjulte": [
-    "kort-spel-0"
-  ],
+  "skjulte": [],
   "redigerte": {
     "kort-spel-7": {
-      "tittel": "Manchester United på god veg til Mesterligaen! TESTER",
-      "brodtekst": "Manchester United vann 2–1 mot Brentford på hemmelandet sitt og er no nærare og nærare å sikre seg ein plass i Mesterligaen neste sesong! Med berre fire kampar att må dei klare seg på elleve poeng, og no er det berre matematikken som kan ta frå dei sjansen. Kaptein Bruno Fernandes er også nærare og nærare ein historisk prestasjon – han manglar berre éin målgivande pasning! - TESTINGS"
+      "tittel": "Manchester United pÃ¥ god veg til Mesterligaen! TESTER",
+      "brodtekst": "Manchester United vann 2â1 mot Brentford pÃ¥ hemmelandet sitt og er no nÃ¦rare og nÃ¦rare Ã¥ sikre seg ein plass i Mesterligaen neste sesong! Med berre fire kampar att mÃ¥ dei klare seg pÃ¥ elleve poeng, og no er det berre matematikken som kan ta frÃ¥ dei sjansen. Kaptein Bruno Fernandes er ogsÃ¥ nÃ¦rare og nÃ¦rare ein historisk prestasjon â han manglar berre Ã©in mÃ¥lgivande pasning! - TESTINGS"
+    },
+    "kort-spel-6": {
+      "tittel": "Manchester United på god veg til Mesterligaen! 🏆",
+      "brodtekst": "Manchester United vann 2–1 mot Brentford på hemmelandet sitt og er no nærare og nærare å sikre seg ein plass i Mesterligaen neste sesong! Med berre fire kampar att må dei klare seg på elleve poeng, og no er det berre matematikken som kan ta frå dei sjansen. Kaptein Bruno Fernandes er også nærare og nærare ein historisk prestasjon – han manglar berre éin målgjevande pasning!"
     }
   }
 }
