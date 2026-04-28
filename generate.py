@@ -4,6 +4,7 @@ import os
 import re
 import time
 import urllib.request
+import urllib.parse
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import datetime
@@ -17,6 +18,9 @@ SAKER_SPEL =  8
 STD_LAT  = 62.3439
 STD_LON  =  5.8467
 STD_STAD = "Ulsteinvik"
+
+GITHUB_REPO = "froham/juniornytt"
+REDAKSJON_PATH = "redaksjon.json"
 
 RSS_NASJONAL = [
     ("https://www.nrk.no/toppsaker.rss",   "NRK"),
@@ -86,7 +90,35 @@ def farevarsel(vind, base, nedbor):
     if nedbor >= 5: f.append("🌊")
     return " ".join(f)
 
-def hent_vaer():
+def hent_redaksjon():
+    """Les redaksjon.json frå GitHub – returnerer dict med skjulte og redigerte saker."""
+    url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{REDAKSJON_PATH}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return json.loads(r.read())
+    except Exception:
+        return {"skjulte": [], "redigerte": {}}
+
+def bruk_redaksjon(saker, redaksjon, prefix=""):
+    """Filtrer skjulte og erstatt redigerte saker."""
+    skjulte  = set(redaksjon.get("skjulte", []))
+    redigerte = redaksjon.get("redigerte", {})
+    ut = []
+    for i, sak in enumerate(saker):
+        kort_id = f"kort-{prefix}{i}"
+        if kort_id in skjulte:
+            print(f"  Skjult: «{sak.get('tittel','')}»")
+            continue
+        if kort_id in redigerte:
+            r = redigerte[kort_id]
+            if r.get("tittel"):   sak["tittel"]    = r["tittel"]
+            if r.get("brodtekst"): sak["brodtekst"] = r["brodtekst"]
+            print(f"  Redigert: «{sak.get('tittel','')}»")
+        ut.append(sak)
+    return ut
+
+
     url = f"https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={STD_LAT:.4f}&lon={STD_LON:.4f}"
     req = urllib.request.Request(url, headers={"User-Agent": "JuniorNytt/1.0 github.com/froham/juniornytt"})
     try:
@@ -325,7 +357,7 @@ BORDERS = ["#FDE047","#93C5FD","#86EFAC","#F9A8D4","#C4B5FD","#FCA5A1",
            "#FCD34D","#7DD3FC","#6EE7B7","#F0ABFC","#A78BFA","#FB923C",
            "#FACC15","#60A5FA","#34D399","#E879F9"]
 
-def card(sak, idx):
+def card(sak, idx, prefix=""):
     bg, border = COLORS[idx % len(COLORS)], BORDERS[idx % len(BORDERS)]
     emoji = sak.get("emoji") or velg_emoji(sak.get("tittel",""), sak.get("brodtekst",""))
     ts = f'<span class="tidspunkt">🕐 {sak["tidspunkt"]}</span>' if sak.get("tidspunkt") else ""
@@ -347,7 +379,10 @@ def card(sak, idx):
         lenke_html = f'<a href="{lenke}" target="_blank" rel="noopener noreferrer" class="les-meir">🔗 Les originalen{lås} →</a>'
     else:
         lenke_html = '<span class="les-meir"></span>'
-    return f'''<div class="card" style="background:{bg};border-color:{border}">
+    card_id = f"kort-{prefix}{idx}"
+    return f'''<div class="card" id="{card_id}" style="background:{bg};border-color:{border}">
+      <button class="skjul-knapp" onclick="skjulKort('{card_id}')">🙈 Skjul</button>
+      <button class="rediger-knapp" onclick="opneRediger('{card_id}')">✏️ Rediger</button>
       <div class="card-meta">{ts}{land}</div>
       <div class="card-emoji">{emoji}</div>
       <h3>{sak["tittel"]}</h3>
@@ -384,9 +419,9 @@ def build_html(nasjonal, lokal, spel, vaer):
     ukedagar = ["Måndag","Tysdag","Onsdag","Torsdag","Fredag","Laurdag","Sundag"]
     ukedag = ukedagar[datetime.now().weekday()]
     dato = datetime.now().strftime("%-d. %B %Y").lower()
-    nat_cards  = "".join(card(s,i) for i,s in enumerate(nasjonal))
-    lok_cards  = "".join(card(s,i) for i,s in enumerate(lokal))
-    spel_cards = "".join(card(s,i) for i,s in enumerate(spel))
+    nat_cards  = "".join(card(s,i,prefix="nat-") for i,s in enumerate(nasjonal))
+    lok_cards  = "".join(card(s,i,prefix="lok-") for i,s in enumerate(lokal))
+    spel_cards = "".join(card(s,i,prefix="spel-") for i,s in enumerate(spel))
     vaer_boks  = vaer_html(vaer)
 
     return f"""<!DOCTYPE html>
@@ -459,6 +494,28 @@ def build_html(nasjonal, lokal, spel, vaer):
   .toggle::after{{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:2px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}}
   .toggle.on::after{{left:20px}}
   @media(max-width:480px){{header h1{{font-size:2rem}}}}
+  /* Admin */
+  .admin-bar{{display:none;position:fixed;bottom:0;left:0;right:0;background:#1f2937;color:white;padding:10px 16px;z-index:999;align-items:center;gap:10px;font-size:.8rem;flex-wrap:wrap}}
+  .admin-bar.open{{display:flex}}
+  .admin-bar span{{flex:1;opacity:.7;min-width:120px}}
+  .admin-btn{{background:#3b82f6;color:white;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.75rem;font-weight:700}}
+  .admin-btn.red{{background:#ef4444}}
+  .admin-btn.green{{background:#10b981}}
+  .card.skjult{{opacity:.2;position:relative}}
+  .card.skjult::after{{content:'SKJULT';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;font-weight:900;color:#ef4444;letter-spacing:.1em;pointer-events:none}}
+  .skjul-knapp,.rediger-knapp{{display:none;position:absolute;z-index:10;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.72rem;font-weight:700}}
+  .skjul-knapp{{top:10px;right:10px;background:#ef4444;color:white}}
+  .rediger-knapp{{top:10px;right:80px;background:#f59e0b;color:white}}
+  body.admin-paa .skjul-knapp,body.admin-paa .rediger-knapp{{display:block}}
+  body.admin-paa .card{{position:relative}}
+  .admin-modal{{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}}
+  .admin-modal.open{{display:flex}}
+  .admin-modal-inner{{background:white;border-radius:16px;padding:24px;width:90%;max-width:540px;display:flex;flex-direction:column;gap:12px}}
+  .admin-modal-inner h3{{font-size:1rem;font-weight:800;color:#1f2937}}
+  .admin-modal-inner input,.admin-modal-inner textarea{{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:.9rem;font-family:inherit}}
+  .admin-modal-inner textarea{{min-height:120px;resize:vertical}}
+  .admin-modal-btns{{display:flex;gap:8px;justify-content:flex-end}}
+  .publiser-status{{font-size:.75rem;color:#10b981;margin-top:4px;display:none}}
 </style>
 <script>
   const SRC = {{
@@ -485,6 +542,125 @@ def build_html(nasjonal, lokal, spel, vaer):
       document.body.removeAttribute("class");
       tekst.textContent = "🔒 Foreldremodus";
     }}
+  }}
+
+  // ── Admin ──────────────────────────────────────────────
+  const ADMIN_PASSORD = "juniornytt2026"; // ← byt ut med eige passord
+  const GH_REPO      = "froham/juniornytt";
+  const GH_FILE      = "redaksjon.json";
+  const GH_WORKFLOW  = "update.yml";
+  let adminPaa = false;
+  let ghToken  = "";
+  let redaksjon = {{ skjulte: [], redigerte: {{}} }};
+  let aktivKortId = null;
+
+  async function adminLogin() {{
+    const pw = prompt("Adminpassord:");
+    if (pw !== ADMIN_PASSORD) {{ if (pw !== null) alert("Feil passord."); return; }}
+    const token = prompt("GitHub Personal Access Token\n(repo-tilgang påkravd):");
+    if (!token) return;
+    ghToken = token;
+    adminPaa = true;
+    document.body.classList.add("admin-paa");
+    document.getElementById("admin-bar").classList.add("open");
+    await lastRedaksjon();
+  }}
+
+  function adminLoggUt() {{
+    adminPaa = false; ghToken = "";
+    document.body.classList.remove("admin-paa");
+    document.getElementById("admin-bar").classList.remove("open");
+  }}
+
+  async function lastRedaksjon() {{
+    try {{
+      const r = await fetch(`https://api.github.com/repos/${{GH_REPO}}/contents/${{GH_FILE}}`,
+        {{ headers: {{ Authorization: `token ${{ghToken}}`, Accept: "application/vnd.github.v3+json" }} }});
+      if (r.ok) {{
+        const data = await r.json();
+        redaksjon = JSON.parse(atob(data.content));
+      }}
+    }} catch(e) {{ console.log("Ingen redaksjon.json endå – startar frå scratch."); }}
+    // Vis skjulte i admin-modus
+    redaksjon.skjulte.forEach(id => {{
+      const el = document.getElementById(id);
+      if (el) el.classList.add("skjult");
+    }});
+  }}
+
+  async function lagreRedaksjon() {{
+    const status = document.getElementById("publiser-status");
+    status.style.display = "block";
+    status.textContent = "⏳ Lagrar…";
+    try {{
+      // Hent noverande SHA
+      let sha = "";
+      const r = await fetch(`https://api.github.com/repos/${{GH_REPO}}/contents/${{GH_FILE}}`,
+        {{ headers: {{ Authorization: `token ${{ghToken}}` }} }});
+      if (r.ok) {{ const d = await r.json(); sha = d.sha; }}
+
+      // Skriv redaksjon.json
+      const innhald = btoa(unescape(encodeURIComponent(JSON.stringify(redaksjon, null, 2))));
+      const body = {{ message: "redaksjon: oppdater", content: innhald }};
+      if (sha) body.sha = sha;
+      await fetch(`https://api.github.com/repos/${{GH_REPO}}/contents/${{GH_FILE}}`,
+        {{ method: "PUT", headers: {{ Authorization: `token ${{ghToken}}`, "Content-Type": "application/json" }},
+           body: JSON.stringify(body) }});
+
+      // Trigger ny bygg
+      await fetch(`https://api.github.com/repos/${{GH_REPO}}/actions/workflows/${{GH_WORKFLOW}}/dispatches`,
+        {{ method: "POST", headers: {{ Authorization: `token ${{ghToken}}`, "Content-Type": "application/json" }},
+           body: JSON.stringify({{ ref: "main" }}) }});
+
+      status.textContent = "✅ Publisert! Sida vert oppdatert om ~1 min.";
+    }} catch(e) {{
+      status.textContent = "❌ Feil: " + e.message;
+    }}
+  }}
+
+  function skjulKort(id) {{
+    const el = document.getElementById(id);
+    if (el.classList.contains("skjult")) {{
+      el.classList.remove("skjult");
+      redaksjon.skjulte = redaksjon.skjulte.filter(s => s !== id);
+    }} else {{
+      el.classList.add("skjult");
+      if (!redaksjon.skjulte.includes(id)) redaksjon.skjulte.push(id);
+    }}
+    const knapp = el.querySelector(".skjul-knapp");
+    knapp.textContent = el.classList.contains("skjult") ? "👁 Vis" : "🙈 Skjul";
+  }}
+
+  function opneRediger(id) {{
+    aktivKortId = id;
+    const el = document.getElementById(id);
+    document.getElementById("modal-tittel").value  = el.querySelector("h3").textContent;
+    document.getElementById("modal-brodtekst").value = el.querySelector("p").textContent;
+    document.getElementById("admin-modal").classList.add("open");
+  }}
+
+  function lukkModal() {{
+    document.getElementById("admin-modal").classList.remove("open");
+    aktivKortId = null;
+  }}
+
+  function lagreRedigering() {{
+    if (!aktivKortId) return;
+    const tittel    = document.getElementById("modal-tittel").value.trim();
+    const brodtekst = document.getElementById("modal-brodtekst").value.trim();
+    const el = document.getElementById(aktivKortId);
+    el.querySelector("h3").textContent = tittel;
+    el.querySelector("p").textContent  = brodtekst;
+    if (!redaksjon.redigerte) redaksjon.redigerte = {{}};
+    redaksjon.redigerte[aktivKortId] = {{ tittel, brodtekst }};
+    lukkModal();
+  }}
+
+  function nullstillRedaksjon() {{
+    if (!confirm("Nullstill ALL skjuling og redigering?")) return;
+    redaksjon = {{ skjulte: [], redigerte: {{}} }};
+    document.querySelectorAll(".card.skjult").forEach(c => c.classList.remove("skjult"));
+    document.querySelectorAll(".skjul-knapp").forEach(k => k.textContent = "🙈 Skjul");
   }}
 </script>
 </head>
@@ -524,13 +700,40 @@ def build_html(nasjonal, lokal, spel, vaer):
     <div class="toggle" id="foreldre-toggle"></div>
   </div>
   <div class="foreldre-info">Foreldremodus gir lenke til kjelda bak nyheita</div>
+  <div style="margin-top:12px">
+    <a href="#" onclick="adminLogin();return false;" style="font-size:.68rem;color:#d1d5db;text-decoration:none;opacity:.4">⚙</a>
+  </div>
 </footer>
+
+<div class="admin-bar" id="admin-bar">
+  <span>🛡️ Admin-modus</span>
+  <button class="admin-btn green" onclick="lagreRedaksjon()">🚀 Publiser endringar</button>
+  <button class="admin-btn" onclick="nullstillRedaksjon()">↩️ Nullstill</button>
+  <button class="admin-btn red" onclick="adminLoggUt()">Logg ut</button>
+</div>
+<div class="publiser-status" id="publiser-status"></div>
+
+<div class="admin-modal" id="admin-modal">
+  <div class="admin-modal-inner">
+    <h3>✏️ Rediger sak</h3>
+    <input id="modal-tittel" type="text" placeholder="Tittel">
+    <textarea id="modal-brodtekst" placeholder="Brødtekst"></textarea>
+    <div class="admin-modal-btns">
+      <button class="admin-btn red" onclick="lukkModal()">Avbryt</button>
+      <button class="admin-btn green" onclick="lagreRedigering()">💾 Lagre</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>"""
 
 if __name__ == "__main__":
     now = datetime.now()
     print(f"Køyring kl. {now.strftime('%H:%M')}")
+
+    print("Hentar redaksjon.json...")
+    redaksjon = hent_redaksjon()
+    print(f"  → {len(redaksjon.get('skjulte',[]))} skjulte, {len(redaksjon.get('redigerte',{}))} redigerte")
 
     print(f"Hentar vêr for {STD_STAD}...")
     vaer = hent_vaer()
@@ -541,6 +744,8 @@ if __name__ == "__main__":
     print("Skriv om nasjonale nyhende...")
     nasjonal = omskriv(nat_rss, antall=SAKER_NAT) or omskriv(nat_rss[:12], antall=6)
     nasjonal = (nasjonal or [])[:SAKER_NAT]
+    nasjonal = bruk_redaksjon(nasjonal, redaksjon, prefix="nat-")
+    print(f"  → {len(nasjonal)} saker etter redaksjon")
     print(f"  → {len(nasjonal)} saker")
 
     print("Hentar RSS – lokalt...")
@@ -549,6 +754,8 @@ if __name__ == "__main__":
     print("Skriv om lokale nyhende...")
     lokal = omskriv(lok_rss, antall=SAKER_LOK) or omskriv(lok_rss[:12], antall=6)
     lokal = fjern_duplikatar(lokal or [], nasjonal or [])[:SAKER_LOK]
+    lokal = bruk_redaksjon(lokal, redaksjon, prefix="lok-")
+    print(f"  → {len(lokal)} saker etter redaksjon")
     print(f"  → {len(lokal)} saker")
 
     print("Hentar RSS – spel & sport...")
@@ -557,6 +764,8 @@ if __name__ == "__main__":
     print("Skriv om spel & sport...")
     spel = omskriv(spel_rss, antall=SAKER_SPEL, prompt_mal=SPEL_PROMPT) or []
     spel = spel[:SAKER_SPEL]
+    spel = bruk_redaksjon(spel, redaksjon, prefix="spel-")
+    print(f"  → {len(spel)} saker etter redaksjon")
     print(f"  → {len(spel)} saker")
 
     html = build_html(nasjonal, lokal, spel, vaer)
