@@ -560,6 +560,7 @@ def build_html(nasjonal, lokal, spel, vaer):
     # Les JS frå ekstern fil – unngår alle hermeteikn/krøllparentes-problem
     import pathlib
     javascript = pathlib.Path(__file__).parent.joinpath("admin.js").read_text(encoding="utf-8")
+
   const SRC = {
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
