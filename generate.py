@@ -545,7 +545,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   }}
 
   // ── Admin ──────────────────────────────────────────────
-  const ADMIN_PASSORD = "juniornytt2026"; // ← byt ut med eige passord
+  const ADMIN_PASSORD = "79&4q6%fd1gd3#"; // ← byt ut med eige passord
   const GH_REPO      = "froham/juniornytt";
   const GH_FILE      = "redaksjon.json";
   const GH_WORKFLOW  = "update.yml";
