@@ -718,8 +718,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   .admin-btn:disabled{{opacity:.5;cursor:not-allowed;transform:none}}
   .admin-btn.red{{background:#ef4444}}
   .admin-btn.green{{background:#10b981}}
-  .admin-btn.orange{{background:#f59e0b}}
-  .card.skjult{{opacity:.2;position:relative}}
+  .admin-btn.orange{{background:#f59e0b}}  .card.skjult{{opacity:.2;position:relative}}
   .card.skjult::after{{content:'SKJULT';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5rem;font-weight:900;color:#ef4444;letter-spacing:.1em;pointer-events:none}}
   .skjul-knapp,.rediger-knapp{{display:none;position:absolute;z-index:10;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:.72rem;font-weight:700}}
   .skjul-knapp{{top:10px;right:10px;background:#ef4444;color:white}}
@@ -733,7 +732,7 @@ def build_html(nasjonal, lokal, spel, vaer):
   .admin-modal-inner input,.admin-modal-inner textarea{{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:.9rem;font-family:inherit}}
   .admin-modal-inner textarea{{min-height:120px;resize:vertical}}
   .admin-modal-btns{{display:flex;gap:8px;justify-content:flex-end}}
-  .publiser-status{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1f2937;color:white;padding:20px 32px;border-radius:16px;font-size:1rem;font-weight:700;z-index:2000;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4);text-align:center;min-width:260px}
+  .publiser-status{{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1f2937;color:white;padding:20px 32px;border-radius:16px;font-size:1rem;font-weight:700;z-index:2000;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4);text-align:center;min-width:260px}}
 </style>
 <script>{javascript}</script>
 </head>
