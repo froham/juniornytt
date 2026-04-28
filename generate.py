@@ -557,7 +557,9 @@ def build_html(nasjonal, lokal, spel, vaer):
   .publiser-status{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1f2937;color:white;padding:20px 32px;border-radius:16px;font-size:1rem;font-weight:700;z-index:2000;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4);text-align:center;min-width:260px;white-space:pre-line}
   @media(max-width:480px){header h1{font-size:2rem}}
 """
-    javascript = """
+    # Les JS frå ekstern fil – unngår alle hermeteikn/krøllparentes-problem
+    import pathlib
+    javascript = pathlib.Path(__file__).parent.joinpath("admin.js").read_text(encoding="utf-8")
   const SRC = {
     nasjonal: "Kjelder: NRK · Aftenposten · VG · TV2",
     lokal:    "Kjelder: Vikebladet · Vestlandsnytt · Sunnmørsposten",
@@ -637,10 +639,10 @@ def build_html(nasjonal, lokal, spel, vaer):
     const skjultAntall  = redaksjon.skjulte.length;
     const redigertAntall = Object.keys(redaksjon.redigerte || {}).length;
     const ok = confirm(
-      "Er du sikker på at du vil publisere?\\n\\n" +
-      "• " + skjultAntall + " sak(er) skjult\\n" +
-      "• " + redigertAntall + " sak(er) redigert\\n\\n" +
-      "Sida vert oppdatert for alle om ~1 minutt."
+      "Er du sikker pa at du vil publisere?\\n\\n" +
+      "- " + skjultAntall + " sak(er) skjult\\n" +
+      "- " + redigertAntall + " sak(er) redigert\\n\\n" +
+      "Sida vert oppdatert for alle om ca 1 minutt."
     );
     if (!ok) return;
 
