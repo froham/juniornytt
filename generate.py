@@ -833,14 +833,14 @@ def build_html(nasjonal, lokal, spel, vaer):
   <div class="dato">{ukedag} {dato}</div>
   <div class="sub">Nyhende på nynorsk for deg mellom 8 og 12 år – nye saker vert publisert kl. 07.00, 12.00 og 19.00 kvar dag.</div>
   <div class="ki-merknad">Sida nyttar KI og skrivefeil kan førekomme. JuniorNytt er ei privat, ikkje-kommersiell barneside og er ikkje tilknytt eller sponsa av nokon av kjeldene som er omtala.</div>
-  <div class="oppdatert">Oppdatert kl. {oppdatert}</div>
+  <div class="oppdatert">Oppdatert kl. {datetime.now().strftime("%H:%M")}</div>
   {vaer_boks}
 </header>
 
 <div class="tabs">
-  <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">🇳🇴 Nasjonalt <span class="badge">{nat_tal}</span></button>
-  <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">📍 Lokalt <span class="badge">{lok_tal}</span></button>
-  <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">🎮 Spel &amp; Sport <span class="badge">{spel_tal}</span></button>
+  <button class="tab tab-nat" id="tab-nasjonal" onclick="show('nasjonal')">🇳🇴 Nasjonalt <span class="badge">{len(nasjonal)}</span></button>
+  <button class="tab tab-lok inactive" id="tab-lokal" onclick="show('lokal')">📍 Lokalt <span class="badge">{len(lokal)}</span></button>
+  <button class="tab tab-spel inactive" id="tab-spel" onclick="show('spel')">🎮 Spel &amp; Sport <span class="badge">{len(spel)}</span></button>
 </div>
 <div class="sources" id="src-line">Kjelder: NRK · Aftenposten · VG · TV2</div>
 <div class="varsel-boks" id="varsel-spel">⚠️ I spel der du kan møte framande på nett – hugs å aldri dele personleg informasjon, og fortel alltid ein vaksen viss nokon oppfører seg rart.</div>
