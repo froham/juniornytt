@@ -1,5 +1,8 @@
 {
-  "skjulte": [],
+  "skjulte": [
+    "kort-spel-nysupermariofilmpåveg-a7079f",
+    "kort-spel-ballxpitfekkeinkjempesto-45db3b"
+  ],
   "redigerte": {
     "kort-spel-7": {
       "tittel": "Manchester United pÃ¥ god veg til Mesterligaen! TESTER",
@@ -8,6 +11,10 @@
     "kort-spel-6": {
       "tittel": "Manchester United på god veg til Mesterligaen! 🏆",
       "brodtekst": "Manchester United vann 2–1 mot Brentford på hemmelandet sitt og er no nærare og nærare å sikre seg ein plass i Mesterligaen neste sesong! Med berre fire kampar att må dei klare seg på elleve poeng, og no er det berre matematikken som kan ta frå dei sjansen. Kaptein Bruno Fernandes er også nærare og nærare ein historisk prestasjon – han manglar berre éin målgjevande pasning!"
+    },
+    "kort-spel-snookerstjernafårhardkri-c62606": {
+      "tittel": "Snooker-stjerna får hard kritikk for kritt-bruk",
+      "brodtekst": "Under VM i snooker (ei kulesportkompetisjon) skaper ein liten detalj stor rabalder! Superstjerna Ronnie O'Sullivan får knallhard kritikk frå andre toppspeleiar på grunn av korleis han brukar kritt (det er det kvite stoffet som snooker-spelarar brukar på køllen sin). Mange seier at dette burde vere forbudt, og det har vorte eit stort diskusjonstema. TEST TEST"
     }
   }
 }
