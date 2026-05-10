@@ -290,7 +290,7 @@ def omskriv(artiklar, antall=8, retries=4, wait=60, prompt_mal=None):
     for attempt in range(retries):
         try:
             resp = client.messages.create(
-                model="claude-haiku-4-5", max_tokens=6000,
+                model="claude-sonnet-4-6", max_tokens=6000,
                 messages=[{"role": "user", "content": prompt}]
             )
             text = resp.content[0].text.replace("```json","").replace("```","").strip()
